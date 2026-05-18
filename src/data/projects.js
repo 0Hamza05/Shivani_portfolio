@@ -64,13 +64,11 @@ export const projects = [
     slug: 'volunteering',
     title: 'Volunteering',
     category: 'Stage 5',
-    cover: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80',
+    cover: '/images/Vol - 1.jpg',
     gridImages: [
-      'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80',
-      'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=81',
-      'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=82',
-      'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=83',
-      'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=84',
+      '/images/Vol - 1.jpg',
+      '/images/Vol - 2.JPG',
+
     ],
     description: "The realization that you are the author of your own story. The safety nets are removed, and the thrill of absolute freedom rushes in.\n\nWith this freedom comes the heavy weight of responsibility. We move to new cities, sign our first leases, and realize that we are entirely in charge of our destiny. It is a period of relentless hustle, of staying up late dreaming about the future, and of realizing that adulthood is something you create, not something that simply happens to you."
   },
