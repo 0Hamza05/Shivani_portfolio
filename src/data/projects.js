@@ -79,13 +79,12 @@ export const projects = [
     slug: 'dance',
     title: 'Dance',
     category: 'Stage 6',
-    cover: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
+    cover: '/images/Dance - 4.MOV',
     gridImages: [
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=81',
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=82',
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=83',
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=84',
+      '/images/Dance - 1.JPG',
+      '/images/Dance - 2.PNG',
+      '/images/Dance - 3.PNG',
+      '/images/Dance - 4.MOV'
     ],
     description: "Building the foundation. We pour our energy, our time, and our passion into our work, striving to leave a mark on the world.\n\nThis stage is characterized by late nights, early mornings, failures, and hard-earned victories. We figure out not just what we want to do, but what impact we want to have. The idealism of youth begins to temper into pragmatic strategy. We learn the value of resilience, of getting back up, and of defining success on our own terms."
   },
@@ -154,13 +153,18 @@ export const projects = [
     slug: 'travel',
     title: 'Travel',
     category: 'Stage 11',
-    cover: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80',
+    cover: '/images/Travel - 1.jpg',
     gridImages: [
-      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=80',
-      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=81',
-      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=82',
-      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=83',
-      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&q=84',
+      '/images/Travel - 1.jpg',
+      '/images/Travel - 2.jpg',
+      '/images/Travel - 3.jpg',
+      '/images/Travel - 4.jpg',
+      '/images/Travel - 5.jpg',
+      '/images/Travel - 6.jpg',
+      '/images/Travel - 7.jpg',
+      '/images/Travel - 8.jpg',
+      '/images/Travel - 9.jpg',
+      '/images/Travel - 10.jpg'
     ],
     description: "Exploring the vastness of the world. Every new city, landscape, and culture expands the boundaries of who we are.\n\nTravel teaches us resilience and empathy. It forces us out of our comfort zones and into the beautiful chaos of the unknown. We collect memories instead of things, and learn that despite the vast differences in language and customs, humanity shares the same fundamental hopes and dreams."
   },
@@ -169,13 +173,14 @@ export const projects = [
     slug: 'overcoming-fears',
     title: 'Overcoming Fears',
     category: 'Stage 12',
-    cover: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
+    cover: '/images/Dog - 1.jpg',
     gridImages: [
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=81',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=82',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=83',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=84',
+      '/images/Dog - 1.jpg',
+      '/images/Dog - 2.jpg',
+      '/images/Dog - 3.jpg',
+      '/images/Dog - 4.jpg',
+      '/images/Dog - 5.jpg',
+      '/images/Dog - 6.jpg'
     ],
     description: "The moment we decide that what we want is more important than what we are afraid of.\n\nOvercoming fear is not about the absence of terror, but the courage to take the step anyway. It is the trembling leap into the unknown that redefines our limits. Each fear conquered becomes a stepping stone to a stronger, more authentic version of ourselves, proving that our boundaries are often just illusions."
   }
