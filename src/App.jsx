@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Welcome from './pages/Welcome';
 import Home from './pages/Home';
@@ -14,16 +14,26 @@ export default function App() {
 
   return (
     <Router>
-      <AnimatePresence>
-        {!welcomeDismissed && <Welcome key="welcome-screen" onDismiss={() => setWelcomeDismissed(true)} />}
+      <AnimatePresence mode="wait">
+        {!welcomeDismissed ? (
+          <Welcome key="welcome-screen" onDismiss={() => setWelcomeDismissed(true)} />
+        ) : (
+          <motion.div
+            key="main-content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/work" element={<Work />} />
+              <Route path="/work/:slug" element={<ProjectDetail />} />
+              <Route path="/about" element={<About />} />
+            </Routes>
+          </motion.div>
+        )}
       </AnimatePresence>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/work" element={<Work />} />
-        <Route path="/work/:slug" element={<ProjectDetail />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
     </Router>
   );
 }
