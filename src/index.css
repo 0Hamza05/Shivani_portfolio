@@ -7,12 +7,12 @@
 }
 
 :root {
-  --bg: #F09EA7;
-  --fg: #1a1a1a;
-  --fg-dim: rgba(26, 26, 26, 0.6);
+  --bg: #ffffff;
+  --fg: #111111;
+  --fg-dim: rgba(17, 17, 17, 0.6);
   --fg-hover: #000000;
   --accent: #FAFABE;
-  --border: rgba(69, 42, 35, 0.15);
+  --border: rgba(17, 17, 17, 0.08);
   --nav-h: 56px;
 }
 
@@ -55,6 +55,6 @@ img {
 
 /* Text Selection */
 ::selection {
-  background-color: rgba(240, 158, 167, 0.5); /* Pastel pink */
-  color: #452a23;
+  background-color: rgba(240, 158, 167, 0.25); /* Subtle pink selection highlight */
+  color: #111111;
 }

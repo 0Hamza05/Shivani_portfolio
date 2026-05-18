@@ -61,7 +61,7 @@ export default function Navbar() {
             fontSize: '1.8rem',
             fontWeight: 400,
             letterSpacing: '0.08em',
-            color: '#ffffff',
+            color: 'var(--fg)',
             opacity: 0.9,
             transition: 'opacity 0.2s',
             position: 'relative',

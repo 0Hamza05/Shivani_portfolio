@@ -321,7 +321,7 @@ export default function ProjectDetail() {
             style={{
               position: 'fixed',
               inset: 0,
-              backgroundColor: 'rgba(240, 158, 167, 0.25)', // soft transparent pink overlay
+              backgroundColor: 'rgba(255, 255, 255, 0.85)', // soft transparent white frosted overlay
               backdropFilter: 'blur(15px)',
               zIndex: 9999,
               display: 'flex',

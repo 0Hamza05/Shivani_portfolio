@@ -44,7 +44,7 @@ function getColumnChunkItems(colIndex, chunkY, pattern) {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  const GAP = 16;
+  const GAP = 6;
   let currentY = 0;
   return pattern.map((slot, index) => {
     const photo = shuffled[index % shuffled.length];
@@ -92,7 +92,7 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
                 overflow: 'hidden',
                 backgroundColor: 'var(--border)',
                 position: 'relative',
-                borderRadius: '12px',
+                borderRadius: '8px',
               }}
               className="project-card-wrapper"
             >
@@ -396,7 +396,7 @@ export default function Home() {
           position: fixed;
           inset: 0;
           pointer-events: none;
-          box-shadow: inset 0 0 50px rgba(240, 158, 167, 0.4);
+          box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.02);
           z-index: 5;
         }
       `}</style>
