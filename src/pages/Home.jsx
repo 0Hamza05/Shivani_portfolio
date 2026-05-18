@@ -368,14 +368,15 @@ export default function Home() {
           opacity: 1;
         }
         .project-title {
-          font-family: 'EB Garamond', serif;
-          font-size: 1.2rem;
+          font-family: 'Great Vibes', cursive;
+          font-size: 2.4rem;
           font-weight: 400;
           color: var(--fg);
-          letter-spacing: 0.02em;
+          letter-spacing: 0.01em;
           transform: translateY(8px);
           transition: transform 0.4s ease;
           margin: 0;
+          text-transform: none;
         }
         .project-card-wrapper:hover .project-title {
           transform: translateY(0);
