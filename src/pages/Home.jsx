@@ -218,6 +218,7 @@ let savedPos = null;
 
 const LERP_SPEED = 0.075; // Butter-smooth easing rate
 const DECELERATION = 0.945; // Decay rate for velocity inertia
+const WHEEL_SCROLL_FACTOR = 0.35; // Controlled scaling factor for mouse wheel and touchpad inputs
 const WHEEL_IMPULSE = 0.018;
 const DRAG_IMPULSE = 0.075;
 const DRAG_LERP = 0.72;
@@ -329,12 +330,15 @@ export default function Home() {
           event.preventDefault();
         }
 
-        targetPos.current.x += deltaX;
-        targetPos.current.y += deltaY;
-        velocity.current.x += deltaX * WHEEL_IMPULSE;
-        velocity.current.y += deltaY * WHEEL_IMPULSE;
-        motionRef.current.velocityX += deltaX;
-        motionRef.current.velocityY += deltaY;
+        const scaledDeltaX = deltaX * WHEEL_SCROLL_FACTOR;
+        const scaledDeltaY = deltaY * WHEEL_SCROLL_FACTOR;
+
+        targetPos.current.x += scaledDeltaX;
+        targetPos.current.y += scaledDeltaY;
+        velocity.current.x += scaledDeltaX * WHEEL_IMPULSE;
+        velocity.current.y += scaledDeltaY * WHEEL_IMPULSE;
+        motionRef.current.velocityX += scaledDeltaX;
+        motionRef.current.velocityY += scaledDeltaY;
 
         return false;
       },
