@@ -1,12 +1,8 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Lenis from 'lenis';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { projects } from '../data/projects';
-
-gsap.registerPlugin(ScrollTrigger);
 
 // Deterministic pseudo-random number generator
 function getRandomGen(seed) {
@@ -19,6 +15,7 @@ function getRandomGen(seed) {
 
 const COL_W = 400;
 const COL_H = 1200;
+const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 
 // 4 distinct vertical column patterns
 const COL_PATTERNS = [
@@ -32,10 +29,9 @@ const COL_PATTERNS = [
 const COL_SPEEDS = [1.0, 1.35, 0.8, 1.15]; 
 
 const allPhotos = projects.flatMap(proj => 
-  proj.gridImages.map((imgUrl, idx) => ({
+  proj.gridImages.map((imgUrl) => ({
     project: proj,
-    imgUrl: imgUrl,
-    uniqueId: `${proj.id}-${idx}`
+    imgUrl: imgUrl
   }))
 );
 
@@ -109,7 +105,7 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
               className="project-card-wrapper"
             >
               {(() => {
-                const isVideo = item.cover && item.cover.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
+                const isVideo = item.cover && VIDEO_RE.test(item.cover);
                 if (isVideo) {
                   return (
                     <video
@@ -175,7 +171,7 @@ function checkBoundariesChanged(oldX, oldY, newX, newY, winSize) {
   return false;
 }
 
-function Column({ colIndex, pos, winSize, onClick }) {
+function Column({ colIndex, pos, winSize, onClick, registerColumn }) {
   const type = ((colIndex % 4) + 4) % 4; 
   const pattern = COL_PATTERNS[type];
   const speed = COL_SPEEDS[type];
@@ -191,6 +187,7 @@ function Column({ colIndex, pos, winSize, onClick }) {
 
   return (
     <div 
+      ref={(node) => registerColumn(colIndex, node)}
       className="parallax-column"
       data-speed={speed}
       style={{
@@ -231,6 +228,7 @@ const VELOCITY_LERP = 0.085;
 export default function Home() {
   const containerRef = useRef(null);
   const gridWrapperRef = useRef(null);
+  const columnRefs = useRef(new Map());
   const [pos, setPosState] = useState(() => {
     return savedPos || { x: 0, y: 0 };
   });
@@ -239,6 +237,13 @@ export default function Home() {
   const renderedPosRef = useRef({ x: pos.x, y: pos.y });
   const lenisRef = useRef(null);
   const motionRef = useRef({ speed: 0, velocityX: 0, velocityY: 0 });
+  const registerColumn = useCallback((colIndex, node) => {
+    if (node) {
+      columnRefs.current.set(colIndex, node);
+    } else {
+      columnRefs.current.delete(colIndex);
+    }
+  }, []);
 
   // Helper to trigger state change and update the rendered boundary reference
   const updateRenderedPos = (newX, newY) => {
@@ -497,9 +502,8 @@ export default function Home() {
       if (gridWrapperRef.current) {
         gridWrapperRef.current.style.transform = `translate3d(${-posRef.current.x}px, 0, 0)`;
       }
-      if (containerRef.current) {
-        const cols = containerRef.current.querySelectorAll('.parallax-column');
-        cols.forEach(col => {
+      if (columnRefs.current.size) {
+        columnRefs.current.forEach((col) => {
           const speed = parseFloat(col.getAttribute('data-speed')) || 1.0;
           col.style.transform = `translate3d(0, ${-posRef.current.y * speed}px, 0)`;
         });
@@ -538,8 +542,6 @@ export default function Home() {
       if (checkBoundariesChanged(renderedPosRef.current.x, renderedPosRef.current.y, posRef.current.x, posRef.current.y, winSize)) {
         updateRenderedPos(posRef.current.x, posRef.current.y);
       }
-
-      ScrollTrigger.update();
       rafId = requestAnimationFrame(loop);
     };
 
@@ -600,45 +602,6 @@ export default function Home() {
           --hover-scale: 1.025;
           filter: contrast(1.03);
         }
-        .project-card-wrapper .project-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to top, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 60%);
-          opacity: 0;
-          transition: opacity 0.4s ease;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 24px;
-        }
-        .project-card-wrapper:hover .project-overlay {
-          opacity: 1;
-        }
-        .project-title {
-          font-family: 'Great Vibes', cursive;
-          font-size: 2.4rem;
-          font-weight: 400;
-          color: var(--fg);
-          letter-spacing: 0.01em;
-          transform: translateY(8px);
-          transition: transform 0.4s ease;
-          margin: 0;
-          text-transform: none;
-        }
-        .project-card-wrapper:hover .project-title {
-          transform: translateY(0);
-        }
-        .project-category {
-          font-size: 0.55rem;
-          letter-spacing: 0.2em;
-          color: var(--fg-dim);
-          margin-top: 4px;
-          transform: translateY(8px);
-          transition: transform 0.4s ease 0.04s;
-        }
-        .project-card-wrapper:hover .project-category {
-          transform: translateY(0);
-        }
 
         .is-dragging-gallery,
         .is-dragging-gallery * {
@@ -696,6 +659,7 @@ export default function Home() {
               pos={pos} 
               winSize={winSize}
               onClick={handleClick}
+              registerColumn={registerColumn}
             />
           ))}
         </div>

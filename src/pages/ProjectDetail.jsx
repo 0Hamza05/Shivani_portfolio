@@ -3,6 +3,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { projects } from '../data/projects';
 import { useEffect, useState, useRef } from 'react';
 
+const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
+const carouselButtonStyle = {
+  border: '1px solid var(--border)',
+  background: 'rgba(255, 255, 255, 0.8)',
+  width: '44px',
+  height: '44px',
+  borderRadius: '50%',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '1rem',
+  color: 'var(--fg)',
+  transition: 'all 0.3s ease',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
+};
+
+function isVideoUrl(url) {
+  return VIDEO_RE.test(url || '');
+}
+
 // Focused Editorial Carousel Component with fluid spring physics and touch swipe support
 function PillarCarousel({ images, title, onZoom }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -71,7 +92,7 @@ function PillarCarousel({ images, title, onZoom }) {
             const isVisible = Math.abs(offset) <= 1;
             if (!isVisible) return null;
 
-            const isVideo = img && img.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
+            const isVideo = isVideoUrl(img);
             const isActive = idx === currentIndex;
 
             return (
@@ -182,21 +203,7 @@ function PillarCarousel({ images, title, onZoom }) {
       }}>
         <button 
           onClick={handlePrev}
-          style={{
-            border: '1px solid var(--border)',
-            background: 'rgba(255, 255, 255, 0.8)',
-            width: '44px',
-            height: '44px',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1rem',
-            color: 'var(--fg)',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
-          }}
+          style={carouselButtonStyle}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'scale(1)'; }}
           aria-label="Previous image"
@@ -216,21 +223,7 @@ function PillarCarousel({ images, title, onZoom }) {
 
         <button 
           onClick={handleNext}
-          style={{
-            border: '1px solid var(--border)',
-            background: 'rgba(255, 255, 255, 0.8)',
-            width: '44px',
-            height: '44px',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1rem',
-            color: 'var(--fg)',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
-          }}
+          style={carouselButtonStyle}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'scale(1)'; }}
           aria-label="Next image"
@@ -278,7 +271,7 @@ export default function ProjectDetail() {
       {/* Hero Banner Image */}
       <div style={{ height: '70vh', width: '100%', position: 'relative', overflow: 'hidden' }}>
         {(() => {
-          const isVideo = project.cover && project.cover.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
+          const isVideo = isVideoUrl(project.cover);
           if (isVideo) {
             return (
               <video
@@ -441,7 +434,7 @@ export default function ProjectDetail() {
                 </button>
               </div>
               <div style={{ borderRadius: '4px', overflow: 'hidden', maxWidth: '100%', maxHeight: '70vh' }}>
-                {activeImage.match(/\.(mp4|webm|ogg|mov)(\?|$)/i) ? (
+                {isVideoUrl(activeImage) ? (
                   <video 
                     src={activeImage} 
                     autoPlay 
