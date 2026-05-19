@@ -23,6 +23,19 @@ export default function Navbar() {
     return location.pathname.startsWith(path);
   };
 
+  const navLinkStyle = (active = false) => ({
+    fontSize: '0.68rem',
+    letterSpacing: '0.2em',
+    fontWeight: 500,
+    color: active ? 'var(--fg)' : 'rgba(17, 17, 17, 0.78)',
+    transition: 'color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
+    borderBottom: active ? '1px solid var(--fg)' : '1px solid transparent',
+    padding: '7px 9px 6px',
+    borderRadius: '999px',
+    backgroundColor: 'rgba(255, 255, 255, 0.34)',
+    textShadow: '0 1px 10px rgba(255, 255, 255, 0.92), 0 0 1px rgba(255, 255, 255, 0.9)',
+  });
+
   return (
     <>
       <nav
@@ -37,10 +50,11 @@ export default function Navbar() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 32px',
-          backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.25)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: scrolled ? '1px solid var(--border)' : '1px solid rgba(255, 255, 255, 0.1)',
+          backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.86)' : 'rgba(255, 255, 255, 0.46)',
+          backdropFilter: 'blur(18px) saturate(1.12)',
+          WebkitBackdropFilter: 'blur(18px) saturate(1.12)',
+          borderBottom: scrolled ? '1px solid var(--border)' : '1px solid rgba(255, 255, 255, 0.36)',
+          boxShadow: scrolled ? '0 10px 30px rgba(0, 0, 0, 0.035)' : '0 8px 28px rgba(0, 0, 0, 0.025)',
           transition: 'all 0.4s ease',
         }}
       >
@@ -84,18 +98,9 @@ export default function Navbar() {
           {/* WORK Link */}
           <Link
             to="/"
-            style={{
-              fontSize: '0.65rem',
-              letterSpacing: '0.2em',
-              fontWeight: 400,
-              color: isActive('/') ? 'var(--fg)' : 'var(--fg-dim)',
-              transition: 'color 0.2s ease',
-              borderBottom: isActive('/') ? '1px solid var(--fg)' : '1px solid transparent',
-              paddingBottom: '1px',
-              textShadow: scrolled ? 'none' : '0 1px 8px rgba(255, 255, 255, 0.8), 0 0 2px rgba(255, 255, 255, 0.5)',
-            }}
+            style={navLinkStyle(isActive('/'))}
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--fg)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = isActive('/') ? 'var(--fg)' : 'var(--fg-dim)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = isActive('/') ? 'var(--fg)' : 'rgba(17, 17, 17, 0.78)'; }}
           >
             WORK
           </Link>
@@ -113,13 +118,8 @@ export default function Navbar() {
           >
             <span
               style={{
-                fontSize: '0.65rem',
-                letterSpacing: '0.2em',
-                fontWeight: 400,
-                color: 'var(--fg-dim)',
-                transition: 'color 0.2s ease',
-                paddingBottom: '1px',
-                textShadow: scrolled ? 'none' : '0 1px 8px rgba(255, 255, 255, 0.8), 0 0 2px rgba(255, 255, 255, 0.5)',
+                ...navLinkStyle(false),
+                display: 'inline-block',
               }}
               className="pillars-trigger-text"
             >
@@ -181,18 +181,9 @@ export default function Navbar() {
           {/* ABOUT Link */}
           <Link
             to="/about"
-            style={{
-              fontSize: '0.65rem',
-              letterSpacing: '0.2em',
-              fontWeight: 400,
-              color: isActive('/about') ? 'var(--fg)' : 'var(--fg-dim)',
-              transition: 'color 0.2s ease',
-              borderBottom: isActive('/about') ? '1px solid var(--fg)' : '1px solid transparent',
-              paddingBottom: '1px',
-              textShadow: scrolled ? 'none' : '0 1px 8px rgba(255, 255, 255, 0.8), 0 0 2px rgba(255, 255, 255, 0.5)',
-            }}
+            style={navLinkStyle(isActive('/about'))}
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--fg)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = isActive('/about') ? 'var(--fg)' : 'var(--fg-dim)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = isActive('/about') ? 'var(--fg)' : 'rgba(17, 17, 17, 0.78)'; }}
           >
             ABOUT
           </Link>

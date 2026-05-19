@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Lenis from 'lenis';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { projects } from '../data/projects';
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Deterministic pseudo-random number generator
 function getRandomGen(seed) {
@@ -88,6 +94,7 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
             onClick={onClick} 
             draggable={false} 
             onDragStart={e => e.preventDefault()}
+            aria-label={`Open ${item.project.title} pillar post`}
             style={{ display: 'block', width: '100%', height: '100%' }}
           >
             <div
@@ -111,6 +118,7 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
                       loop
                       muted
                       playsInline
+                      preload="metadata"
                       style={{
                         width: '100%',
                         height: '100%',
@@ -126,6 +134,7 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
                     src={item.cover}
                     alt={item.project.title}
                     loading="lazy"
+                    decoding="async"
                     draggable={false}
                     style={{
                       width: '100%',
@@ -210,8 +219,14 @@ function Column({ colIndex, pos, winSize, onClick }) {
 // Cache position in module-level memory so it persists across React route changes
 let savedPos = null;
 
-const LERP_SPEED = 0.08; // Butter-smooth easing rate
-const DECELERATION = 0.95; // Decay rate for velocity inertia
+const LERP_SPEED = 0.075; // Butter-smooth easing rate
+const DECELERATION = 0.945; // Decay rate for velocity inertia
+const WHEEL_IMPULSE = 0.018;
+const DRAG_IMPULSE = 0.075;
+const DRAG_LERP = 0.72;
+const DRAG_VELOCITY_LERP = 0.32;
+const MAX_RELEASE_VELOCITY = 4.2;
+const VELOCITY_LERP = 0.085;
 
 export default function Home() {
   const containerRef = useRef(null);
@@ -222,6 +237,8 @@ export default function Home() {
   const posRef = useRef(pos);
   const targetPos = useRef({ x: pos.x, y: pos.y });
   const renderedPosRef = useRef({ x: pos.x, y: pos.y });
+  const lenisRef = useRef(null);
+  const motionRef = useRef({ speed: 0, velocityX: 0, velocityY: 0 });
 
   // Helper to trigger state change and update the rendered boundary reference
   const updateRenderedPos = (newX, newY) => {
@@ -238,8 +255,11 @@ export default function Home() {
   }, []);
 
   const [winSize, setWinSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const isPointerDown = useRef(false);
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
+  const dragStart = useRef({ x: 0, y: 0 });
+  const activePointerId = useRef(null);
   const hasDragged = useRef(false);
   const velocity = useRef({ x: 0, y: 0 });
   const lastTime = useRef(performance.now());
@@ -285,58 +305,147 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const handleWheel = (e) => {
-      targetPos.current.x += e.deltaX;
-      targetPos.current.y += e.deltaY;
-    };
+    const lenis = new Lenis({
+      eventsTarget: containerRef.current || window,
+      smoothWheel: true,
+      syncTouch: true,
+      syncTouchLerp: 0.075,
+      touchInertiaExponent: 1.55,
+      gestureOrientation: 'both',
+      lerp: LERP_SPEED,
+      wheelMultiplier: 1.05,
+      touchMultiplier: 1.35,
+      infinite: true,
+      autoRaf: false,
+      virtualScroll: ({ deltaX, deltaY, event }) => {
+        if (event.ctrlKey) return false;
 
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: true });
-    }
+        if (event.cancelable) {
+          event.preventDefault();
+        }
+
+        targetPos.current.x += deltaX;
+        targetPos.current.y += deltaY;
+        velocity.current.x += deltaX * WHEEL_IMPULSE;
+        velocity.current.y += deltaY * WHEEL_IMPULSE;
+        motionRef.current.velocityX += deltaX;
+        motionRef.current.velocityY += deltaY;
+
+        return false;
+      },
+    });
+
+    lenisRef.current = lenis;
+    const resize = () => lenis.resize();
+    window.addEventListener('resize', resize);
+
     return () => {
-      if (container) container.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('resize', resize);
+      lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
   // Register pointer move and up events globally on window for fluid drag and click bubble
   useEffect(() => {
     const handlePointerMove = (e) => {
-      if (!isDragging.current) return;
-      const dx = lastMouse.current.x - e.clientX;
-      const dy = lastMouse.current.y - e.clientY;
-      
-      // Filter out micro pointer shakes to protect standard click events
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        hasDragged.current = true;
-      }
+      if (!isPointerDown.current) return;
+      if (activePointerId.current !== null && e.pointerId !== activePointerId.current) return;
 
-      const now = performance.now();
-      const dt = Math.max(1, now - lastTime.current);
-      
-      velocity.current = {
-        x: dx / dt,
-        y: dy / dt
-      };
-      
-      // Accumulate pointer delta to target position (avoid layout thrashing)
-      targetPos.current.x += dx;
-      targetPos.current.y += dy;
-      
-      lastMouse.current = { x: e.clientX, y: e.clientY };
-      lastTime.current = now;
+      const samples = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : [e];
+
+      samples.forEach((sample) => {
+        const dx = lastMouse.current.x - sample.clientX;
+        const dy = lastMouse.current.y - sample.clientY;
+        const movedX = sample.clientX - dragStart.current.x;
+        const movedY = sample.clientY - dragStart.current.y;
+        const movedDistance = Math.hypot(movedX, movedY);
+
+        if (movedDistance > 7) {
+          hasDragged.current = true;
+          if (!isDragging.current) {
+            isDragging.current = true;
+            containerRef.current?.setPointerCapture?.(e.pointerId);
+            lenisRef.current?.stop?.();
+            document.documentElement.classList.add('is-dragging-gallery');
+            targetPos.current = { x: posRef.current.x, y: posRef.current.y };
+          }
+        }
+
+        if (!isDragging.current) {
+          lastMouse.current = { x: sample.clientX, y: sample.clientY };
+          lastTime.current = sample.timeStamp || performance.now();
+          return;
+        }
+
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+
+        const now = sample.timeStamp || performance.now();
+        const dt = Math.max(1, Math.min(34, now - lastTime.current));
+        const measuredVelocityX = dx / dt;
+        const measuredVelocityY = dy / dt;
+
+        velocity.current.x += (measuredVelocityX - velocity.current.x) * DRAG_VELOCITY_LERP;
+        velocity.current.y += (measuredVelocityY - velocity.current.y) * DRAG_VELOCITY_LERP;
+        motionRef.current.velocityX += dx * DRAG_IMPULSE * dt;
+        motionRef.current.velocityY += dy * DRAG_IMPULSE * dt;
+
+        // Accumulate pointer delta to target position; the RAF loop handles the visual interpolation.
+        targetPos.current.x += dx;
+        targetPos.current.y += dy;
+
+        lastMouse.current = { x: sample.clientX, y: sample.clientY };
+        lastTime.current = now;
+      });
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e) => {
+      if (activePointerId.current !== null && e.pointerId !== activePointerId.current) return;
+      isPointerDown.current = false;
       isDragging.current = false;
+      activePointerId.current = null;
+      velocity.current.x = Math.max(-MAX_RELEASE_VELOCITY, Math.min(MAX_RELEASE_VELOCITY, velocity.current.x));
+      velocity.current.y = Math.max(-MAX_RELEASE_VELOCITY, Math.min(MAX_RELEASE_VELOCITY, velocity.current.y));
+      try {
+        containerRef.current?.releasePointerCapture?.(e.pointerId);
+      } catch {
+        // Pointer capture can already be released by the browser on route changes.
+      }
+      document.documentElement.classList.remove('is-dragging-gallery');
+      lenisRef.current?.start?.();
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
+    const handlePointerCancel = (e) => {
+      if (activePointerId.current !== null && e.pointerId !== activePointerId.current) return;
+      isPointerDown.current = false;
+      isDragging.current = false;
+      activePointerId.current = null;
+      velocity.current = { x: 0, y: 0 };
+      document.documentElement.classList.remove('is-dragging-gallery');
+      lenisRef.current?.start?.();
+    };
+
+    const handleWindowBlur = () => {
+      isPointerDown.current = false;
+      isDragging.current = false;
+      activePointerId.current = null;
+      velocity.current = { x: 0, y: 0 };
+      document.documentElement.classList.remove('is-dragging-gallery');
+      lenisRef.current?.start?.();
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: false });
     window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerCancel);
+    window.addEventListener('blur', handleWindowBlur);
 
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerCancel);
+      window.removeEventListener('blur', handleWindowBlur);
     };
   }, []);
 
@@ -351,6 +460,7 @@ export default function Home() {
       const now = performance.now();
       const dt = Math.max(1, Math.min(64, now - lastLoopTime));
       lastLoopTime = now;
+      lenisRef.current?.raf(now);
 
       // 1. Decelerate dragging inertia velocity when released
       if (!isDragging.current) {
@@ -370,8 +480,8 @@ export default function Home() {
       const dx = targetPos.current.x - posRef.current.x;
       const dy = targetPos.current.y - posRef.current.y;
       
-      // Responsive active tracking (0.38) vs graceful glide (0.08)
-      const currentLerp = isDragging.current ? 0.38 : LERP_SPEED;
+      // Tight tracking while held; slower easing only after release.
+      const currentLerp = isDragging.current ? DRAG_LERP : LERP_SPEED;
       
       if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
         const speedMultiplier = dt / 16.67;
@@ -404,10 +514,24 @@ export default function Home() {
       const instantSpeed = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       const scaleSpeedLerp = 1 - Math.pow(1 - 0.1, dt / 16.67);
       smoothSpeed = smoothSpeed + (instantSpeed - smoothSpeed) * scaleSpeedLerp;
+      motionRef.current.speed = smoothSpeed;
+      motionRef.current.velocityX += (deltaX - motionRef.current.velocityX) * VELOCITY_LERP;
+      motionRef.current.velocityY += (deltaY - motionRef.current.velocityY) * VELOCITY_LERP;
 
       if (containerRef.current) {
-        const scale = 1 - Math.min(smoothSpeed * 0.003, 0.1);
-        containerRef.current.style.setProperty('--dynamic-scale', scale);
+        const gapScale = isDragging.current ? 1 : 1 - Math.min(smoothSpeed * 0.00055, 0.018);
+        const mediaScale = 1.035 + Math.min(smoothSpeed * 0.0022, 0.075);
+        const opacity = 1 - Math.min(smoothSpeed * 0.0035, 0.1);
+        const floatY = isDragging.current ? 0 : Math.max(-8, Math.min(8, -motionRef.current.velocityY * 0.045));
+        const parallaxY = Math.max(-28, Math.min(28, motionRef.current.velocityY * 0.22));
+        const parallaxX = Math.max(-10, Math.min(10, motionRef.current.velocityX * 0.08));
+
+        containerRef.current.style.setProperty('--gap-scale', gapScale);
+        containerRef.current.style.setProperty('--media-scale', mediaScale);
+        containerRef.current.style.setProperty('--media-opacity', opacity);
+        containerRef.current.style.setProperty('--float-y', `${floatY}px`);
+        containerRef.current.style.setProperty('--media-parallax-x', `${parallaxX}px`);
+        containerRef.current.style.setProperty('--media-parallax-y', `${parallaxY}px`);
       }
 
       // 5. Throttled Boundary Update check for React re-rendering
@@ -415,6 +539,7 @@ export default function Home() {
         updateRenderedPos(posRef.current.x, posRef.current.y);
       }
 
+      ScrollTrigger.update();
       rafId = requestAnimationFrame(loop);
     };
 
@@ -423,13 +548,17 @@ export default function Home() {
   }, [winSize]);
 
   const handlePointerDown = (e) => {
-    isDragging.current = true;
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    isPointerDown.current = true;
+    isDragging.current = false;
+    activePointerId.current = e.pointerId;
     hasDragged.current = false;
     lastMouse.current = { x: e.clientX, y: e.clientY };
+    dragStart.current = { x: e.clientX, y: e.clientY };
     velocity.current = { x: 0, y: 0 };
-    lastTime.current = performance.now();
+    lastTime.current = e.timeStamp || performance.now();
     
-    // Snaps inertia target instantly to prevent click-jump stutter
+    // Snaps inertia target instantly to prevent click-jump stutter if this becomes a drag.
     targetPos.current = { x: posRef.current.x, y: posRef.current.y };
   };
 
@@ -453,15 +582,23 @@ export default function Home() {
     <>
       <style>{`
         .project-card-wrapper {
-          transform: scale(var(--dynamic-scale, 1));
+          transform: translate3d(0, var(--float-y, 0px), 0) scale(var(--gap-scale, 1));
           transform-origin: center;
           will-change: transform;
+          contain: paint;
         }
         .project-card-wrapper .project-img {
-          transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          --hover-scale: 1;
+          opacity: var(--media-opacity, 1);
+          transform: translate3d(var(--media-parallax-x, 0px), var(--media-parallax-y, 0px), 0) scale(calc(var(--media-scale, 1.045) * var(--hover-scale)));
+          transform-origin: center;
+          will-change: transform, opacity;
+          backface-visibility: hidden;
+          transition: opacity 180ms ease, filter 420ms ease;
         }
         .project-card-wrapper:hover .project-img {
-          transform: scale(1.05);
+          --hover-scale: 1.025;
+          filter: contrast(1.03);
         }
         .project-card-wrapper .project-overlay {
           position: absolute;
@@ -502,6 +639,11 @@ export default function Home() {
         .project-card-wrapper:hover .project-category {
           transform: translateY(0);
         }
+
+        .is-dragging-gallery,
+        .is-dragging-gallery * {
+          cursor: grabbing !important;
+        }
         
         .infinite-vignette {
           position: fixed;
@@ -514,8 +656,11 @@ export default function Home() {
 
       <div className="infinite-vignette" />
 
-      <div
+      <motion.div
         ref={containerRef}
+        initial={{ opacity: 0, scale: 1.015 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: 'fixed',
           top: 0,
@@ -525,6 +670,9 @@ export default function Home() {
           overflow: 'hidden',
           cursor: isDragging.current ? 'grabbing' : 'grab',
           touchAction: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          overscrollBehavior: 'none',
           zIndex: 1
         }}
         onPointerDown={handlePointerDown}
@@ -551,7 +699,7 @@ export default function Home() {
             />
           ))}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }

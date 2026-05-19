@@ -128,7 +128,10 @@ function PillarCarousel({ images, title, onZoom }) {
                   flex: 1, 
                   borderRadius: '8px', 
                   overflow: 'hidden', 
-                  backgroundColor: 'var(--border)' 
+                  backgroundColor: '#f7f7f4',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   {isVideo ? (
                     <video 
@@ -137,13 +140,15 @@ function PillarCarousel({ images, title, onZoom }) {
                       loop 
                       muted 
                       playsInline 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#f7f7f4' }} 
                     />
                   ) : (
                     <img 
                       src={img} 
                       alt={`${title} slide`} 
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} 
+                      loading="lazy"
+                      decoding="async"
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} 
                     />
                   )}
                 </div>
