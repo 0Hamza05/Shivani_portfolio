@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
 
 // Deterministic pseudo-random number generator
@@ -84,7 +83,13 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
             height: item.height,
           }}
         >
-          <Link to={`/work/${item.project.slug}`} onClick={onClick} draggable={false} style={{ display: 'block', width: '100%', height: '100%' }}>
+          <Link 
+            to={`/work/${item.project.slug}`} 
+            onClick={onClick} 
+            draggable={false} 
+            onDragStart={e => e.preventDefault()}
+            style={{ display: 'block', width: '100%', height: '100%' }}
+          >
             <div
               style={{
                 width: '100%',
@@ -132,9 +137,6 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
                   />
                 );
               })()}
-              <div className="project-overlay">
-                <p className="project-title">{item.project.title}</p>
-              </div>
             </div>
           </Link>
         </div>
@@ -143,15 +145,33 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
   );
 }
 
+function checkBoundariesChanged(oldX, oldY, newX, newY, winSize) {
+  const w = winSize?.w || window.innerWidth;
+  const h = winSize?.h || window.innerHeight;
+
+  // 1. Column range shift
+  const oldStartCol = Math.floor(oldX / COL_W) - 1;
+  const oldEndCol = Math.floor((oldX + w) / COL_W) + 1;
+  const newStartCol = Math.floor(newX / COL_W) - 1;
+  const newEndCol = Math.floor((newX + w) / COL_W) + 1;
+  
+  if (oldStartCol !== newStartCol || oldEndCol !== newEndCol) return true;
+
+  // 2. Coarse vertical row range check (updates once per 300px instead of continuously on parallax values)
+  const oldRowIndex = Math.floor(oldY / 300);
+  const newRowIndex = Math.floor(newY / 300);
+  
+  if (oldRowIndex !== newRowIndex) return true;
+
+  return false;
+}
+
 function Column({ colIndex, pos, winSize, onClick }) {
   const type = ((colIndex % 4) + 4) % 4; 
   const pattern = COL_PATTERNS[type];
   const speed = COL_SPEEDS[type];
   
-  // Apply parallax speed
   const effY = pos.y * speed;
-  
-  // Calculate which vertical chunks are visible for this specific column
   const startRow = Math.floor(effY / COL_H) - 1;
   const endRow = Math.floor((effY + winSize.h) / COL_H) + 1;
   
@@ -161,24 +181,28 @@ function Column({ colIndex, pos, winSize, onClick }) {
   }
 
   return (
-    <div style={{
-      position: 'absolute',
-      left: colIndex * COL_W,
-      top: 0,
-      width: COL_W,
-      height: '100%',
-    }}>
-      <div style={{ transform: `translateY(${-effY}px)`, willChange: 'transform' }}>
-        {visibleChunks.map(chunkY => (
-          <ColumnChunk 
-            key={`${colIndex}-${chunkY}`}
-            colIndex={colIndex}
-            chunkY={chunkY}
-            pattern={pattern}
-            onClick={onClick}
-          />
-        ))}
-      </div>
+    <div 
+      className="parallax-column"
+      data-speed={speed}
+      style={{
+        position: 'absolute',
+        left: colIndex * COL_W,
+        top: 0,
+        width: COL_W,
+        height: '100%',
+        transform: `translate3d(0, ${-pos.y * speed}px, 0)`,
+        willChange: 'transform',
+      }}
+    >
+      {visibleChunks.map(chunkY => (
+        <ColumnChunk 
+          key={`${colIndex}-${chunkY}`}
+          colIndex={colIndex}
+          chunkY={chunkY}
+          pattern={pattern}
+          onClick={onClick}
+        />
+      ))}
     </div>
   );
 }
@@ -186,26 +210,32 @@ function Column({ colIndex, pos, winSize, onClick }) {
 // Cache position in module-level memory so it persists across React route changes
 let savedPos = null;
 
+const LERP_SPEED = 0.08; // Butter-smooth easing rate
+const DECELERATION = 0.95; // Decay rate for velocity inertia
+
 export default function Home() {
   const containerRef = useRef(null);
+  const gridWrapperRef = useRef(null);
   const [pos, setPosState] = useState(() => {
     return savedPos || { x: 0, y: 0 };
   });
   const posRef = useRef(pos);
+  const targetPos = useRef({ x: pos.x, y: pos.y });
+  const renderedPosRef = useRef({ x: pos.x, y: pos.y });
+
+  // Helper to trigger state change and update the rendered boundary reference
+  const updateRenderedPos = (newX, newY) => {
+    renderedPosRef.current = { x: newX, y: newY };
+    setPosState({ x: newX, y: newY });
+    savedPos = { x: newX, y: newY };
+  };
 
   // Initialize ref on first render if starting with cached position
   useEffect(() => {
     posRef.current = pos;
+    targetPos.current = { ...pos };
+    renderedPosRef.current = { ...pos };
   }, []);
-
-  const setPos = (newPos) => {
-    setPosState(prev => {
-      const p = typeof newPos === 'function' ? newPos(prev) : newPos;
-      posRef.current = p;
-      savedPos = p; // Keep cache updated in real time
-      return p;
-    });
-  };
 
   const [winSize, setWinSize] = useState({ w: window.innerWidth, h: window.innerHeight });
   const isDragging = useRef(false);
@@ -213,63 +243,184 @@ export default function Home() {
   const hasDragged = useRef(false);
   const velocity = useRef({ x: 0, y: 0 });
   const lastTime = useRef(performance.now());
-  const rafRef = useRef(null);
 
   useEffect(() => {
-    const handleResize = () => setWinSize({ w: window.innerWidth, h: window.innerHeight });
+    const handleResize = () => {
+      const newSize = { w: window.innerWidth, h: window.innerHeight };
+      setWinSize(newSize);
+      updateRenderedPos(posRef.current.x, posRef.current.y);
+    };
     window.addEventListener('resize', handleResize);
     
     // Only center if we don't have a saved position
     if (!savedPos) {
-      setPos({ x: -window.innerWidth / 2 + (COL_W * 4) / 2, y: -window.innerHeight / 2 + COL_H / 2 });
+      const initialPos = {
+        x: -window.innerWidth / 2 + (COL_W * 4) / 2,
+        y: -window.innerHeight / 2 + COL_H / 2
+      };
+      posRef.current = initialPos;
+      targetPos.current = { ...initialPos };
+      updateRenderedPos(initialPos.x, initialPos.y);
     }
     
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Keyboard navigation for premium user experience
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const STEP = 250;
+      if (e.key === 'ArrowUp') {
+        targetPos.current.y -= STEP;
+      } else if (e.key === 'ArrowDown') {
+        targetPos.current.y += STEP;
+      } else if (e.key === 'ArrowLeft') {
+        targetPos.current.x -= STEP;
+      } else if (e.key === 'ArrowRight') {
+        targetPos.current.x += STEP;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
     const handleWheel = (e) => {
-      setPos(p => ({ x: p.x + e.deltaX, y: p.y + e.deltaY }));
+      targetPos.current.x += e.deltaX;
+      targetPos.current.y += e.deltaY;
     };
 
     const container = containerRef.current;
-    if(container) {
+    if (container) {
       container.addEventListener('wheel', handleWheel, { passive: true });
     }
     return () => {
-      if(container) container.removeEventListener('wheel', handleWheel);
+      if (container) container.removeEventListener('wheel', handleWheel);
     };
   }, []);
 
-  // Universal velocity loop for dynamic spacing (scaling)
+  // Register pointer move and up events globally on window for fluid drag and click bubble
+  useEffect(() => {
+    const handlePointerMove = (e) => {
+      if (!isDragging.current) return;
+      const dx = lastMouse.current.x - e.clientX;
+      const dy = lastMouse.current.y - e.clientY;
+      
+      // Filter out micro pointer shakes to protect standard click events
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        hasDragged.current = true;
+      }
+
+      const now = performance.now();
+      const dt = Math.max(1, now - lastTime.current);
+      
+      velocity.current = {
+        x: dx / dt,
+        y: dy / dt
+      };
+      
+      // Accumulate pointer delta to target position (avoid layout thrashing)
+      targetPos.current.x += dx;
+      targetPos.current.y += dy;
+      
+      lastMouse.current = { x: e.clientX, y: e.clientY };
+      lastTime.current = now;
+    };
+
+    const handlePointerUp = () => {
+      isDragging.current = false;
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, []);
+
+  // Unified physical simulation and animation loop
   useEffect(() => {
     let rafId;
-    const lastPos = { x: posRef.current.x, y: posRef.current.y };
+    let lastLoopTime = performance.now();
+    const lastPosForSpeed = { x: posRef.current.x, y: posRef.current.y };
     let smoothSpeed = 0;
 
     const loop = () => {
-      const dx = posRef.current.x - lastPos.x;
-      const dy = posRef.current.y - lastPos.y;
-      lastPos.x = posRef.current.x;
-      lastPos.y = posRef.current.y;
+      const now = performance.now();
+      const dt = Math.max(1, Math.min(64, now - lastLoopTime));
+      lastLoopTime = now;
 
-      const instantSpeed = Math.sqrt(dx * dx + dy * dy);
+      // 1. Decelerate dragging inertia velocity when released
+      if (!isDragging.current) {
+        if (Math.abs(velocity.current.x) > 0.001 || Math.abs(velocity.current.y) > 0.001) {
+          targetPos.current.x += velocity.current.x * dt;
+          targetPos.current.y += velocity.current.y * dt;
+          
+          const frictionFactor = Math.pow(DECELERATION, dt / 16.67);
+          velocity.current.x *= frictionFactor;
+          velocity.current.y *= frictionFactor;
+        } else {
+          velocity.current = { x: 0, y: 0 };
+        }
+      }
+
+      // 2. Smoothly interpolate current visual position towards target position
+      const dx = targetPos.current.x - posRef.current.x;
+      const dy = targetPos.current.y - posRef.current.y;
       
-      // Interpolate for smooth decay
-      smoothSpeed = smoothSpeed + (instantSpeed - smoothSpeed) * 0.1;
+      // Responsive active tracking (0.38) vs graceful glide (0.08)
+      const currentLerp = isDragging.current ? 0.38 : LERP_SPEED;
+      
+      if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+        const speedMultiplier = dt / 16.67;
+        const actualLerp = 1 - Math.pow(1 - currentLerp, speedMultiplier);
+        posRef.current.x += dx * actualLerp;
+        posRef.current.y += dy * actualLerp;
+      } else {
+        posRef.current.x = targetPos.current.x;
+        posRef.current.y = targetPos.current.y;
+      }
+
+      // 3. Direct DOM transform updates (guarantees instantaneous rendering during drag/scroll)
+      if (gridWrapperRef.current) {
+        gridWrapperRef.current.style.transform = `translate3d(${-posRef.current.x}px, 0, 0)`;
+      }
+      if (containerRef.current) {
+        const cols = containerRef.current.querySelectorAll('.parallax-column');
+        cols.forEach(col => {
+          const speed = parseFloat(col.getAttribute('data-speed')) || 1.0;
+          col.style.transform = `translate3d(0, ${-posRef.current.y * speed}px, 0)`;
+        });
+      }
+
+      // 4. Compute speed for the dynamic scale
+      const deltaX = posRef.current.x - lastPosForSpeed.x;
+      const deltaY = posRef.current.y - lastPosForSpeed.y;
+      lastPosForSpeed.x = posRef.current.x;
+      lastPosForSpeed.y = posRef.current.y;
+
+      const instantSpeed = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const scaleSpeedLerp = 1 - Math.pow(1 - 0.1, dt / 16.67);
+      smoothSpeed = smoothSpeed + (instantSpeed - smoothSpeed) * scaleSpeedLerp;
 
       if (containerRef.current) {
-        // Map speed to scale factor. Shrink up to 10% (0.9 scale) for a beautiful spacing effect
         const scale = 1 - Math.min(smoothSpeed * 0.003, 0.1);
         containerRef.current.style.setProperty('--dynamic-scale', scale);
       }
 
+      // 5. Throttled Boundary Update check for React re-rendering
+      if (checkBoundariesChanged(renderedPosRef.current.x, renderedPosRef.current.y, posRef.current.x, posRef.current.y, winSize)) {
+        updateRenderedPos(posRef.current.x, posRef.current.y);
+      }
+
       rafId = requestAnimationFrame(loop);
     };
-    
+
     rafId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafId);
-  }, []);
+  }, [winSize]);
 
   const handlePointerDown = (e) => {
     isDragging.current = true;
@@ -277,50 +428,9 @@ export default function Home() {
     lastMouse.current = { x: e.clientX, y: e.clientY };
     velocity.current = { x: 0, y: 0 };
     lastTime.current = performance.now();
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-  };
-
-  const handlePointerMove = (e) => {
-    if (!isDragging.current) return;
-    const dx = lastMouse.current.x - e.clientX;
-    const dy = lastMouse.current.y - e.clientY;
     
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      hasDragged.current = true;
-    }
-
-    const now = performance.now();
-    const dt = Math.max(1, now - lastTime.current);
-    
-    velocity.current = {
-      x: dx / dt,
-      y: dy / dt
-    };
-    
-    setPos(p => ({ x: p.x + dx, y: p.y + dy }));
-    
-    lastMouse.current = { x: e.clientX, y: e.clientY };
-    lastTime.current = now;
-  };
-
-  const handlePointerUp = () => {
-    isDragging.current = false;
-    
-    const applyInertia = () => {
-      if (Math.abs(velocity.current.x) < 0.05 && Math.abs(velocity.current.y) < 0.05) return;
-      
-      setPos(p => ({
-        x: p.x + velocity.current.x * 16,
-        y: p.y + velocity.current.y * 16
-      }));
-      
-      velocity.current.x *= 0.95;
-      velocity.current.y *= 0.95;
-      
-      rafRef.current = requestAnimationFrame(applyInertia);
-    };
-    
-    rafRef.current = requestAnimationFrame(applyInertia);
+    // Snaps inertia target instantly to prevent click-jump stutter
+    targetPos.current = { x: posRef.current.x, y: posRef.current.y };
   };
 
   const handleClick = (e) => {
@@ -330,7 +440,7 @@ export default function Home() {
     }
   };
 
-  // Determine which columns are visible on X axis
+  // Determine currently visible column range
   const startCol = Math.floor(pos.x / COL_W) - 1;
   const endCol = Math.floor((pos.x + winSize.w) / COL_W) + 1;
 
@@ -418,11 +528,19 @@ export default function Home() {
           zIndex: 1
         }}
         onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
       >
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', transform: `translateX(${-pos.x}px)`, willChange: 'transform' }}>
+        <div 
+          ref={gridWrapperRef}
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%', 
+            transform: `translate3d(${-pos.x}px, 0, 0)`, 
+            willChange: 'transform' 
+          }}
+        >
           {visibleCols.map(c => (
             <Column 
               key={c}

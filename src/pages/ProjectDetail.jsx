@@ -1,95 +1,239 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { projects } from '../data/projects';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
-function Polaroid({ src, title, index, onZoom, isMobile }) {
-  const angles = [-6, 4, -2, 8, -4];
-  const angle = angles[index % angles.length];
-  const isVideo = src && src.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
+// Focused Editorial Carousel Component with fluid spring physics and touch swipe support
+function PillarCarousel({ images, title, onZoom }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStart = useRef(null);
+  const touchEnd = useRef(null);
+  const minSwipeDistance = 50;
 
-  // Desktop: Stacked & absolute draggable
-  // Mobile: Flex grid element with touch tilt
-  const desktopStyle = {
-    position: 'absolute',
-    width: '260px',
-    padding: '12px 12px 24px 12px',
-    backgroundColor: '#ffffff',
-    boxShadow: '0 8px 24px rgba(69, 42, 35, 0.08)',
-    border: '1px solid rgba(69, 42, 35, 0.05)',
-    borderRadius: '4px',
-    cursor: 'grab',
-    transformOrigin: 'center',
-    zIndex: 10 + index,
-    left: `${10 + (index * 15)}px`,
-    top: `${40 + (index * 60)}px`,
+  const handlePrev = () => {
+    setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
-  const mobileStyle = {
-    width: '100%',
-    maxWidth: '280px',
-    margin: '0 auto',
-    padding: '12px 12px 24px 12px',
-    backgroundColor: '#ffffff',
-    boxShadow: '0 8px 24px rgba(69, 42, 35, 0.06)',
-    border: '1px solid rgba(69, 42, 35, 0.05)',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transformOrigin: 'center',
+  const handleNext = () => {
+    setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
   };
+
+  const handleTouchStart = (e) => {
+    touchEnd.current = null;
+    touchStart.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEnd.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart.current || !touchEnd.current) return;
+    const distance = touchStart.current - touchEnd.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrev();
+    }
+  };
+
+  if (!images || images.length === 0) return null;
 
   return (
-    <motion.div
-      drag={!isMobile}
-      dragConstraints={{ left: -150, right: 150, top: -150, bottom: 150 }}
-      whileDrag={{ scale: 1.05, zIndex: 100 }}
-      whileHover={{ 
-        scale: 1.03, 
-        rotate: isMobile ? angle : angle + (index % 2 === 0 ? 3 : -3) 
-      }}
-      initial={{ opacity: 0, y: 50, rotate: angle }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.15 * index, type: "spring", stiffness: 100 }}
-      onClick={() => onZoom(src)}
-      style={isMobile ? mobileStyle : desktopStyle}
-    >
-      <div style={{ 
-        width: '100%', 
-        height: '200px', 
-        overflow: 'hidden', 
-        backgroundColor: 'var(--border)', 
-        borderRadius: '2px',
-        position: 'relative'
-      }}>
-        {isVideo ? (
-          <video 
-            src={src} 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-          />
-        ) : (
-          <img 
-            src={src} 
-            alt="Pillar memory" 
-            style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} 
-          />
-        )}
+    <div style={{ width: '100%', margin: '48px 0', position: 'relative' }}>
+      {/* Interactive Swipeable Carousel Area */}
+      <div 
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ 
+          width: '100%', 
+          height: '460px', 
+          position: 'relative', 
+          overflow: 'hidden', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center' 
+        }}
+      >
+        <AnimatePresence initial={false} mode="popLayout">
+          {images.map((img, idx) => {
+            // Calculate offsets relative to the active slide for adjacent slide previews
+            let offset = idx - currentIndex;
+            
+            // Loop slides infinitely
+            if (offset < -1) offset += images.length;
+            if (offset > 1) offset -= images.length;
+            
+            // Only render current, prev, and next slides for premium 120fps performance
+            const isVisible = Math.abs(offset) <= 1;
+            if (!isVisible) return null;
+
+            const isVideo = img && img.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
+            const isActive = idx === currentIndex;
+
+            return (
+              <motion.div
+                key={img}
+                initial={{ 
+                  opacity: 0, 
+                  scale: 0.8,
+                  x: offset * 320,
+                  zIndex: 1
+                }}
+                animate={{ 
+                  opacity: isActive ? 1 : 0.35, 
+                  scale: isActive ? 1 : 0.86,
+                  x: offset * 320,
+                  zIndex: isActive ? 10 : 5
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  scale: 0.8,
+                  x: offset * 320
+                }}
+                transition={{ 
+                  type: 'spring', 
+                  stiffness: 260, 
+                  damping: 30 
+                }}
+                onClick={() => {
+                  if (isActive) {
+                    onZoom(img);
+                  } else {
+                    setCurrentIndex(idx);
+                  }
+                }}
+                style={{
+                  position: 'absolute',
+                  width: 'min(480px, 80vw)',
+                  height: '380px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '12px',
+                  padding: '16px 16px 48px 16px',
+                  boxShadow: isActive 
+                    ? '0 24px 50px rgba(69, 42, 35, 0.12)' 
+                    : '0 8px 24px rgba(69, 42, 35, 0.04)',
+                  border: '1px solid rgba(69, 42, 35, 0.06)',
+                  cursor: isActive ? 'zoom-in' : 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                {/* Visual Media Wrapper */}
+                <div style={{ 
+                  width: '100%', 
+                  flex: 1, 
+                  borderRadius: '8px', 
+                  overflow: 'hidden', 
+                  backgroundColor: 'var(--border)' 
+                }}>
+                  {isVideo ? (
+                    <video 
+                      src={img} 
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    />
+                  ) : (
+                    <img 
+                      src={img} 
+                      alt={`${title} slide`} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} 
+                    />
+                  )}
+                </div>
+
+                {/* Polaroid-style exhibition caption */}
+                <div style={{ 
+                  marginTop: '16px', 
+                  fontFamily: "'EB Garamond', serif", 
+                  fontSize: '0.9rem', 
+                  color: 'var(--fg)', 
+                  textAlign: 'center', 
+                  opacity: isActive ? 0.8 : 0.3,
+                  letterSpacing: '0.05em',
+                  textTransform: 'lowercase'
+                }}>
+                  {title} &mdash; memory {idx + 1}
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
+
+      {/* Elegant minimalist navigation controls */}
       <div style={{ 
-        marginTop: '12px', 
-        fontFamily: "'EB Garamond', serif", 
-        fontSize: '0.85rem', 
-        color: 'var(--fg)', 
-        textAlign: 'center', 
-        opacity: 0.8,
-        letterSpacing: '0.05em'
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        gap: '32px', 
+        marginTop: '-12px' 
       }}>
-        {title}
+        <button 
+          onClick={handlePrev}
+          style={{
+            border: '1px solid var(--border)',
+            background: 'rgba(255, 255, 255, 0.8)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1rem',
+            color: 'var(--fg)',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'scale(1)'; }}
+          aria-label="Previous image"
+        >
+          ←
+        </button>
+
+        <div style={{ 
+          fontFamily: "'EB Garamond', serif", 
+          fontSize: '1.1rem', 
+          color: 'var(--fg)', 
+          opacity: 0.8,
+          letterSpacing: '0.1em'
+        }}>
+          {String(currentIndex + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
+        </div>
+
+        <button 
+          onClick={handleNext}
+          style={{
+            border: '1px solid var(--border)',
+            background: 'rgba(255, 255, 255, 0.8)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1rem',
+            color: 'var(--fg)',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'scale(1)'; }}
+          aria-label="Next image"
+        >
+          →
+        </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -117,9 +261,6 @@ export default function ProjectDetail() {
       </div>
     );
   }
-
-  // Filter out the cover image if it is inside gridImages to avoid duplicates
-  const otherImages = project.gridImages.filter(img => img !== project.cover);
 
   return (
     <motion.div
@@ -179,117 +320,47 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {/* Main Content Layout */}
+      {/* Main Content Layout (Centered & Elegant) */}
       <div style={{ 
-        padding: isMobile ? '60px 24px 100px' : '80px 48px 120px', 
+        padding: isMobile ? '48px 24px 80px' : '72px 48px 100px', 
         maxWidth: '1200px', 
-        margin: '0 auto' 
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
       }}>
-        {isMobile ? (
-          // Mobile: Layout text first, then polaroid gallery grid below
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
-            <motion.div
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              style={{ fontSize: '1.15rem', lineHeight: '1.8', color: 'var(--fg)', fontFamily: "'EB Garamond', serif" }}
-            >
-              {project.description.split('\n').map((paragraph, index) => (
-                paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
-              ))}
-            </motion.div>
+        {/* Editorial Description text */}
+        <motion.div
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          style={{ 
+            maxWidth: '760px', 
+            width: '100%',
+            fontSize: isMobile ? '1.15rem' : '1.25rem', 
+            lineHeight: '1.9', 
+            color: 'var(--fg)', 
+            fontFamily: "'EB Garamond', serif",
+            textAlign: 'center',
+            marginBottom: '32px'
+          }}
+        >
+          {project.description.split('\n').map((paragraph, index) => (
+            paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
+          ))}
+        </motion.div>
 
-            {otherImages.length > 0 && (
-              <div>
-                <h3 style={{ 
-                  fontFamily: "'EB Garamond', serif", 
-                  fontSize: '1.4rem', 
-                  color: 'var(--fg)', 
-                  marginBottom: '24px',
-                  textAlign: 'center',
-                  fontWeight: 400
-                }}>
-                  PILLAR GALLERY
-                </h3>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', 
-                  gap: '32px',
-                  justifyContent: 'center'
-                }}>
-                  {otherImages.map((img, idx) => (
-                    <Polaroid 
-                      key={idx}
-                      src={img}
-                      title={project.title}
-                      index={idx}
-                      onZoom={setActiveImage}
-                      isMobile={true}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          // Desktop: Beautiful side-by-side layout with sticky interactive polaroids
-          <div style={{ display: 'flex', gap: '80px', alignItems: 'flex-start' }}>
-            <motion.div
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              style={{ 
-                flex: '1', 
-                maxWidth: '650px', 
-                fontSize: '1.25rem', 
-                lineHeight: '1.9', 
-                color: 'var(--fg)', 
-                fontFamily: "'EB Garamond', serif" 
-              }}
-            >
-              {project.description.split('\n').map((paragraph, index) => (
-                paragraph.trim() ? <p key={index} style={{ marginBottom: '32px' }}>{paragraph}</p> : null
-              ))}
-            </motion.div>
-
-            {otherImages.length > 0 && (
-              <div style={{ 
-                width: '320px', 
-                position: 'sticky', 
-                top: '120px', 
-                height: '520px',
-                zIndex: 10
-              }}>
-                <p style={{ 
-                  fontFamily: "'EB Garamond', serif", 
-                  fontSize: '0.85rem', 
-                  color: 'var(--fg-dim)', 
-                  letterSpacing: '0.15em',
-                  marginBottom: '12px',
-                  textTransform: 'uppercase',
-                  textAlign: 'center'
-                }}>
-                  📌 Interactive Scrapbook
-                </p>
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                  {otherImages.map((img, idx) => (
-                    <Polaroid 
-                      key={idx}
-                      src={img}
-                      title={project.title}
-                      index={idx}
-                      onZoom={setActiveImage}
-                      isMobile={false}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+        {/* Focused Editorial Carousel */}
+        {project.gridImages.length > 0 && (
+          <PillarCarousel 
+            images={project.gridImages}
+            title={project.title}
+            onZoom={setActiveImage}
+          />
         )}
         
         {/* Footer Nav */}
-        <div style={{ marginTop: '80px', paddingTop: '40px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+        <div style={{ width: '100%', maxWidth: '760px', marginTop: '64px', paddingTop: '40px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
           <Link 
             to="/" 
             style={{ 
@@ -300,7 +371,8 @@ export default function ProjectDetail() {
               padding: '12px 24px',
               border: '1px solid var(--border)',
               display: 'inline-block',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
+              borderRadius: '24px'
             }} 
             onMouseEnter={e => { e.target.style.color = 'var(--fg)'; e.target.style.borderColor = 'var(--fg)'; }} 
             onMouseLeave={e => { e.target.style.color = 'var(--fg-dim)'; e.target.style.borderColor = 'var(--border)'; }}
@@ -321,7 +393,7 @@ export default function ProjectDetail() {
             style={{
               position: 'fixed',
               inset: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.85)', // soft transparent white frosted overlay
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
               backdropFilter: 'blur(15px)',
               zIndex: 9999,
               display: 'flex',
@@ -335,7 +407,7 @@ export default function ProjectDetail() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
+              onClick={(e) => e.stopPropagation()}
               style={{ 
                 maxWidth: '90vw', 
                 maxHeight: '85vh', 
