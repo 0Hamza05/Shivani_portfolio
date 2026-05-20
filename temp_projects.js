@@ -1,4 +1,4 @@
-export const projects = [
+module.exports = [
   {
     id: 1,
     slug: 'school-india',
@@ -28,6 +28,7 @@ export const projects = [
       '/images/university/uni-4.webp',
       '/images/university/uni-5.webp',
       '/images/university/uni-6.webp',
+      '/images/university/moving-1.webp',
     ],
     blogImages: [
       '/images/university/uni-1.mp4',
@@ -36,6 +37,7 @@ export const projects = [
       '/images/university/uni-4.webp',
       '/images/university/uni-5.webp',
       '/images/university/uni-6.webp',
+      '/images/university/moving-1.webp',
     ],
     description: "A time of scraped knees and boundless imagination. The days feel like years, stretching infinitely under the summer sun.\n\nA cardboard box becomes a spaceship; a puddle becomes an ocean. This is the era of relentless questions, of unbridled curiosity. The world is a playground, untouched by cynicism, where magic is not just believed in—it is an everyday reality. We learn to run before we learn to walk, and every single day brings a monumental discovery about how the world works."
   },
@@ -44,13 +46,9 @@ export const projects = [
     slug: 'uni-link',
     title: 'Uni Link',
     category: 'Stage 3',
-    cover: '/images/uni-link/uni-link-1.webp',
-    gridImages: [
-      '/images/uni-link/uni-link-1.webp',
-    ],
-    blogImages: [
-      '/images/uni-link/uni-link-1.webp',
-    ],
+    cover: '',
+    gridImages: [],
+    blogImages: [],
     description: "The web of connections. In the crucible of university, we began to bridge the gap between ideas and impact. Collaboration becomes our currency, and we discover that the strongest structures are built together.\n\nIt is an era of linking minds, sharing passions, and realizing that our individual threads are part of a much larger, beautifully complex tapestry."
   },
   {
@@ -180,18 +178,18 @@ export const projects = [
       '/images/volunteering/vol-4.webp',
       '/images/volunteering/vol-5.webp',
       '/images/volunteering/vol-6.webp',
-      '/images/volunteering/vol-7.webp',
+      '/images/volunteering/vol-7.jpg',
       '/images/volunteering/vol-8.webp',
       '/images/volunteering/vol-9.webp',
       '/images/volunteering/vol-10.webp',
       '/images/volunteering/vol-11.webp',
       '/images/volunteering/vol-12.webp',
-      '/images/volunteering/vol-13.webp',
       '/images/volunteering/vol-14.webp',
-      '/images/volunteering/vol-15.webp',
-      '/images/volunteering/vol-16.webp',
-      '/images/volunteering/vol-17.webp',
-      '/images/volunteering/vol-18.webp',
+      '/images/volunteering/dance-7.webp',
+      '/images/volunteering/friends-8.webp',
+      '/images/volunteering/job-10.webp',
+      '/images/volunteering/life-in-london-11.webp',
+      '/images/volunteering/life-in-london-2.webp',
     ],
     blogImages: [
       '/images/volunteering/vol-1.webp',
@@ -200,18 +198,18 @@ export const projects = [
       '/images/volunteering/vol-4.webp',
       '/images/volunteering/vol-5.webp',
       '/images/volunteering/vol-6.webp',
-      '/images/volunteering/vol-7.webp',
+      '/images/volunteering/vol-7.jpg',
       '/images/volunteering/vol-8.webp',
       '/images/volunteering/vol-9.webp',
       '/images/volunteering/vol-10.webp',
       '/images/volunteering/vol-11.webp',
       '/images/volunteering/vol-12.webp',
-      '/images/volunteering/vol-13.webp',
       '/images/volunteering/vol-14.webp',
-      '/images/volunteering/vol-15.webp',
-      '/images/volunteering/vol-16.webp',
-      '/images/volunteering/vol-17.webp',
-      '/images/volunteering/vol-18.webp',
+      '/images/volunteering/dance-7.webp',
+      '/images/volunteering/friends-8.webp',
+      '/images/volunteering/job-10.webp',
+      '/images/volunteering/life-in-london-11.webp',
+      '/images/volunteering/life-in-london-2.webp',
     ],
     description: "The realization that you are the author of your own story. The safety nets are removed, and the thrill of absolute freedom rushes in.\n\nWith this freedom comes the heavy weight of responsibility. We move to new cities, sign our first leases, and realize that we are entirely in charge of our destiny. It is a period of relentless hustle, of staying up late dreaming about the future, and of realizing that adulthood is something you create, not something that simply happens to you."
   },
