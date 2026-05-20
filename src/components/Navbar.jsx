@@ -150,7 +150,7 @@ export default function Navbar() {
                 zIndex: 999,
               }}
             >
-              {projects.map(proj => (
+              {projects.filter(proj => !proj.youtubeUrl).map(proj => (
                 <Link
                   key={proj.id}
                   to={`/work/${proj.slug}`}
@@ -259,7 +259,7 @@ export default function Navbar() {
                 <span style={{ fontSize: '0.65rem', letterSpacing: '0.25em', color: 'var(--fg-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>
                   PILLARS
                 </span>
-                {projects.map(proj => (
+                {projects.filter(proj => !proj.youtubeUrl).map(proj => (
                   <Link
                     key={proj.id}
                     to={`/work/${proj.slug}`}

@@ -352,5 +352,21 @@ export const projects = [
       '/images/overcoming-fears/dog-6.webp'
     ],
     description: "The moment we decide that what we want is more important than what we are afraid of.\n\nOvercoming fear is not about the absence of terror, but the courage to take the step anyway. It is the trembling leap into the unknown that redefines our limits. Each fear conquered becomes a stepping stone to a stronger, more authentic version of ourselves, proving that our boundaries are often just illusions."
+  },
+  {
+    id: 13,
+    slug: 'podcast',
+    title: 'Podcast',
+    category: 'Stage 13',
+    cover: '/images/podcast/podcast-1.webp',
+    youtubeUrl: 'https://www.youtube.com/watch?v=nUVwA5zdt6I',
+    noCrop: true,
+    gridImages: [
+      '/images/podcast/podcast-1.webp',
+    ],
+    blogImages: [
+      '/images/podcast/podcast-1.webp',
+    ],
+    description: "A conversation that goes beyond the surface. Sharing stories, insights, and perspectives that inspire and connect."
   }
 ];

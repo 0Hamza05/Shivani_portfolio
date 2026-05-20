@@ -129,63 +129,101 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
             height: item.height,
           }}
         >
-          <Link 
-            to={`/work/${item.project.slug}`} 
-            onClick={onClick} 
-            draggable={false} 
-            onDragStart={e => e.preventDefault()}
-            aria-label={`Open ${item.project.title} pillar post`}
-            style={{ display: 'block', width: '100%', height: '100%' }}
-          >
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                overflow: 'hidden',
-                backgroundColor: 'var(--border)',
-                position: 'relative',
-                borderRadius: '8px',
-              }}
-              className="project-card-wrapper"
+          {item.project.youtubeUrl ? (
+            <a 
+              href={item.project.youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClick} 
+              draggable={false} 
+              onDragStart={e => e.preventDefault()}
+              aria-label={`Watch ${item.project.title} on YouTube`}
+              style={{ display: 'block', width: '100%', height: '100%' }}
             >
-              {(() => {
-                const isVideo = item.cover && VIDEO_RE.test(item.cover);
-                if (isVideo) {
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'hidden',
+                  backgroundColor: item.project.noCrop ? '#000000' : 'var(--border)',
+                  position: 'relative',
+                  borderRadius: '8px',
+                }}
+                className="project-card-wrapper"
+              >
+                <img
+                  src={item.cover}
+                  alt={item.project.title}
+                  draggable={false}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: item.project.noCrop ? 'contain' : 'cover',
+                    pointerEvents: 'none',
+                  }}
+                  className="project-img"
+                />
+              </div>
+            </a>
+          ) : (
+            <Link 
+              to={`/work/${item.project.slug}`} 
+              onClick={onClick} 
+              draggable={false} 
+              onDragStart={e => e.preventDefault()}
+              aria-label={`Open ${item.project.title} pillar post`}
+              style={{ display: 'block', width: '100%', height: '100%' }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'hidden',
+                  backgroundColor: item.project.noCrop ? '#000000' : 'var(--border)',
+                  position: 'relative',
+                  borderRadius: '8px',
+                }}
+                className="project-card-wrapper"
+              >
+                {(() => {
+                  const isVideo = item.cover && VIDEO_RE.test(item.cover);
+                  if (isVideo) {
+                    return (
+                      <video
+                        src={item.cover}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        preload="metadata"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: item.project.noCrop ? 'contain' : 'cover',
+                          pointerEvents: 'none',
+                        }}
+                        className="project-img"
+                      />
+                    );
+                  }
                   return (
-                    <video
+                    <img
                       src={item.cover}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      preload="metadata"
+                      alt={item.project.title}
+                      draggable={false}
                       style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'cover',
+                        objectFit: item.project.noCrop ? 'contain' : 'cover',
                         pointerEvents: 'none',
                       }}
                       className="project-img"
                     />
                   );
-                }
-                return (
-                  <img
-                    src={item.cover}
-                    alt={item.project.title}
-                    draggable={false}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      pointerEvents: 'none',
-                    }}
-                    className="project-img"
-                  />
-                );
-              })()}
-            </div>
-          </Link>
+                })()}
+              </div>
+            </Link>
+          )}
         </div>
       ))}
     </div>
