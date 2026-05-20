@@ -293,6 +293,152 @@ function PillarFilmStrip({ images, title, onZoom }) {
   );
 }
 
+// ─── Vintage Voice Note Player ───────────────────────────────────────────────
+function VoiceNotePlayer({ src }) {
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  const fmt = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) { audioRef.current.pause(); } else { audioRef.current.play(); }
+    setIsPlaying(p => !p);
+  };
+
+  const handleSeek = (e) => {
+    if (!audioRef.current || !duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * duration;
+  };
+
+  return (
+    <div style={{
+      maxWidth: '760px',
+      width: '100%',
+      margin: '0 auto 48px auto',
+      backgroundColor: 'rgba(191, 118, 13, 0.04)',
+      border: '1px solid rgba(191, 118, 13, 0.2)',
+      borderRadius: '12px',
+      padding: '22px 28px',
+    }}>
+      {/* Label */}
+      <div style={{
+        fontFamily: "'Courier New', Courier, monospace",
+        fontSize: '0.58rem',
+        letterSpacing: '0.3em',
+        color: '#bf760d',
+        fontWeight: 'bold',
+        marginBottom: '18px',
+        textTransform: 'uppercase',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+      }}>
+        <span style={{ fontSize: '0.7rem' }}>◉</span> Voice Note
+      </div>
+
+      {/* Controls row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+        {/* Play / Pause */}
+        <button
+          onClick={toggle}
+          aria-label={isPlaying ? 'Pause voice note' : 'Play voice note'}
+          style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '50%',
+            border: '1.5px solid var(--fg)',
+            background: isPlaying ? 'var(--fg)' : 'transparent',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: isPlaying ? 'var(--bg)' : 'var(--fg)',
+            fontSize: '1rem',
+            flexShrink: 0,
+            transition: 'background 0.2s ease, color 0.2s ease',
+          }}
+        >
+          {isPlaying ? '⏸' : '▶'}
+        </button>
+
+        {/* Scrubber + time */}
+        <div style={{ flex: 1 }}>
+          {/* Progress bar */}
+          <div
+            onClick={handleSeek}
+            style={{
+              width: '100%',
+              height: '3px',
+              backgroundColor: 'var(--border)',
+              borderRadius: '2px',
+              cursor: 'pointer',
+              position: 'relative',
+              marginBottom: '9px',
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              left: 0, top: 0,
+              height: '100%',
+              width: `${progress}%`,
+              backgroundColor: '#bf760d',
+              borderRadius: '2px',
+              transition: 'width 0.1s linear',
+            }} />
+            {/* Playhead dot */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: `${progress}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: '#bf760d',
+              transition: 'left 0.1s linear',
+              boxShadow: '0 0 4px rgba(191,118,13,0.4)',
+            }} />
+          </div>
+          {/* Time display */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontFamily: "'Courier New', Courier, monospace",
+            fontSize: '0.62rem',
+            color: 'var(--fg-dim)',
+            letterSpacing: '0.05em',
+          }}>
+            <span>{fmt(currentTime)}</span>
+            <span>{fmt(duration)}</span>
+          </div>
+        </div>
+      </div>
+
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="metadata"
+        onTimeUpdate={() => {
+          if (!audioRef.current) return;
+          setCurrentTime(audioRef.current.currentTime);
+          setProgress((audioRef.current.currentTime / (audioRef.current.duration || 1)) * 100);
+        }}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+        onEnded={() => { setIsPlaying(false); setProgress(0); setCurrentTime(0); }}
+      />
+    </div>
+  );
+}
+
 export default function ProjectDetail() {
   const { slug } = useParams();
   const project = projects.find(p => p.slug === slug);
@@ -405,6 +551,11 @@ export default function ProjectDetail() {
             paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
           ))}
         </motion.div>
+
+        {/* Voice Note Player — shown only when project has a voiceNote */}
+        {project.voiceNote && (
+          <VoiceNotePlayer src={project.voiceNote} />
+        )}
 
         {/* Focused Editorial Film Strip horizontal scroll */}
         {((project.blogImages || project.gridImages || []).length > 0) && (
