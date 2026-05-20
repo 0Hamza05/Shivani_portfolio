@@ -24,135 +24,177 @@ function isVideoUrl(url) {
   return VIDEO_RE.test(url || '');
 }
 
-// Focused Editorial Carousel Component with fluid spring physics and touch swipe support
-function PillarCarousel({ images, title, onZoom }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const touchStart = useRef(null);
-  const touchEnd = useRef(null);
-  const minSwipeDistance = 50;
+// Vintage Celluloid Film Strip Component with smooth horizontal scroll and drag-to-grab support
+function PillarFilmStrip({ images, title, onZoom }) {
+  const scrollRef = useRef(null);
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftVal = useRef(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScrollLimits = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    setCanScrollLeft(scrollLeft > 2);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 2);
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScrollLimits);
+      checkScrollLimits();
+      window.addEventListener('resize', checkScrollLimits);
+    }
+    return () => {
+      if (el) el.removeEventListener('scroll', checkScrollLimits);
+      window.removeEventListener('resize', checkScrollLimits);
+    };
+  }, [images]);
+
+  const handleMouseDown = (e) => {
+    isDown.current = true;
+    scrollRef.current.classList.add('active');
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeftVal.current = scrollRef.current.scrollLeft;
+  };
+
+  const handleMouseLeave = () => {
+    isDown.current = false;
+    scrollRef.current?.classList.remove('active');
+  };
+
+  const handleMouseUp = () => {
+    isDown.current = false;
+    scrollRef.current?.classList.remove('active');
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDown.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5; // Drag sensitivity
+    scrollRef.current.scrollLeft = scrollLeftVal.current - walk;
+  };
 
   const handlePrev = () => {
-    setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
+    scrollRef.current?.scrollBy({ left: -460, behavior: 'smooth' });
   };
 
   const handleNext = () => {
-    setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
-  };
-
-  const handleTouchStart = (e) => {
-    touchEnd.current = null;
-    touchStart.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchMove = (e) => {
-    touchEnd.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart.current || !touchEnd.current) return;
-    const distance = touchStart.current - touchEnd.current;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    if (isLeftSwipe) {
-      handleNext();
-    } else if (isRightSwipe) {
-      handlePrev();
-    }
+    scrollRef.current?.scrollBy({ left: 460, behavior: 'smooth' });
   };
 
   if (!images || images.length === 0) return null;
 
+  const sprocketStyle = {
+    height: '14px',
+    backgroundColor: '#111111',
+    backgroundImage: 'repeating-linear-gradient(90deg, transparent 0px, transparent 18px, var(--bg) 18px, var(--bg) 28px)',
+    width: '100%',
+    position: 'absolute',
+    left: 0,
+    zIndex: 2,
+  };
+
   return (
-    <div style={{ width: '100%', margin: '48px 0', position: 'relative' }}>
-      {/* Interactive Swipeable Carousel Area */}
+    <div style={{ width: '100vw', maxWidth: 'none', marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', marginTop: '64px', marginBottom: '64px', overflow: 'hidden', flexShrink: 0 }}>
+      <style>{`
+        .film-track::-webkit-scrollbar {
+          display: none;
+        }
+        .film-track {
+          scrollbar-width: none;
+          cursor: grab;
+        }
+        .film-track.active {
+          cursor: grabbing;
+        }
+        .film-frame {
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+        }
+        .film-frame:hover {
+          transform: scale(1.018) translateY(-3px);
+          filter: brightness(1.05) contrast(1.02);
+        }
+      `}</style>
+
+      {/* Film Strip Main Track Wrapper */}
       <div 
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         style={{ 
-          width: '100%', 
-          height: '460px', 
-          position: 'relative', 
-          overflow: 'hidden', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
+          width: '100%',
+          backgroundColor: '#151515', 
+          position: 'relative',
+          padding: '28px 0',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.22), inset 0 0 50px rgba(0, 0, 0, 0.95)',
+          borderTop: '2px solid #222',
+          borderBottom: '2px solid #222',
         }}
       >
-        <AnimatePresence initial={false} mode="popLayout">
-          {images.map((img, idx) => {
-            // Calculate offsets relative to the active slide for adjacent slide previews
-            let offset = idx - currentIndex;
-            
-            // Loop slides infinitely
-            if (offset < -1) offset += images.length;
-            if (offset > 1) offset -= images.length;
-            
-            // Only render current, prev, and next slides for premium 120fps performance
-            const isVisible = Math.abs(offset) <= 1;
-            if (!isVisible) return null;
+        {/* Top Sprockets */}
+        <div style={{ ...sprocketStyle, top: '6px' }} />
 
+        {/* Horizontal Scroll Track */}
+        <div 
+          ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          className="film-track"
+          style={{ 
+            display: 'flex', 
+            gap: '12px', 
+            overflowX: 'auto', 
+            padding: '16px 12vw',
+            scrollBehavior: 'smooth',
+            WebkitOverflowScrolling: 'touch',
+            userSelect: 'none',
+          }}
+        >
+          {images.map((img, idx) => {
             const isVideo = isVideoUrl(img);
-            const isActive = idx === currentIndex;
+            const frameNumber = String(idx + 1).padStart(2, '0');
+            const filmStocks = ['KODAK 400TX', 'ILFORD HP5', 'FUJI PRO 400H', 'TRI-X PAN'];
+            const stockName = filmStocks[idx % filmStocks.length];
 
             return (
-              <motion.div
+              <div
                 key={img}
-                initial={{ 
-                  opacity: 0, 
-                  scale: 0.8,
-                  x: offset * 320,
-                  zIndex: 1
-                }}
-                animate={{ 
-                  opacity: isActive ? 1 : 0.35, 
-                  scale: isActive ? 1 : 0.86,
-                  x: offset * 320,
-                  zIndex: isActive ? 10 : 5
-                }}
-                exit={{ 
-                  opacity: 0, 
-                  scale: 0.8,
-                  x: offset * 320
-                }}
-                transition={{ 
-                  type: 'spring', 
-                  stiffness: 260, 
-                  damping: 30 
-                }}
-                onClick={() => {
-                  if (isActive) {
+                onClick={(e) => {
+                  if (!isDown.current) {
                     onZoom(img);
-                  } else {
-                    setCurrentIndex(idx);
                   }
                 }}
                 style={{
-                  position: 'absolute',
-                  width: 'min(480px, 80vw)',
-                  height: '380px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '12px',
-                  padding: '16px 16px 48px 16px',
-                  boxShadow: isActive 
-                    ? '0 24px 50px rgba(69, 42, 35, 0.12)' 
-                    : '0 8px 24px rgba(69, 42, 35, 0.04)',
-                  border: '1px solid rgba(69, 42, 35, 0.06)',
-                  cursor: isActive ? 'zoom-in' : 'pointer',
+                  flex: '0 0 auto',
+                  width: 'min(440px, 80vw)',
+                  height: '320px',
+                  backgroundColor: '#111111',
                   display: 'flex',
                   flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  padding: '14px 10px 10px 10px',
+                  position: 'relative',
+                  borderLeft: '5px solid #0a0a0a',
+                  borderRight: '5px solid #0a0a0a',
+                  boxShadow: 'inset 0 0 24px rgba(0,0,0,0.85)',
+                  cursor: 'zoom-in',
                 }}
+                className="film-frame"
               >
-                {/* Visual Media Wrapper */}
+                {/* Media Container */}
                 <div style={{ 
                   width: '100%', 
-                  flex: 1, 
-                  borderRadius: '8px', 
+                  height: '264px', 
                   overflow: 'hidden', 
-                  backgroundColor: '#f7f7f4',
+                  backgroundColor: '#050505',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  borderRadius: '2px',
+                  boxShadow: '0 0 10px rgba(0,0,0,0.5)',
                 }}>
                   {isVideo ? (
                     <video 
@@ -161,72 +203,88 @@ function PillarCarousel({ images, title, onZoom }) {
                       loop 
                       muted 
                       playsInline 
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#f7f7f4' }} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} 
                     />
                   ) : (
                     <img 
                       src={img} 
-                      alt={`${title} slide`} 
+                      alt={`${title} frame ${frameNumber}`} 
                       loading="lazy"
                       decoding="async"
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} 
                     />
                   )}
                 </div>
 
-                {/* Polaroid-style exhibition caption */}
+                {/* Kodak/Exhibition markings */}
                 <div style={{ 
-                  marginTop: '16px', 
-                  fontFamily: "'EB Garamond', serif", 
-                  fontSize: '0.9rem', 
-                  color: 'var(--fg)', 
-                  textAlign: 'center', 
-                  opacity: isActive ? 0.8 : 0.3,
-                  letterSpacing: '0.05em',
-                  textTransform: 'lowercase'
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  padding: '5px 4px 0 4px',
+                  fontFamily: "'Courier New', Courier, monospace",
+                  fontSize: '0.62rem',
+                  fontWeight: 'bold',
+                  color: '#bf760d', // Vintage amber gold
+                  letterSpacing: '0.18em',
+                  opacity: 0.85,
                 }}>
-                  {title} &mdash; memory {idx + 1}
+                  <span>{stockName}</span>
+                  <span>▷ {frameNumber}</span>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
-        </AnimatePresence>
+        </div>
+
+        {/* Bottom Sprockets */}
+        <div style={{ ...sprocketStyle, bottom: '6px' }} />
       </div>
 
-      {/* Elegant minimalist navigation controls */}
+      {/* Elegant vintage buttons */}
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        gap: '32px', 
-        marginTop: '-12px' 
+        gap: '24px', 
+        marginTop: '20px' 
       }}>
         <button 
           onClick={handlePrev}
-          style={carouselButtonStyle}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+          disabled={!canScrollLeft}
+          style={{
+            ...carouselButtonStyle,
+            opacity: canScrollLeft ? 1 : 0.25,
+            pointerEvents: canScrollLeft ? 'auto' : 'none',
+          }}
+          onMouseEnter={e => { if (canScrollLeft) { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; } }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'scale(1)'; }}
-          aria-label="Previous image"
+          aria-label="Scroll left"
         >
           ←
         </button>
 
-        <div style={{ 
+        <span style={{ 
           fontFamily: "'EB Garamond', serif", 
-          fontSize: '1.1rem', 
-          color: 'var(--fg)', 
-          opacity: 0.8,
-          letterSpacing: '0.1em'
+          fontSize: '0.9rem', 
+          color: 'var(--fg-dim)', 
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase',
         }}>
-          {String(currentIndex + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
-        </div>
+          Film Reel
+        </span>
 
         <button 
           onClick={handleNext}
-          style={carouselButtonStyle}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+          disabled={!canScrollRight}
+          style={{
+            ...carouselButtonStyle,
+            opacity: canScrollRight ? 1 : 0.25,
+            pointerEvents: canScrollRight ? 'auto' : 'none',
+          }}
+          onMouseEnter={e => { if (canScrollRight) { e.currentTarget.style.borderColor = 'var(--fg)'; e.currentTarget.style.transform = 'scale(1.05)'; } }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'scale(1)'; }}
-          aria-label="Next image"
+          aria-label="Scroll right"
         >
           →
         </button>
@@ -348,10 +406,10 @@ export default function ProjectDetail() {
           ))}
         </motion.div>
 
-        {/* Focused Editorial Carousel */}
-        {project.gridImages.length > 0 && (
-          <PillarCarousel 
-            images={project.gridImages}
+        {/* Focused Editorial Film Strip horizontal scroll */}
+        {((project.blogImages || project.gridImages || []).length > 0) && (
+          <PillarFilmStrip 
+            images={project.blogImages || project.gridImages}
             title={project.title}
             onZoom={setActiveImage}
           />

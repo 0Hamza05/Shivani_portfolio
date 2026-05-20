@@ -69,7 +69,7 @@ export default function Navbar() {
           }}
           style={{
             fontFamily: "'EB Garamond', serif",
-            fontSize: '2.5rem',
+            fontSize: '2.0rem',
             fontWeight: 400,
             letterSpacing: '0.04em',
             color: 'var(--fg)',

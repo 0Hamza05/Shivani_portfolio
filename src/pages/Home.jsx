@@ -196,8 +196,9 @@ function Column({ colIndex, pos, winSize, onClick, registerColumn }) {
         top: 0,
         width: COL_W,
         height: '100%',
-        transform: `translate3d(0, ${-pos.y * speed}px, 0)`,
         willChange: 'transform',
+        // NOTE: transform is set exclusively by the RAF loop via direct DOM mutation.
+        // Do NOT add a React-state-driven transform here — it would fight the RAF and cause stutter.
       }}
     >
       {visibleChunks.map(chunkY => (
@@ -216,7 +217,7 @@ function Column({ colIndex, pos, winSize, onClick, registerColumn }) {
 // Cache position in module-level memory so it persists across React route changes
 let savedPos = null;
 
-const LERP_SPEED = 0.075; // Butter-smooth easing rate
+const LERP_SPEED = 0.12; // Responsive easing rate (raised from 0.075 to reduce lag)
 const DECELERATION = 0.945; // Decay rate for velocity inertia
 const WHEEL_SCROLL_FACTOR = 0.35; // Controlled scaling factor for mouse wheel and touchpad inputs
 const WHEEL_IMPULSE = 0.018;
@@ -261,6 +262,7 @@ export default function Home() {
   }, []);
 
   const [winSize, setWinSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const winSizeRef = useRef({ w: window.innerWidth, h: window.innerHeight });
   const isPointerDown = useRef(false);
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
@@ -273,6 +275,7 @@ export default function Home() {
   useEffect(() => {
     const handleResize = () => {
       const newSize = { w: window.innerWidth, h: window.innerHeight };
+      winSizeRef.current = newSize;
       setWinSize(newSize);
       updateRenderedPos(posRef.current.x, posRef.current.y);
     };
@@ -543,7 +546,7 @@ export default function Home() {
       }
 
       // 5. Throttled Boundary Update check for React re-rendering
-      if (checkBoundariesChanged(renderedPosRef.current.x, renderedPosRef.current.y, posRef.current.x, posRef.current.y, winSize)) {
+      if (checkBoundariesChanged(renderedPosRef.current.x, renderedPosRef.current.y, posRef.current.x, posRef.current.y, winSizeRef.current)) {
         updateRenderedPos(posRef.current.x, posRef.current.y);
       }
       rafId = requestAnimationFrame(loop);
@@ -551,7 +554,8 @@ export default function Home() {
 
     rafId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafId);
-  }, [winSize]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // winSize is read via winSizeRef — no restart needed on resize
 
   const handlePointerDown = (e) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
@@ -603,7 +607,6 @@ export default function Home() {
           transition: opacity 180ms ease, filter 420ms ease;
         }
         .project-card-wrapper:hover .project-img {
-          --hover-scale: 1.025;
           filter: contrast(1.03);
         }
 
@@ -652,8 +655,9 @@ export default function Home() {
             left: 0, 
             width: '100%', 
             height: '100%', 
-            transform: `translate3d(${-pos.x}px, 0, 0)`, 
-            willChange: 'transform' 
+            willChange: 'transform',
+            // NOTE: transform is set exclusively by the RAF loop via direct DOM mutation.
+            // Do NOT add a React-state-driven transform here — it would fight the RAF and cause stutter.
           }}
         >
           {visibleCols.map(c => (
