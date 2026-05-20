@@ -158,7 +158,7 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
                       loop
                       muted
                       playsInline
-                      preload="metadata"
+                      preload="auto"
                       style={{
                         width: '100%',
                         height: '100%',
@@ -173,8 +173,6 @@ function ColumnChunk({ colIndex, chunkY, pattern, onClick }) {
                   <img
                     src={item.cover}
                     alt={item.project.title}
-                    loading="lazy"
-                    decoding="async"
                     draggable={false}
                     style={{
                       width: '100%',
