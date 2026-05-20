@@ -76,14 +76,7 @@ export const projects = [
     gridImages: [
       '/images/first-job/job-1.webp',
       '/images/first-job/job-2.webp',
-      '/images/first-job/job-3.webp',
-      '/images/first-job/job-4.webp',
-      '/images/first-job/job-5.webp',
-      '/images/first-job/job-6.webp',
-      '/images/first-job/job-7.webp',
-      '/images/first-job/job-8.webp',
-      '/images/first-job/job-9.webp',
-      '/images/first-job/job-10.webp',
+      
     ],
     blogImages: [
       '/images/first-job/job-1.webp',

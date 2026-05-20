@@ -75,3 +75,6 @@ img {
   background-color: rgba(240, 158, 167, 0.25); /* Subtle pink selection highlight */
   color: #111111;
 }
+
+/* LinkedIn hover */
+a.linkedin:hover { color: var(--fg-hover) !important; }

@@ -18,7 +18,7 @@ export default function About() {
           <a href="mailto:hello@shivani.com" style={{ textDecoration: 'none', color: 'var(--fg)', transition: 'color 0.2s' }}>HELLO@SHIVANI.COM</a>
           <a href="#" style={{ textDecoration: 'none', color: 'var(--fg)', transition: 'color 0.2s' }}>NEWSLETTER</a>
           <a href="#" style={{ textDecoration: 'none', color: 'var(--fg)', transition: 'color 0.2s' }}>INSTAGRAM</a>
-          <a href="#" style={{ textDecoration: 'none', color: 'var(--fg)', transition: 'color 0.2s' }}>LINKEDIN</a>
+            <a href="https://www.linkedin.com/in/shivanipawar9" target="_blank" rel="noopener noreferrer" className="linkedin" style={{ textDecoration: 'none', color: 'var(--fg)', transition: 'color 0.2s' }}>LINKEDIN</a>
         </div>
       </motion.div>
     </div>
