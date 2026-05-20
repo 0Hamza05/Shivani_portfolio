@@ -35,20 +35,64 @@ const allPhotos = projects.flatMap(proj =>
   }))
 );
 
-function getColumnChunkItems(colIndex, chunkY, pattern) {
-  const seed = (colIndex + 10000) * 100000 + (chunkY + 10000) + allPhotos.length * 123;
-  const rand = getRandomGen(seed);
+const GRID_SIZE = 100;
+const N_PHOTOS = allPhotos.length;
+const randomGrid = new Array(GRID_SIZE * GRID_SIZE);
 
-  let shuffled = [...allPhotos];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+// Precompute a random distribution of photo indices that avoids immediate local repetition
+for (let y = 0; y < GRID_SIZE; y++) {
+  for (let x = 0; x < GRID_SIZE; x++) {
+    let forbidden = [];
+    if (x > 0) forbidden.push(randomGrid[(x - 1) + y * GRID_SIZE]);
+    if (y > 0) forbidden.push(randomGrid[x + (y - 1) * GRID_SIZE]);
+    
+    if (N_PHOTOS > 6) {
+      // Avoid repetition within a 2-cell radius for a more natural look
+      if (x > 1) forbidden.push(randomGrid[(x - 2) + y * GRID_SIZE]);
+      if (y > 1) forbidden.push(randomGrid[x + (y - 2) * GRID_SIZE]);
+      if (x > 0 && y > 0) forbidden.push(randomGrid[(x - 1) + (y - 1) * GRID_SIZE]);
+      if (x < GRID_SIZE - 1 && y > 0) forbidden.push(randomGrid[(x + 1) + (y - 1) * GRID_SIZE]);
+    }
+
+    let candidates = [];
+    for (let i = 0; i < N_PHOTOS; i++) {
+      if (!forbidden.includes(i)) candidates.push(i);
+    }
+    
+    // Fallback if we filtered out too many candidates
+    if (candidates.length === 0) {
+      let looseForbidden = [];
+      if (x > 0) looseForbidden.push(randomGrid[(x - 1) + y * GRID_SIZE]);
+      if (y > 0) looseForbidden.push(randomGrid[x + (y - 1) * GRID_SIZE]);
+      for (let i = 0; i < N_PHOTOS; i++) {
+        if (!looseForbidden.includes(i)) candidates.push(i);
+      }
+      if (candidates.length === 0) {
+         candidates = [Math.floor(Math.random() * N_PHOTOS)];
+      }
+    }
+    
+    randomGrid[x + y * GRID_SIZE] = candidates[Math.floor(Math.random() * candidates.length)];
   }
+}
 
+// Global random shuffle so it feels fresh on reload
+const globalShuffledPhotos = [...allPhotos].sort(() => Math.random() - 0.5);
+
+function getColumnChunkItems(colIndex, chunkY, pattern) {
   const GAP = 6;
   let currentY = 0;
   return pattern.map((slot, index) => {
-    const photo = shuffled[index % shuffled.length];
+    // Calculate global virtual item index in this column
+    const itemY = chunkY * pattern.length + index;
+    
+    // Wrap to the precomputed random grid
+    const gx = ((colIndex % GRID_SIZE) + GRID_SIZE) % GRID_SIZE;
+    const gy = ((itemY % GRID_SIZE) + GRID_SIZE) % GRID_SIZE;
+    
+    const photoIndex = randomGrid[gx + gy * GRID_SIZE];
+    const photo = globalShuffledPhotos[photoIndex % globalShuffledPhotos.length];
+    
     const item = {
       id: `${colIndex}-${chunkY}-${index}`,
       project: photo.project,
