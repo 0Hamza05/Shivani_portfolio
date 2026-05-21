@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
@@ -8,18 +8,16 @@ const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 // ─── Config ────────────────────────────────────────────────────────────────────
 const NUM_COLS  = 5;
 const COL_WIDTH = 300; // px
-const GAP       = 8;   // px between columns and rows
+const GAP       = 8;   // px between columns
 
 // Each column animates at a different duration → different visual speed → parallax
-// Larger = slower scroll
 const COL_DURATIONS = [56, 48, 44, 48, 40]; // seconds per loop
-
-// Stagger: columns start at different offsets so grid looks organic on load
-// 0% = top of loop, 50% = halfway through
-const COL_OFFSETS = ['0%', '-25%', '-10%', '-40%', '-18%'];
 
 // Visual top margin stagger so columns sit at different heights
 const COL_STAGGER = [0, 60, 25, 90, 15]; // px
+
+// Horizontal bounce speed (px per frame at 60fps) — slightly faster
+const SPEED_X = 0.8;
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const prioritySlugs = ['uni-link', 'volunteering', 'university', 'podcast'];
@@ -32,18 +30,13 @@ const uniLinkImgs = uniLinkProject ? uniLinkProject.gridImages.map(imgUrl => ({ 
 const podcastProject = projects.find(p => p.slug === 'podcast');
 const podcastImgs = podcastProject ? podcastProject.gridImages.map(imgUrl => ({ project: podcastProject, imgUrl })) : [];
 
-// Build prioritized list without uni-link and podcast (they will be placed manually)
 const prioritizedWithoutUniAndPod = prioritized.filter(p => p.slug !== 'uni-link' && p.slug !== 'podcast');
 
 const allPhotos = [
-  // First copies at the very start
   ...uniLinkImgs,
   ...podcastImgs,
-  // Normal prioritized (volunteering, university)
   ...prioritizedWithoutUniAndPod.flatMap(proj => proj.gridImages.map(imgUrl => ({ project: proj, imgUrl }))),
-  // Remaining projects
   ...others.flatMap(proj => proj.gridImages.map(imgUrl => ({ project: proj, imgUrl }))),
-  // Second copies at the end
   ...podcastImgs,
   ...uniLinkImgs,
 ];
@@ -57,7 +50,7 @@ function buildColumns(photos, numCols) {
   return cols;
 }
 
-// ─── Photo card (no fixed height — natural aspect ratio) ──────────────────────
+// ─── Photo card ───────────────────────────────────────────────────────────────
 function PhotoCard({ photo, eager }) {
   const isVideo = VIDEO_RE.test(photo.imgUrl);
   const media = isVideo ? (
@@ -112,59 +105,96 @@ function PhotoCard({ photo, eager }) {
 
 // ─── Home ──────────────────────────────────────────────────────────────────────
 export default function Home() {
+  // One copy of the grid width
   const totalW = NUM_COLS * COL_WIDTH + (NUM_COLS - 1) * GAP;
 
   const scrollRef = useRef(null);
-  const isDown = useRef(false);
-  const startX = useRef(0);
-  const scrollLeftStart = useRef(0);
-  const isDragging = useRef(false);
-  const dragThreshold = 10; // px
+  // Triplicate columns horizontally: left-copy | centre | right-copy
+  // We start at the centre copy; bounce reverses direction at each edge.
+  const horizColumns = [...columns, ...columns, ...columns];
 
-  const handleMouseDown = (e) => {
-    isDown.current = true;
-    isDragging.current = false;
-    startX.current = e.pageX - scrollRef.current.offsetLeft;
-    scrollLeftStart.current = scrollRef.current.scrollLeft;
-    scrollRef.current.classList.add('mc-dragging');
-  };
+  // ── Automated horizontal bounce ──────────────────────────────────────────────
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
 
-  const handleMouseLeave = () => {
-    isDown.current = false;
-    if (scrollRef.current) {
-      scrollRef.current.classList.remove('mc-dragging');
-    }
-  };
+    // Bounce between 0 and BOUNCE_RANGE pixels of scrollLeft.
+    // A smaller range means the reversal is clearly visible within a few seconds.
+    const BOUNCE_RANGE = 700; // px — comfortable drift that looks intentional
+    container.scrollLeft = 0;
 
-  const handleMouseUp = () => {
-    isDown.current = false;
-    if (scrollRef.current) {
-      scrollRef.current.classList.remove('mc-dragging');
-    }
-  };
+    const dir = { current: 1 }; // 1 = right, -1 = left
+    let raf;
+    let currentX = 0; // Track precise floating-point position
 
-  const handleMouseMove = (e) => {
-    if (!isDown.current) return;
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = x - startX.current;
-    
-    if (Math.abs(walk) > dragThreshold) {
-      isDragging.current = true;
-    }
-    
-    if (isDragging.current) {
-      e.preventDefault();
-      scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
-    }
-  };
+    const step = () => {
+      currentX += SPEED_X * dir.current;
 
-  const handleCaptureClick = (e) => {
-    if (isDragging.current) {
-      e.preventDefault();
-      e.stopPropagation();
-      isDragging.current = false;
-    }
-  };
+      if (currentX >= BOUNCE_RANGE) {
+        currentX = BOUNCE_RANGE;
+        dir.current = -1;
+      } else if (currentX <= 0) {
+        currentX = 0;
+        dir.current = 1;
+      }
+      
+      container.scrollLeft = currentX;
+
+      raf = requestAnimationFrame(step);
+    };
+
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  // ── Column grid renderer ─────────────────────────────────────────────────────
+  const renderColumns = () =>
+    horizColumns.map((colPhotos, colIdx) => {
+      const baseIdx   = colIdx % NUM_COLS;
+      const duration  = COL_DURATIONS[baseIdx];
+
+      return (
+        <div
+          key={colIdx}
+          className="mc-col-wrap"
+          style={{
+            width: `${COL_WIDTH}px`,
+            flexShrink: 0,
+            height: '100%',
+            overflow: 'hidden',
+            paddingTop: `${COL_STAGGER[baseIdx]}px`,
+            boxSizing: 'border-box',
+          }}
+        >
+          {/* Inner strip — doubled for seamless vertical loop via CSS animation */}
+          <div
+            className="mc-col-inner"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: `${GAP}px`,
+              animation: `marquee-up ${duration}s linear infinite`,
+            }}
+          >
+            {colPhotos.map((photo, j) => (
+              <PhotoCard
+                key={`a-${photo.project.slug}-${j}`}
+                photo={photo}
+                eager={baseIdx < 3 && j === 0}
+              />
+            ))}
+            {/* Duplicate for seamless loop */}
+            {colPhotos.map((photo, j) => (
+              <PhotoCard
+                key={`b-${photo.project.slug}-${j}`}
+                photo={photo}
+                eager={false}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    });
 
   return (
     <>
@@ -195,53 +225,24 @@ export default function Home() {
           filter: contrast(1.04) brightness(1.02);
         }
 
-        /* ── Marquee keyframe ── */
+        /* ── Vertical marquee (CSS-driven, no JS conflict) ── */
         @keyframes marquee-up {
           from { transform: translateY(0); }
           to   { transform: translateY(-50%); }
         }
-
-        /* ── Pause column on hover ── */
         .mc-col-wrap:hover .mc-col-inner {
           animation-play-state: paused;
         }
 
-        /* ── Scroll box ── */
+        /* ── Scroll container ── */
         .mc-scroll-box {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(17,17,17,0.15) transparent;
-          cursor: grab;
+          overflow: hidden;        /* JS controls scrollLeft; no scrollbars */
+          cursor: default;
           user-select: none;
-        }
-        .mc-scroll-box::-webkit-scrollbar { height: 4px; }
-        .mc-scroll-box::-webkit-scrollbar-track { background: transparent; }
-        .mc-scroll-box::-webkit-scrollbar-thumb {
-          background: rgba(17,17,17,0.15);
-          border-radius: 4px;
-        }
-        .mc-scroll-box.mc-dragging {
-          cursor: grabbing;
-        }
-
-        /* ── Scroll hint ── */
-        .mc-hint {
-          position: absolute;
-          bottom: 18px;
-          right: 24px;
-          font-size: 0.68rem;
-          font-weight: 600;
-          letter-spacing: 0.15em;
-          color: var(--fg);
-          text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-          pointer-events: none;
-          z-index: 10;
-          display: flex;
-          align-items: center;
-          gap: 6px;
         }
       `}</style>
 
-      {/* Full-viewport container below navbar */}
+      {/* Full-viewport panel below navbar */}
       <motion.div
         ref={scrollRef}
         initial={{ opacity: 0 }}
@@ -253,88 +254,24 @@ export default function Home() {
           left: 0,
           right: 0,
           bottom: 0,
-          overflowX: 'auto',   // horizontal scroll — independent of body overflow
-          overflowY: 'hidden', // vertical clip — columns animate, don't page-scroll
+          background: 'var(--bg)',
         }}
         className="mc-scroll-box"
-        onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseLeave}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onClickCapture={handleCaptureClick}
       >
-
-
-
-
-        {/* Inner grid — wide enough to require horizontal scroll */}
+        {/* Inner grid — 3× width for horizontal bounce room */}
         <div
           style={{
             display: 'flex',
             gap: `${GAP}px`,
             height: '100%',
-            width: `${totalW}px`,
+            // Total width = 3 copies of the grid + gaps between copies
+            width: `${totalW * 3 + GAP * 2}px`,
             padding: `0 ${GAP}px`,
             alignItems: 'flex-start',
             boxSizing: 'border-box',
           }}
         >
-          {columns.map((colPhotos, colIdx) => {
-            const duration = COL_DURATIONS[colIdx];
-            const delay    = COL_OFFSETS[colIdx];  // animation-delay trick for offset
-
-            return (
-              /* Column wrapper: clips vertical overflow, full height */
-              <div
-                key={colIdx}
-                className="mc-col-wrap"
-                style={{
-                  width: `${COL_WIDTH}px`,
-                  flexShrink: 0,
-                  height: '100%',
-                  overflow: 'hidden',
-                  paddingTop: `${COL_STAGGER[colIdx]}px`,
-                  boxSizing: 'border-box',
-                }}
-              >
-                {/* Animated inner strip — photos × 2 for seamless loop */}
-                <div
-                  className="mc-col-inner"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: `${GAP}px`,
-                    animation: `marquee-up ${duration}s linear infinite`,
-                    animationDelay: '0s',
-                  }}
-                >
-                   {colPhotos.map((photo, j) => (
-                     <PhotoCard
-                       key={`a-${photo.project.slug}-${j}`}
-                       photo={photo}
-                       eager={colIdx < 3 && j === 0}
-                     />
-                   ))}
-                   {/* Duplicate copy — makes the loop seamless */}
-                   {colPhotos.map((photo, j) => (
-                     <PhotoCard
-                       key={`b-${photo.project.slug}-${j}`}
-                       photo={photo}
-                       eager={false}
-                     />
-                   ))}
-                   {/* Third copy for columns 3 and 4 (indices 2 and 3) to ensure continuous scroll */}
-                   {(colIdx === 2 || colIdx === 3) && colPhotos.map((photo, j) => (
-                     <PhotoCard
-                       key={`c-${photo.project.slug}-${j}`}
-                       photo={photo}
-                       eager={false}
-                     />
-                   ))}
-                </div>
-              </div>
-            );
-          })}
+          {renderColumns()}
         </div>
       </motion.div>
     </>

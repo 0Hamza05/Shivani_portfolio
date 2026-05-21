@@ -158,7 +158,6 @@ function PillarFilmStrip({ images, title, onZoom }) {
           className="film-track"
           style={{ 
             display: 'flex', 
-            justifyContent: 'center', 
             gap: '12px', 
             overflowX: 'auto', 
             padding: '16px 12vw',
@@ -216,7 +215,8 @@ function PillarFilmStrip({ images, title, onZoom }) {
                       autoPlay 
                       loop 
                       muted 
-                      playsInline 
+                      playsInline
+                      preload="metadata"
                       style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} 
                     />
                   ) : (
