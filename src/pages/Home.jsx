@@ -25,8 +25,14 @@ const COL_STAGGER = [0, 60, 25, 90, 15, 50]; // px
 const prioritySlugs = ['volunteering', 'university', 'podcast'];
 const prioritized = projects.filter(p => prioritySlugs.includes(p.slug));
 const others = projects.filter(p => !prioritySlugs.includes(p.slug));
-const allPhotos = [...prioritized, ...others].flatMap(proj =>
-  proj.gridImages.map(imgUrl => ({ project: proj, imgUrl })));
+const allPhotos = [...prioritized, ...others].flatMap(proj => {
+  const imgs = proj.gridImages.map(imgUrl => ({ project: proj, imgUrl }));
+  // Duplicate podcast images to increase visibility
+  if (proj.slug === 'podcast') {
+    return [...imgs, ...imgs]; // appear twice
+  }
+  return imgs;
+});
 
 function buildColumns(photos, numCols) {
   const cols = Array.from({ length: numCols }, () => []);
