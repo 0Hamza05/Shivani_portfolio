@@ -243,7 +243,7 @@ export default function Home() {
             padding: `0 ${GAP}px`,
             alignItems: 'flex-start',
             boxSizing: 'border-box',
-            animation: 'bounce-x 30s alternate infinite linear',
+            animation: 'bounce-x 20s alternate infinite linear',
             willChange: 'transform',
           }}
         >
