@@ -22,9 +22,11 @@ const COL_OFFSETS = ['0%', '-25%', '-10%', '-40%', '-18%', '-33%'];
 const COL_STAGGER = [0, 60, 25, 90, 15, 50]; // px
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-const allPhotos = projects.flatMap(proj =>
-  proj.gridImages.map(imgUrl => ({ project: proj, imgUrl }))
-);
+const prioritySlugs = ['volunteering', 'university', 'podcast'];
+const prioritized = projects.filter(p => prioritySlugs.includes(p.slug));
+const others = projects.filter(p => !prioritySlugs.includes(p.slug));
+const allPhotos = [...prioritized, ...others].flatMap(proj =>
+  proj.gridImages.map(imgUrl => ({ project: proj, imgUrl })));
 
 function buildColumns(photos, numCols) {
   const cols = Array.from({ length: numCols }, () => []);
