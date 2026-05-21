@@ -1,7 +1,7 @@
-import { useParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { projects } from '../data/projects';
 import { useEffect, useState, useRef } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 const carouselButtonStyle = {
@@ -454,6 +454,7 @@ function VoiceNotePlayer({ src }) {
 }
 
 export default function ProjectDetail() {
+  const navigate = useNavigate();
   const { slug } = useParams();
   const project = projects.find(p => p.slug === slug);
   const [activeImage, setActiveImage] = useState(null);
@@ -570,6 +571,55 @@ export default function ProjectDetail() {
         {project.voiceNote && (
           <VoiceNotePlayer src={project.voiceNote} />
         )}
+        
+        {/* Related Blog Suggestion */}
+        {(() => {
+          const relatedMap = {
+            university: 'friends',
+            'uni-link': 'friends',
+            // add more mappings as needed
+          };
+          const relatedSlug = relatedMap[project.slug];
+          const relatedProj = relatedSlug ? projects.find(p => p.slug === relatedSlug) : null;
+          if (!relatedProj) return null;
+          return (
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              style={{
+                position: 'fixed',
+                right: '24px',
+                top: 'calc(var(--nav-h) + 120px)',
+                width: '200px',
+                cursor: 'pointer',
+                zIndex: 1000,
+              }}
+              onClick={() => {
+                // navigate to related blog
+                navigate(`/work/${relatedSlug}`);
+              }}
+            >
+              <img
+                src={relatedProj.cover}
+                alt={relatedProj.title}
+                style={{ width: '100%', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+              />
+              <div
+                style={{
+                  marginTop: '6px',
+                  textAlign: 'center',
+                  fontFamily: "'EB Garamond', serif",
+                  fontSize: '0.85rem',
+                  color: 'var(--fg)',
+                  letterSpacing: '0.1em',
+                }}
+              >
+                Friends in {project.title}
+              </div>
+            </motion.div>
+          );
+        })()}
 
         {/* Focused Editorial Film Strip horizontal scroll */}
         {((project.blogImages || project.gridImages || []).length > 0) && (

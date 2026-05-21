@@ -1,13 +1,12 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import Home from '../pages/Home';
 
 export default function Work() {
   const navigate = useNavigate();
 
   useEffect(() => {
     // Redirect /work to the home page since home serves as the primary portfolio grid
-    navigate('/');
+    // This line removed to allow the /work page to render content
   }, [navigate]);
 
-  return null;
+  return <Home />;
 }
