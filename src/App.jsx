@@ -15,6 +15,12 @@ export default function App() {
   return (
     <Router>
       <AnimatePresence mode="wait">
+        {/* Preload Home off-screen for image loading and animation start */}
+        {!welcomeDismissed && (
+          <div style={{ position: 'absolute', left: '-9999px', top: 0, visibility: 'hidden' }}>
+            <Home />
+          </div>
+        )}
         {!welcomeDismissed ? (
           <Welcome key="welcome-screen" onDismiss={() => setWelcomeDismissed(true)} />
         ) : (

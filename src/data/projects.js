@@ -73,12 +73,12 @@ export const projects = [
     slug: 'first-job',
     title: 'First Job',
     category: 'Stage 5',
-    cover: '/images/first-job/friends-10.webp',
+    cover: '/images/first-job/first-job-1.webp',
     gridImages: [
-      '/images/first-job/friends-10.webp',
+      '/images/first-job/first-job-1.webp',
     ],
     blogImages: [
-      '/images/first-job/friends-10.webp',
+      '/images/first-job/first-job-1.webp',
     ],
     description: "The turbulent transition from child to individual. Everything feels impossibly loud, incredibly important, and permanently changing.\n\nIt is an era marked by shifting identities, deep insecurities, and the fiery desire to carve out a unique space in the world. We pull away from the familiar to find out who we are when no one else is looking. Friendships become our lifeblood, and every emotion is felt at maximum volume. It is beautifully chaotic."
   },
@@ -87,14 +87,14 @@ export const projects = [
     slug: 'holi-deloite',
     title: 'Holi Deloitte',
     category: 'Stage 6',
-    cover: '/images/holi-deloite/holi.webp',
+    cover: '/images/holi-deloitte/holi-deloitte-1.webp',
     gridImages: [
-      '/images/holi-deloite/holi.webp',
-      '/images/holi-deloite/leadership-2.webp',
+      '/images/holi-deloitte/holi-deloitte-1.webp',
+      '/images/holi-deloitte/holi-deloitte-2.webp',
     ],
     blogImages: [
-      '/images/holi-deloite/holi.webp',
-      '/images/holi-deloite/leadership-2.webp',
+      '/images/holi-deloitte/holi-deloitte-1.webp',
+      '/images/holi-deloitte/holi-deloitte-2.webp',
     ],
     description: "A celebration of vibrant energy and shared laughter. Midst the structured world of professional life, we find moments to let loose, paint the town with joy, and embrace the warmth of community.\n\nThe colors of Holi remind us that work is not just about tasks and deliverables, but about the beautiful human connections that color our everyday existence."
   },
@@ -103,14 +103,14 @@ export const projects = [
     slug: 'farewell-deloitte',
     title: 'Farewell Deloitte',
     category: 'Stage 7',
-    cover: '/images/farewell-deloitte/job-1.webp',
+    cover: '/images/farewell-deloitte/farewell-deloitte-1.webp',
     gridImages: [
-      '/images/farewell-deloitte/job-1.webp',
-      '/images/farewell-deloitte/job-2.webp',
+      '/images/farewell-deloitte/farewell-deloitte-1.webp',
+      '/images/farewell-deloitte/farewell-deloitte-2.webp',
     ],
     blogImages: [
-      '/images/farewell-deloitte/job-1.webp',
-      '/images/farewell-deloitte/job-2.webp',
+      '/images/farewell-deloitte/farewell-deloitte-1.webp',
+      '/images/farewell-deloitte/farewell-deloitte-2.webp',
     ],
     description: "The bittersweet art of letting go. Standing at the end of a formative chapter, looking back with gratitude at the friendships, lessons, and milestones that shaped us.\n\nSaying goodbye is never easy, but it is the necessary bridge to the next adventure. We pack up our memories and step forward, carrying the strength of our beginnings into the unknown."
   },
@@ -328,16 +328,16 @@ export const projects = [
     gridImages: [
       '/images/friends/friends-1.webp',
       '/images/friends/friends-2.webp',
+      '/images/friends/friends-3.webp',
+      '/images/friends/friends-4.webp',
       '/images/friends/friends-5.webp',
-      '/images/friends/friends-6.webp',
-      '/images/friends/friends-9.webp',
     ],
     blogImages: [
       '/images/friends/friends-1.webp',
       '/images/friends/friends-2.webp',
+      '/images/friends/friends-3.webp',
+      '/images/friends/friends-4.webp',
       '/images/friends/friends-5.webp',
-      '/images/friends/friends-6.webp',
-      '/images/friends/friends-9.webp',
     ],
     description: "The final, golden hours. The physical body may slow, but the mind holds the vast, accumulated wealth of an entire lifetime.\n\nThere is a profound peace in knowing you have weathered the storms. We become the storytellers, passing down our lived history to the next generation. The focus shifts entirely from what we can achieve to what we can impart. It is a beautiful grace—a deep, quiet understanding that the cycle of life is complete, and that the love we gave is the only thing that truly remains."
   },
@@ -346,12 +346,12 @@ export const projects = [
     slug: 'acess-pass',
     title: 'Access Pass',
     category: 'Stage 16',
-    cover: '/images/acess-pass/acess-pass.webp',
+    cover: '/images/acess-pass/acess-pass-1.webp',
     gridImages: [
-      '/images/acess-pass/acess-pass.webp',
+      '/images/acess-pass/acess-pass-1.webp',
     ],
     blogImages: [
-      '/images/acess-pass/acess-pass.webp',
+      '/images/acess-pass/acess-pass-1.webp',
     ],
     description: "Unlocking new territories of influence and responsibility. The access pass represents the doors that open when we have earned the trust and respect of our peers. It is a symbol of entry into spaces where decisions are made and impact is amplified.\n\nWith each new pass, we accept the responsibility to not only occupy the room, but to leave the door open for those who follow."
   },
