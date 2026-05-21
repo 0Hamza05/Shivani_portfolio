@@ -113,39 +113,7 @@ export default function Home() {
   // We start at the centre copy; bounce reverses direction at each edge.
   const horizColumns = [...columns, ...columns, ...columns];
 
-  // ── Automated horizontal bounce ──────────────────────────────────────────────
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    // Bounce between 0 and BOUNCE_RANGE pixels of scrollLeft.
-    // A smaller range means the reversal is clearly visible within a few seconds.
-    const BOUNCE_RANGE = 700; // px — comfortable drift that looks intentional
-    container.scrollLeft = 0;
-
-    const dir = { current: 1 }; // 1 = right, -1 = left
-    let raf;
-    let currentX = 0; // Track precise floating-point position
-
-    const step = () => {
-      currentX += SPEED_X * dir.current;
-
-      if (currentX >= BOUNCE_RANGE) {
-        currentX = BOUNCE_RANGE;
-        dir.current = -1;
-      } else if (currentX <= 0) {
-        currentX = 0;
-        dir.current = 1;
-      }
-      
-      container.scrollLeft = currentX;
-
-      raf = requestAnimationFrame(step);
-    };
-
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+  // ── Horizontal bounce now handled entirely via CSS (see bounce-x keyframes) ──
 
   // ── Column grid renderer ─────────────────────────────────────────────────────
   const renderColumns = () =>
@@ -234,6 +202,12 @@ export default function Home() {
           animation-play-state: paused;
         }
 
+        /* ── Horizontal bounce (CSS-driven, hardware accelerated) ── */
+        @keyframes bounce-x {
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-700px, 0, 0); }
+        }
+
         /* ── Scroll container ── */
         .mc-scroll-box {
           overflow: hidden;        /* JS controls scrollLeft; no scrollbars */
@@ -269,6 +243,8 @@ export default function Home() {
             padding: `0 ${GAP}px`,
             alignItems: 'flex-start',
             boxSizing: 'border-box',
+            animation: 'bounce-x 30s alternate infinite linear',
+            willChange: 'transform',
           }}
         >
           {renderColumns()}
