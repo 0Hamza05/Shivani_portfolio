@@ -48,9 +48,8 @@ export const projects = [
     gridImages: [
       '/images/uni-link/uni-link-1.webp',
     ],
-    blogImages: [
-      '/images/uni-link/uni-link-1.webp',
-    ],
+    // Redirect URL for external blog
+    redirectUrl: 'https://www.wbs.ac.uk/blogs/student/undergraduate/how-wbs-careersplus-can-help-you-establish-your-career-goals/',
     description: "The web of connections. In the crucible of university, we began to bridge the gap between ideas and impact. Collaboration becomes our currency, and we discover that the strongest structures are built together.\n\nIt is an era of linking minds, sharing passions, and realizing that our individual threads are part of a much larger, beautifully complex tapestry."
   },
   {
