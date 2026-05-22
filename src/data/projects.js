@@ -346,12 +346,12 @@ export const projects = [
     slug: 'acess-pass',
     title: 'Access Pass',
     category: 'Stage 16',
-    cover: '/images/acess-pass/optimised/acess-pass-op-1.webp',
+    cover: '/images/acess-pass/optimised/access-pass-op-1.webp',
     gridImages: [
-      '/images/acess-pass/optimised/acess-pass-op-1.webp',
+      '/images/acess-pass/optimised/access-pass-op-1.webp',
     ],
     blogImages: [
-      '/images/acess-pass/acess-pass-1.webp',
+      '/images/acess-pass/access-pass-1.webp',
     ],
     description: "Unlocking new territories of influence and responsibility. The access pass represents the doors that open when we have earned the trust and respect of our peers. It is a symbol of entry into spaces where decisions are made and impact is amplified.\n\nWith each new pass, we accept the responsibility to not only occupy the room, but to leave the door open for those who follow."
   },
@@ -410,14 +410,14 @@ export const projects = [
     slug: 'overcoming-fears',
     title: 'Overcoming Fears',
     category: 'Stage 18',
-    cover: '/images/overcoming-fears/optimised/dog-1.webp',
+    cover: '/images/overcoming-fears/optimised/dog-op-1.webp',
     gridImages: [
-      '/images/overcoming-fears/optimised/dog-1.webp',
-      '/images/overcoming-fears/optimised/dog-2.webp',
-      '/images/overcoming-fears/optimised/dog-3.webp',
-      '/images/overcoming-fears/optimised/dog-4.webp',
-      '/images/overcoming-fears/optimised/dog-5.webp',
-      '/images/overcoming-fears/optimised/dog-6.webp',
+      '/images/overcoming-fears/optimised/dog-op-1.webp',
+      '/images/overcoming-fears/optimised/dog-op-2.webp',
+      '/images/overcoming-fears/optimised/dog-op-3.webp',
+      '/images/overcoming-fears/optimised/dog-op-4.webp',
+      '/images/overcoming-fears/optimised/dog-op-5.webp',
+      '/images/overcoming-fears/optimised/dog-op-6.webp',
     ],
     blogImages: [
       '/images/overcoming-fears/dog-1.webp',

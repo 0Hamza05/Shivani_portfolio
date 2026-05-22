@@ -72,7 +72,7 @@ img {
 
 /* Text Selection */
 ::selection {
-  background-color: rgba(240, 158, 167, 0.25); /* Subtle pink selection highlight */
+  background-color: rgba(240, 158, 167, 0.25);
   color: #111111;
 }
 
