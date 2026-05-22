@@ -85,7 +85,7 @@ export const projects = [
   {
     id: 6,
     slug: 'holi-deloite',
-    title: 'Holi Deloitte',
+    title: 'Holi Deloitte:\nColoring the Room',
     category: 'Stage 6',
     cover: '/images/holi-deloitte/optimised/holi-deloitte-op-1.webp',
     gridImages: [
@@ -96,7 +96,7 @@ export const projects = [
       '/images/holi-deloitte/holi-deloitte-1.webp',
       '/images/holi-deloitte/holi-deloitte-2.webp',
     ],
-    description: "A celebration of vibrant energy and shared laughter. Midst the structured world of professional life, we find moments to let loose, paint the town with joy, and embrace the warmth of community.\n\nThe colors of Holi remind us that work is not just about tasks and deliverables, but about the beautiful human connections that color our everyday existence."
+    description: "Six months into my graduate role at one of the world’s biggest professional services firms, I didn’t know many people. So I did what felt natural — I found the Hindu Network, and I got involved.\n\nWhat I didn’t fully anticipate was the scale of what that actually meant. Deloitte UK runs 12 diversity networks, and the Hindu Network sits among the largest of them — spanning offices across the country from London to Manchester, Edinburgh to Belfast. As Events Lead, I wasn’t just planning a calendar. I was coordinating across every regional chapter, making sure that colleagues in every office felt part of something, not just the people walking into the London headquarters.\n\nThe first event I led was Holi. And anybody who thinks putting on a cultural celebration inside a major corporation is straightforward has never done it. There are budget proposals to write and defend, external partners to negotiate with, internal speakers to brief, logistics to choreograph, and a dozen administrative threads to hold simultaneously — all while making sure the event itself actually feels joyful rather than corporate. You learn quickly that the difference between a good event and a memorable one is almost entirely in the preparation nobody sees.\n\nBut here’s what I remember most about that first Holi. I was new. I barely knew anyone. And putting my hand up to lead something — to be the person responsible for bringing a room together — turned out to be the fastest way to find my people. The network gave me a community. The work gave me a craft. And somewhere in the middle of colour powder and colleague introductions, a city that had felt quite large started to feel a little more like home."
   },
   {
     id: 7,
@@ -112,7 +112,7 @@ export const projects = [
       '/images/farewell-deloitte/farewell-deloitte-1.webp',
       '/images/farewell-deloitte/farewell-deloitte-2.webp',
     ],
-    description: "The bittersweet art of letting go. Standing at the end of a formative chapter, looking back with gratitude at the friendships, lessons, and milestones that shaped us.\n\nSaying goodbye is never easy, but it is the necessary bridge to the next adventure. We pack up our memories and step forward, carrying the strength of our beginnings into the unknown."
+    description: "My last day at Deloitte looked a lot like every other day. I got a brownie from the canteen. I took a picture in front of the headquarters. And then I left.\n\nTwo and a half years. Great work, great people, mentors I genuinely looked up to, friendships that felt like they’d stretch into a whole career. Comfortable in the best possible way — which, as it turns out, was exactly the problem.\n\nI didn’t leave because anything was wrong. I left because nothing was hard anymore. And I think there’s a version of me that could have stayed, grown steadily, and been perfectly content. I just didn’t want to find out too late that content and fulfilled aren’t always the same thing.\n\nThe brownie was good. The photo is still on my phone. And the decision — the hazy, slightly terrifying, completely right decision — is one I come back to whenever something new feels uncertain.\n\nIt usually does. I usually go anyway."
   },
   {
     id: 8,
@@ -237,7 +237,7 @@ export const projects = [
       '/images/dance/dance-5.webp',
       '/images/dance/dance-6.mp4',
     ],
-    description: "Building the foundation. We pour our energy, our time, and our passion into our work, striving to leave a mark on the world.\n\nThis stage is characterized by late nights, early mornings, failures, and hard-earned victories. We figure out not just what we want to do, but what impact we want to have. The idealism of youth begins to temper into pragmatic strategy. We learn the value of resilience, of getting back up, and of defining success on our own terms."
+    description: "What means hand-eye coordination to some means soul food for me. DANCE.\n\nDance has been part of my existence since I believe I could walk. Strongly encouraged by my parents to learn a disciplined and difficult dance form, I began learning Kathak (An indian classical dance form). This dance form is beyond coordination; it is a prayer to Lord Shiva (from whom I get my name). From strict back posture to feet syncing with tabla beats at over 8times the speed, the neck following your arms and sometimes not, and the face emoting not less than an actor - it has it all. \n\nAt 10, I played sports in school and came back ever excited to go to my dance class. My teacher was ever warm and beautiful, always making me feel like the best of the lot. Well, i also have my exam certificates to prove my distinction!\n\nAs an overthinker, worrier and bearer of all the stress in the world, this one place felt like a sanctuary. Music beats lowered my mind, and worries hid behind the emotion of the performance, as I grew up.\n\nMy commitment to this dance lasts beyond the class and beyond India. During my time at Warwick, I was the president of the Indian Classical Dance Society, and after uni, I signed up as a Kathak teacher on Superprof. "
   },
   {
     id: 12,
@@ -353,7 +353,7 @@ export const projects = [
     blogImages: [
       '/images/acess-pass/access-pass-1.webp',
     ],
-    description: "Unlocking new territories of influence and responsibility. The access pass represents the doors that open when we have earned the trust and respect of our peers. It is a symbol of entry into spaces where decisions are made and impact is amplified.\n\nWith each new pass, we accept the responsibility to not only occupy the room, but to leave the door open for those who follow."
+    description: "I stood in that queue in the most formal black shirt I owned — which, for a twenty-year-old fresh out of university, was really just the least-student thing in my wardrobe. What I hadn’t anticipated was that Deloitte would have a makeup artist, a hair stylist, and a touch-up artist waiting on the other side.\n\nNobody warned me that the corporate world came with that.\n\nThe photo ended up being lovely — lovely enough to become my first LinkedIn picture, lovely enough to be printed on my access pass. And something about seeing your own face on a building entry card hits differently than you’d expect. It’s a small thing. It’s also not a small thing at all.\n\nThat pass was proof. That the dream had a front door, and I had the key to it."
   },
   {
     id: 17,

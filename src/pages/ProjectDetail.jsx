@@ -33,15 +33,13 @@ function PillarFilmStrip({ images, title, onZoom }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  // Center first image on mount (or when images change)
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) {
-      // Desired scroll is half the excess width (could be zero or negative)
-      const desiredScroll = (el.scrollWidth - el.clientWidth) / 2;
-      el.scrollLeft = Math.max(0, desiredScroll);
-    }
-  }, [images]);
+// Start from the first image on mount (or when images change)
+useEffect(() => {
+  const el = scrollRef.current;
+  if (el) {
+    el.scrollLeft = 0;
+  }
+}, [images]);
 
   const checkScrollLimits = () => {
     if (!scrollRef.current) return;
@@ -183,7 +181,7 @@ function PillarFilmStrip({ images, title, onZoom }) {
                 style={{
                   flex: '0 0 auto',
                   width: 'min(440px, 80vw)',
-                  height: '320px',
+                  height: '240px',
                   backgroundColor: '#111111',
                   display: 'flex',
                   flexDirection: 'column',
@@ -200,7 +198,7 @@ function PillarFilmStrip({ images, title, onZoom }) {
                 {/* Media Container */}
                 <div style={{ 
                   width: '100%', 
-                  height: '264px', 
+                  height: '200px', 
                   overflow: 'hidden', 
                   backgroundColor: '#050505',
                   display: 'flex',
