@@ -8,10 +8,10 @@ const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 // ─── Config ────────────────────────────────────────────────────────────────────
 const NUM_COLS  = 5;
 const COL_WIDTH = 300; // px
-const GAP       = 8;   // px between columns
+const GAP       = 4;   // px between columns and items
 
 // Each column animates at a different duration → different visual speed → parallax
-const COL_DURATIONS = [56, 48, 44, 48, 40]; // seconds per loop
+const COL_DURATIONS = [84, 72, 66, 72, 60]; // seconds per loop (slower vertical scroll)
 
 // Visual top margin stagger so columns sit at different heights
 const COL_STAGGER = [0, 60, 25, 90, 15]; // px
