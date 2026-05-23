@@ -1,4 +1,3 @@
-import { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
@@ -15,9 +14,6 @@ const COL_DURATIONS = [84, 72, 66, 72, 60]; // seconds per loop (slower vertical
 
 // Visual top margin stagger so columns sit at different heights
 const COL_STAGGER = [0, 60, 25, 90, 15]; // px
-
-// Horizontal bounce speed (px per frame at 60fps) — slightly faster
-const SPEED_X = 0.8;
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const prioritySlugs = ['uni-link', 'volunteering', 'university', 'podcast'];
@@ -105,15 +101,8 @@ function PhotoCard({ photo, eager }) {
 
 // ─── Home ──────────────────────────────────────────────────────────────────────
 export default function Home() {
-  // One copy of the grid width
   const totalW = NUM_COLS * COL_WIDTH + (NUM_COLS - 1) * GAP;
-
-  const scrollRef = useRef(null);
-  // Triplicate columns horizontally: left-copy | centre | right-copy
-  // We start at the centre copy; bounce reverses direction at each edge.
   const horizColumns = [...columns, ...columns, ...columns];
-
-  // ── Horizontal bounce now handled entirely via CSS (see bounce-x keyframes) ──
 
   // ── Column grid renderer ─────────────────────────────────────────────────────
   const renderColumns = () =>
@@ -218,7 +207,6 @@ export default function Home() {
 
       {/* Full-viewport panel below navbar */}
       <motion.div
-        ref={scrollRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}

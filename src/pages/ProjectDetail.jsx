@@ -30,6 +30,7 @@ function isVideoUrl(url) {
 function PillarFilmStrip({ images, title, onZoom }) {
   const scrollRef = useRef(null);
   const isDown = useRef(false);
+  const hasDragged = useRef(false);
   const startX = useRef(0);
   const scrollLeftVal = useRef(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -68,6 +69,7 @@ useEffect(() => {
 
   const handleMouseDown = (e) => {
     isDown.current = true;
+    hasDragged.current = false;
     scrollRef.current.classList.add('active');
     startX.current = e.pageX - scrollRef.current.offsetLeft;
     scrollLeftVal.current = scrollRef.current.scrollLeft;
@@ -87,7 +89,8 @@ useEffect(() => {
     if (!isDown.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.5; // Drag sensitivity
+    const walk = (x - startX.current) * 1.5;
+    if (Math.abs(walk) > 5) hasDragged.current = true;
     scrollRef.current.scrollLeft = scrollLeftVal.current - walk;
   };
 
@@ -175,10 +178,8 @@ useEffect(() => {
             return (
               <div
                 key={img}
-                onClick={(e) => {
-                  if (!isDown.current) {
-                    onZoom(img);
-                  }
+                onClick={() => {
+                  if (!hasDragged.current) onZoom(img);
                 }}
                 style={{
                   flex: '0 0 auto',

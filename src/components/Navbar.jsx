@@ -140,7 +140,7 @@ export default function Navbar() {
       opacity: 0,
       transform: 'translateY(10px)',
       pointerEvents: 'none',
-      transition: 'all 0.3cubic-bezier(0.16,1,0.3,1)',
+      transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
       zIndex: 999,
     }}
   >
