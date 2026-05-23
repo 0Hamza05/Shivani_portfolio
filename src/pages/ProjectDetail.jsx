@@ -2,6 +2,8 @@ import { projects } from '../data/projects';
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import TravelMap from '../components/TravelMap';
+import { travelDestinations } from '../data/travelDestinations';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 const carouselButtonStyle = {
@@ -485,6 +487,8 @@ export default function ProjectDetail() {
       transition={{ duration: 0.8 }}
       style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', position: 'relative' }}
     >
+      {project.slug !== 'travel' && (
+        <>
       {/* Hero Banner Image */}
       <div style={{ height: '70vh', width: '100%', position: 'relative', overflow: 'hidden' }}>
         {(() => {
@@ -533,7 +537,9 @@ export default function ProjectDetail() {
             {project.title}
           </motion.h1>
         </div>
-      </div>
+            </div>
+    </>
+)}
 
       {/* Main Content Layout (Centered & Elegant) */}
       <div style={{ 
@@ -564,6 +570,10 @@ export default function ProjectDetail() {
             paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
           ))}
         </motion.div>
+
+        {project.slug === 'travel' && (
+  <TravelMap />
+)}
 
         {/* Voice Note Player — shown only when project has a voiceNote */}
         {project.voiceNote && (
@@ -620,13 +630,60 @@ export default function ProjectDetail() {
         })()}
 
         {/* Focused Editorial Film Strip horizontal scroll */}
-        {((project.blogImages || project.gridImages || []).length > 0) && (
+       {project.slug !== 'travel' &&
+  ((project.blogImages || project.gridImages || []).length > 0) && (
           <PillarFilmStrip 
             images={project.blogImages || project.gridImages}
             title={project.title}
             onZoom={setActiveImage}
           />
         )}
+
+        {project.slug === 'travel' && (
+  <div
+    style={{
+      width: "100%",
+      marginTop: "120px",
+
+      display: "flex",
+      flexDirection: "column",
+
+      gap: "180px"
+    }}
+  >
+    {travelDestinations.map((destination) => (
+      <section
+        key={destination.id}
+        id={destination.id}
+
+        style={{
+          minHeight: "60vh",
+          scrollMarginTop: "120px"
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: "'EB Garamond', serif",
+            fontSize: "clamp(2.5rem, 4vw, 4rem)",
+            marginBottom: "24px"
+          }}
+        >
+          {destination.title}
+        </h2>
+
+        <p
+          style={{
+            maxWidth: "700px",
+            lineHeight: 1.9,
+            color: "var(--fg-dim)"
+          }}
+        >
+          Cinematic travel story section for {destination.title}.
+        </p>
+      </section>
+    ))}
+  </div>
+)}
         
         {/* Footer Nav */}
         <div style={{ width: '100%', maxWidth: '760px', marginTop: '64px', paddingTop: '40px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>

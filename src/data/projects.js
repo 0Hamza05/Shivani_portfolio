@@ -403,7 +403,7 @@ export const projects = [
       '/images/travel/travel-18.webp',
       '/images/travel/travel-19.webp',
     ],
-    description: "Exploring the vastness of the world. Every new city, landscape, and culture expands the boundaries of who we are.\n\nTravel teaches us resilience and empathy. It forces us out of our comfort zones and into the beautiful chaos of the unknown. We collect memories instead of things, and learn that despite the vast differences in language and customs, humanity shares the same fundamental hopes and dreams."
+    description: ""
   },
   {
     id: 18,

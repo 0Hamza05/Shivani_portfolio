@@ -88,14 +88,11 @@ export default function Navbar() {
         {/* Desktop Links with Pillars Hover Dropdown */}
         <div
           style={{
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '16px',
-  alignItems: 'center',
-  height: '100%',
-  width: '100%',
-  overflowX: 'hidden',
-}}
+    display: 'flex',
+    gap: '32px',
+    alignItems: 'center',
+    height: '100%',
+  }}
           className="desktop-nav"
         >
           {/* WORK Link */}
@@ -108,34 +105,72 @@ export default function Navbar() {
             WORK
           </Link>
 
-                {/* Inline Pillars Links */}
-                <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                  {projects.filter(proj => !proj.youtubeUrl).map(proj => (
-                    <Link
-                      key={proj.id}
-                      to={`/work/${proj.slug}`}
-                      style={{
-                        fontFamily: "'EB Garamond', serif",
-                        fontSize: '1.05rem',
-                        color: location.pathname === `/work/${proj.slug}` ? 'var(--fg)' : 'var(--fg-dim)',
-                        transition: 'all 0.2s ease',
-                        textAlign: 'left',
-                        padding: '6px 10px',
-                        borderRadius: '4px',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.color = 'var(--fg)';
-                        e.currentTarget.style.backgroundColor = 'rgba(69, 42, 35, 0.03)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.color = location.pathname === `/work/${proj.slug}` ? 'var(--fg)' : 'var(--fg-dim)';
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      {proj.title}
-                    </Link>
-                  ))}
-                </div>
+                <div
+  className="pillars-dropdown-container"
+  style={{
+    position: 'relative',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    cursor: 'pointer',
+  }}
+>
+  <span
+    style={{ ...navLinkStyle(false), display: 'inline-block' }}
+    className="pillars-trigger-text"
+  >
+    PILLARS
+  </span>
+  <div
+    className="pillars-dropdown"
+    style={{
+      position: 'absolute',
+      top: '80%',
+      right: '-160px',
+      width: '600px',
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      backdropFilter: 'blur(25px)',
+      boxShadow: '0 20px 40px rgba(69, 42, 35, 0.08)',
+      border: '1px solid var(--border)',
+      borderRadius: '8px',
+      padding: '24px',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '12px 18px',
+      opacity: 0,
+      transform: 'translateY(10px)',
+      pointerEvents: 'none',
+      transition: 'all 0.3cubic-bezier(0.16,1,0.3,1)',
+      zIndex: 999,
+    }}
+  >
+    {projects.filter(proj => !proj.youtubeUrl).map(proj => (
+      <Link
+        key={proj.id}
+        to={`/work/${proj.slug}`}
+        style={{
+          fontFamily: "'EB Garamond', serif",
+          fontSize: '1.05rem',
+          color: location.pathname === `/work/${proj.slug}` ? 'var(--fg)' : 'var(--fg-dim)',
+          transition: 'all 0.2s ease',
+          textAlign: 'left',
+          padding: '6px 10px',
+          borderRadius: '4px',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.color = 'var(--fg)';
+          e.currentTarget.style.backgroundColor = 'rgba(69, 42, 35, 0.03)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.color = location.pathname === `/work/${proj.slug}` ? 'var(--fg)' : 'var(--fg-dim)';
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+      >
+        {proj.title}
+      </Link>
+    ))}
+  </div>
+</div>
 
           {/* ABOUT Link */}
           <Link
