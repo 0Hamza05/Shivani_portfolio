@@ -544,7 +544,9 @@ export default function ProjectDetail() {
       {/* Main Content Layout (Centered & Elegant) */}
       <div style={{ 
         padding: isMobile ? '48px 24px 80px' : '72px 48px 100px', 
-        maxWidth: '1200px', 
+        maxWidth: project.slug === 'travel'
+            ? '100%'
+            : '1200px',
         margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
@@ -571,9 +573,7 @@ export default function ProjectDetail() {
           ))}
         </motion.div>
 
-        {project.slug === 'travel' && (
-  <TravelMap />
-)}
+        
 
         {/* Voice Note Player — shown only when project has a voiceNote */}
         {project.voiceNote && (
@@ -642,46 +642,101 @@ export default function ProjectDetail() {
         {project.slug === 'travel' && (
   <div
     style={{
-      width: "100%",
-      marginTop: "120px",
+  width: "100vw",
 
-      display: "flex",
-      flexDirection: "column",
+  marginLeft: "calc(-50vw + 50%)",
 
-      gap: "180px"
-    }}
+  display: "flex",
+
+  alignItems: "flex-start",
+
+  gap: "64px",
+
+  paddingLeft: "64px",
+  paddingRight: "64px",
+
+  marginTop: "24px"
+}}
   >
-    {travelDestinations.map((destination) => (
-      <section
-        key={destination.id}
-        id={destination.id}
+    {/* LEFT MAP COLUMN */}
+    <div
+      style={{
+  width: "45%",
 
-        style={{
-          minHeight: "60vh",
-          scrollMarginTop: "355px"
-        }}
-      >
-        <h2
+  position: "fixed",
+
+  left: "64px",
+
+  top: "calc(var(--nav-h) + 32px)",
+
+  height: "calc(100vh - var(--nav-h) - 64px)",
+
+  display: "flex",
+
+  alignItems: "center",
+
+  justifyContent: "center"
+}}
+    >
+      <TravelMap />
+    </div>
+
+    {/* RIGHT CONTENT COLUMN */}
+    <div
+      style={{
+  flex: 1,
+
+  marginLeft: "52%",
+
+  display: "flex",
+  flexDirection: "column",
+
+  gap: "220px",
+
+  paddingBottom: "200px",
+
+  paddingRight: "64px"
+}}
+    >
+      {travelDestinations.map((destination) => (
+        <section
+          key={destination.id}
+          id={destination.id}
+
           style={{
-            fontFamily: "'EB Garamond', serif",
-            fontSize: "clamp(2.5rem, 4vw, 4rem)",
-            marginBottom: "24px"
+            minHeight: "90vh",
+
+            scrollMarginTop: "120px"
           }}
         >
-          {destination.title}
-        </h2>
+          <h2
+            style={{
+              fontFamily: "'EB Garamond', serif",
 
-        <p
-          style={{
-            maxWidth: "700px",
-            lineHeight: 1.9,
-            color: "var(--fg-dim)"
-          }}
-        >
-          Cinematic travel story section for {destination.title}.
-        </p>
-      </section>
-    ))}
+              fontSize: "clamp(2.8rem, 5vw, 5rem)",
+
+              marginBottom: "24px"
+            }}
+          >
+            {destination.title}
+          </h2>
+
+          <p
+            style={{
+              maxWidth: "700px",
+
+              lineHeight: 1.9,
+
+              color: "var(--fg-dim)",
+
+              fontSize: "1.05rem"
+            }}
+          >
+            Cinematic travel story section for {destination.title}.
+          </p>
+        </section>
+      ))}
+    </div>
   </div>
 )}
         

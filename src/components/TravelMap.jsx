@@ -88,24 +88,20 @@ const y =
   return (
     <div
       style={{
-        position: "sticky",
-
-        top: "var(--nav-h)",
-
-        zIndex: 30,
+       
 
         width: "100%",
 
         background: "var(--bg)",
 
-        borderBottom: "1px solid rgba(255,255,255,0.06)"
+       
       }}
     >
       <div
         style={{
           width: "100%",
 
-          maxWidth: "700px",
+          maxWidth: "1500px",
 
           margin: "0 auto",
 
@@ -117,20 +113,26 @@ const y =
       >
         {/* Map */}
         <img
+        
           src="/maps/world-map.svg"
           alt="World Map"
           style={{
             width: "100%",
 
-            height: "40vh",
+            height: "90vh",
 
             objectFit: "contain",
 
             opacity: 0.92,
 
-            display: "block"
+         filter:
+  "invert(78%) sepia(38%) saturate(540%) hue-rotate(357deg) brightness(101%) contrast(98%)",
+            
+  display: "block"
           }}
         />
+        
+
 
           {/* Airplane */}
 <div
@@ -142,7 +144,7 @@ top: `${planePosition.y}%`,
 
    transform: "translate(-50%, -50%)",
 
-    fontSize: "1.2rem",
+    fontSize: "2rem",
 
     color: "red",
 
@@ -227,13 +229,13 @@ top: `${planePosition.y}%`,
     width: "20px",
     height: "20px",
 
-    background: "#bf760d",
+    background: "#9a5c00",
 
     borderRadius: "50% 50% 50% 0",
 
     transform: "rotate(-45deg)",
 
-    boxShadow: "0 0 18px rgba(191,118,13,0.45)",
+    boxShadow: "0 0 18px rgba(154,92,0,0.35)",
 
     border: "2px solid white",
 
