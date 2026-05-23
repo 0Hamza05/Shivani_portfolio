@@ -191,7 +191,10 @@ top: `${planePosition.y}%`,
 
                 padding: "6px 12px",
 
-                background: "rgba(255,255,255,0.92)",
+                background:
+                    activeDestination.id === destination.id
+                        ? "rgba(255,255,255,0.96)"
+                        : "rgba(255,255,255,0.65)",
 
                 border: "1px solid rgba(0,0,0,0.08)",
 
@@ -203,7 +206,10 @@ top: `${planePosition.y}%`,
 
                 textTransform: "uppercase",
 
-                color: "var(--fg)",
+                color:
+                    activeDestination.id === destination.id
+                        ? "var(--fg)"
+                        : "var(--fg-dim)",
 
                 backdropFilter: "blur(10px)",
 
