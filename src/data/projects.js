@@ -39,19 +39,7 @@ export const projects = [
     ],
     description: "A time of scraped knees and boundless imagination. The days feel like years, stretching infinitely under the summer sun.\n\nA cardboard box becomes a spaceship; a puddle becomes an ocean. This is the era of relentless questions, of unbridled curiosity. The world is a playground, untouched by cynicism, where magic is not just believed in—it is an everyday reality. We learn to run before we learn to walk, and every single day brings a monumental discovery about how the world works."
   },
-  {
-    id: 3,
-    slug: 'uni-link',
-    title: 'Uni Link',
-    category: 'Stage 3',
-    cover: '/images/uni-link/optimised/uni-link-op-1.webp',
-    gridImages: [
-      '/images/uni-link/optimised/uni-link-op-1.webp',
-    ],
-    // Redirect URL for external blog
-    redirectUrl: 'https://www.wbs.ac.uk/blogs/student/undergraduate/how-wbs-careersplus-can-help-you-establish-your-career-goals/',
-    description: "The web of connections. In the crucible of university, we began to bridge the gap between ideas and impact. Collaboration becomes our currency, and we discover that the strongest structures are built together.\n\nIt is an era of linking minds, sharing passions, and realizing that our individual threads are part of a much larger, beautifully complex tapestry."
-  },
+  
   {
     id: 4,
     slug: 'placement',
@@ -445,4 +433,16 @@ export const projects = [
     ],
     description: "A conversation that goes beyond the surface. Sharing stories, insights, and perspectives that inspire and connect."
   }
+    {
+        id: 20,
+        slug: 'uni-link',
+        title: 'Uni Link',
+        category: 'Stage 20',
+        cover: '/images/university/optimised/uni-op-2.webp',
+        gridImages: [
+            '/images/university/optimised/uni-op-2.webp',
+            '/images/university/optimised/uni-op-3.webp',
+        ],
+        redirectUrl: 'https://example.com',
+    },
 ];

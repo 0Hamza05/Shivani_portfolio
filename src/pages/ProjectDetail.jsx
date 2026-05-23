@@ -471,6 +471,13 @@ export default function ProjectDetail() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Redirect to external URL if provided
+  useEffect(() => {
+    if (project?.redirectUrl) {
+      window.location.href = project.redirectUrl;
+    }
+  }, [project?.redirectUrl]);
+
   if (!project) {
     return (
       <div style={{ paddingTop: 'calc(var(--nav-h) + 100px)', textAlign: 'center', minHeight: '100vh' }}>

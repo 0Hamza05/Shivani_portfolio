@@ -10,7 +10,7 @@ const COL_WIDTH = 300; // px
 const GAP       = 4;   // px between columns and items
 
 // Each column animates at a different duration → different visual speed → parallax
-const COL_DURATIONS = [84, 72, 66, 72, 60]; // seconds per loop (slower vertical scroll)
+const COL_DURATIONS = [84, 72, 66, 72, 60]; // seconds per loop
 
 // Visual top margin stagger so columns sit at different heights
 const COL_STAGGER = [0, 60, 25, 90, 15]; // px
@@ -37,8 +37,7 @@ const allPhotos = [
   ...uniLinkImgs,
 ];
 
-const finalPhotos = allPhotos;
-const columns = buildColumns(finalPhotos, NUM_COLS);
+const columns = buildColumns(allPhotos, NUM_COLS);
 
 function buildColumns(photos, numCols) {
   const cols = Array.from({ length: numCols }, () => []);
@@ -199,7 +198,7 @@ export default function Home() {
 
         /* ── Scroll container ── */
         .mc-scroll-box {
-          overflow: hidden;        /* JS controls scrollLeft; no scrollbars */
+          overflow: hidden;
           cursor: default;
           user-select: none;
         }
@@ -226,7 +225,6 @@ export default function Home() {
             display: 'flex',
             gap: `${GAP}px`,
             height: '100%',
-            // Total width = 3 copies of the grid + gaps between copies
             width: `${totalW * 3 + GAP * 2}px`,
             padding: `0 ${GAP}px`,
             alignItems: 'flex-start',
