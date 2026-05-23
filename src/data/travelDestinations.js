@@ -5,8 +5,8 @@ export const travelDestinations = [
     title: "London",
 
     mapPosition: {
-      x: "51%",
-      y: "28%"
+      x: "47%",
+      y: "35%"
     }
   },
 
@@ -27,7 +27,7 @@ export const travelDestinations = [
     title: "Singapore",
 
     mapPosition: {
-      x: "76%",
+      x: "66%",
       y: "57%"
     }
   }
