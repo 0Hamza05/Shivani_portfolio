@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { travelDestinations } from "../data/travelDestinations";
 
 export default function TravelMap() {
 
-    const [activeDestination, setActiveDestination] = useState(
+   const [activeDestination, setActiveDestination] = useState(
   travelDestinations[0]
 );
+
+const [planePosition, setPlanePosition] = useState({
+  x: parseFloat(travelDestinations[0].mapPosition.x),
+  y: parseFloat(travelDestinations[0].mapPosition.y)
+});
 
   const handlePinClick = (id) => {
 
@@ -15,18 +20,69 @@ export default function TravelMap() {
 
   if (!destination) return;
 
-  setActiveDestination(destination);
+  const startX = planePosition.x;
+  const startY = planePosition.y;
 
-  setTimeout(() => {
-    const section = document.getElementById(id);
+  const endX = parseFloat(destination.mapPosition.x);
+  const endY = parseFloat(destination.mapPosition.y);
 
-    if (section) {
-      section.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+  const duration = 1400;
+
+  const startTime = performance.now();
+
+  const animate = (currentTime) => {
+
+    const elapsed = currentTime - startTime;
+
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Smooth easing
+    const eased =
+      1 - Math.pow(1 - progress, 3);
+
+    // Linear interpolation
+    // Elevated midpoint control point
+const controlX =
+  (startX + endX) / 2;
+
+const controlY =
+  Math.min(startY, endY) - 12;
+
+// Quadratic Bézier interpolation
+const x =
+  (1 - eased) * (1 - eased) * startX +
+  2 * (1 - eased) * eased * controlX +
+  eased * eased * endX;
+
+const y =
+  (1 - eased) * (1 - eased) * startY +
+  2 * (1 - eased) * eased * controlY +
+  eased * eased * endY;
+
+    setPlanePosition({
+      x,
+      y
+    });
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+
+      setActiveDestination(destination);
+
+      const section =
+        document.getElementById(id);
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
     }
-  }, 500);
+  };
+
+  requestAnimationFrame(animate);
 };
 
   return (
@@ -81,10 +137,10 @@ export default function TravelMap() {
   style={{
     position: "absolute",
 
-    left: activeDestination.mapPosition.x,
-    top: activeDestination.mapPosition.y,
+    left: `${planePosition.x}%`,
+top: `${planePosition.y}%`,
 
-    transform: "translate(-50%, -50%)",
+   transform: "translate(-50%, -50%)",
 
     fontSize: "1.2rem",
 
@@ -92,9 +148,7 @@ export default function TravelMap() {
 
     textShadow: "0 0 18px rgba(255,255,255,0.45)",
 
-    transition:
-      "left 0.8s cubic-bezier(0.22,1,0.36,1), top 0.8s cubic-bezier(0.22,1,0.36,1)",
-
+    
     zIndex: 50,
 
     pointerEvents: "none"
@@ -112,6 +166,11 @@ export default function TravelMap() {
 
             style={{
               position: "absolute",
+
+              zIndex:
+             activeDestination.id === destination.id
+                ? 100
+                : 10,
 
               left: destination.mapPosition.x,
               top: destination.mapPosition.y,
