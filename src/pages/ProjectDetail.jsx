@@ -658,7 +658,7 @@ export default function ProjectDetail() {
 
         style={{
           minHeight: "60vh",
-          scrollMarginTop: "120px"
+          scrollMarginTop: "300px"
         }}
       >
         <h2
