@@ -551,7 +551,11 @@ export default function ProjectDetail() {
 
       {/* Main Content Layout (Centered & Elegant) */}
       <div style={{ 
-        padding: isMobile ? '48px 24px 80px' : '72px 48px 100px', 
+        padding: isMobile
+          ? project.slug === 'travel'
+            ? 'calc(var(--nav-h) + max(56vw, 200px) + 48px) 0 80px'
+            : '48px 24px 80px'
+          : '72px 48px 100px',
         maxWidth: project.slug === 'travel'
             ? '100%'
             : '1200px',
@@ -650,80 +654,65 @@ export default function ProjectDetail() {
         {project.slug === 'travel' && (
   <div
     style={{
-  width: "100vw",
-
-  marginLeft: "calc(-50vw + 50%)",
-
-  display: "flex",
-
-  alignItems: "flex-start",
-
-  gap: "64px",
-
-  paddingLeft: "64px",
-  paddingRight: "64px",
-
-  marginTop: "24px"
-}}
+      width: "100vw",
+      marginLeft: "calc(-50vw + 50%)",
+      display: "flex",
+      flexDirection: isMobile ? "column" : "row",
+      alignItems: "flex-start",
+      gap: isMobile ? "0" : "64px",
+      paddingLeft: isMobile ? "0" : "64px",
+      paddingRight: isMobile ? "0" : "64px",
+      marginTop: "24px",
+    }}
   >
-    {/* LEFT MAP COLUMN */}
+    {/* MAP COLUMN — fixed sidebar on desktop, sticky strip on mobile */}
     <div
       style={{
-  width: "45%",
-
-  position: "fixed",
-
-  left: "64px",
-
-  top: "calc(var(--nav-h) + 32px)",
-
-  height: "calc(100vh - var(--nav-h) - 64px)",
-
-  display: "flex",
-
-  alignItems: "center",
-
-  justifyContent: "center"
-}}
+        width: isMobile ? "100%" : "45%",
+        position: "fixed",
+        top: isMobile ? "var(--nav-h)" : "calc(var(--nav-h) + 32px)",
+        left: isMobile ? 0 : "64px",
+        height: isMobile ? "auto" : "calc(100vh - var(--nav-h) - 64px)",
+        zIndex: 10,
+        backgroundColor: "var(--bg)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
       <TravelMap />
     </div>
 
-    {/* RIGHT CONTENT COLUMN */}
+    {/* CONTENT COLUMN — scrolls alongside the sticky/fixed map */}
     <div
       style={{
-  flex: 1,
-
-  marginLeft: "52%",
-
-  display: "flex",
-  flexDirection: "column",
-
-  gap: "220px",
-
-  paddingBottom: "200px",
-
-  paddingRight: "64px"
-}}
+        flex: 1,
+        marginLeft: isMobile ? "0" : "52%",
+        display: "flex",
+        flexDirection: "column",
+        gap: isMobile ? "64px" : "220px",
+        paddingTop: isMobile ? "40px" : "0",
+        paddingBottom: "200px",
+        paddingLeft: isMobile ? "24px" : "0",
+        paddingRight: isMobile ? "24px" : "64px",
+      }}
     >
       {travelDestinations.map((destination) => (
         <section
           key={destination.id}
           id={destination.id}
-
           style={{
-            minHeight: "90vh",
-
-            scrollMarginTop: "120px"
+            minHeight: isMobile ? "50vh" : "90vh",
+            scrollMarginTop: isMobile
+              ? "calc(var(--nav-h) + max(56vw, 200px) + 24px)"
+              : "120px",
           }}
         >
           <h2
             style={{
               fontFamily: "'EB Garamond', serif",
-
-              fontSize: "clamp(2.8rem, 5vw, 5rem)",
-
-              marginBottom: "24px"
+              fontSize: isMobile ? "clamp(2rem, 8vw, 3rem)" : "clamp(2.8rem, 5vw, 5rem)",
+              marginBottom: "24px",
             }}
           >
             {destination.title}
@@ -732,12 +721,9 @@ export default function ProjectDetail() {
           <p
             style={{
               maxWidth: "700px",
-
               lineHeight: 1.9,
-
               color: "var(--fg-dim)",
-
-              fontSize: "1.05rem"
+              fontSize: isMobile ? "0.95rem" : "1.05rem",
             }}
           >
             Cinematic travel story section for {destination.title}.

@@ -1,18 +1,20 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 export default function Welcome({ onDismiss }) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 1 }}
+      transition={{ duration: shouldReduceMotion ? 0 : 1 }}
+      className="welcome-bg"
       style={{
         position: 'fixed',
         inset: 0,
         background: 'linear-gradient(45deg, #F09EA7, #F6CA94, #FAFABE, #C1EBC0, #C7CAFF, #CDABEB, #F6C2F3)',
         backgroundSize: '400% 400%',
-        animation: 'gradientBG 15s ease infinite',
         zIndex: 200,
         display: 'flex',
         flexDirection: 'column',
@@ -22,19 +24,28 @@ export default function Welcome({ onDismiss }) {
     >
       <style>{`
         @keyframes gradientBG {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+        .welcome-bg {
+          animation: gradientBG 15s ease infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .welcome-bg {
+            animation: none;
+            background-position: 0% 50%;
+          }
+        }
       `}</style>
-      
+
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '100px 32px 64px' }}>
-        
+
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <motion.h1 
-            initial={{ y: 20, opacity: 0 }}
+          <motion.h1
+            initial={shouldReduceMotion ? false : { y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1 }}
+            transition={{ delay: shouldReduceMotion ? 0 : 0.5, duration: shouldReduceMotion ? 0 : 1 }}
             style={{ fontFamily: "'EB Garamond', serif", fontSize: 'clamp(3rem, 6vw, 6rem)', fontWeight: 400, color: 'var(--fg)', letterSpacing: '0.05em', textTransform: 'lowercase' }}
           >
             welcome to my portfolio
@@ -42,11 +53,11 @@ export default function Welcome({ onDismiss }) {
         </div>
 
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
+          initial={shouldReduceMotion ? false : { y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1, duration: 1 }}
+          transition={{ delay: shouldReduceMotion ? 0 : 1, duration: shouldReduceMotion ? 0 : 1 }}
         >
-          <button 
+          <button
             onClick={onDismiss}
             style={{
               fontFamily: "'Inter', sans-serif",

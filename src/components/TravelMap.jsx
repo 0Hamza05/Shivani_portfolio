@@ -87,8 +87,53 @@ export default function TravelMap() {
   const trail = trailRef.current;
   const trailTotal = trail.length;
 
+  const isActive = (id) => activeDestination.id === id;
+
+  const handlePinKeyDown = (e, id) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handlePinClick(id);
+    }
+  };
+
   return (
     <div style={{ width: "100%", background: "var(--bg)" }}>
+      {/* Screen-reader live region: announces destination name when plane lands */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position: "absolute",
+          width: "1px",
+          height: "1px",
+          overflow: "hidden",
+          clip: "rect(0 0 0 0)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {activeDestination ? `Now showing ${activeDestination.title}` : ""}
+      </div>
+
+      <style>{`
+        .travel-pin:focus-visible {
+          outline: 2px solid #9a5c00;
+          outline-offset: 6px;
+          border-radius: 6px;
+        }
+        .travel-pin:focus:not(:focus-visible) {
+          outline: none;
+        }
+        .travel-map-img {
+          height: 90vh;
+        }
+        @media (max-width: 960px) {
+          .travel-map-img {
+            height: 56vw;
+            min-height: 200px;
+          }
+        }
+      `}</style>
+
       <div
         style={{
           width: "100%",
@@ -102,10 +147,10 @@ export default function TravelMap() {
         {/* Map */}
         <img
           src="/maps/world-map.svg"
-          alt="World Map"
+          alt="Interactive world map showing travel destinations"
+          className="travel-map-img"
           style={{
             width: "100%",
-            height: "90vh",
             objectFit: "contain",
             opacity: 0.92,
             filter:
@@ -167,10 +212,20 @@ export default function TravelMap() {
         {travelDestinations.map((destination) => (
           <div
             key={destination.id}
+            role="button"
+            tabIndex={0}
+            aria-label={
+              isActive(destination.id)
+                ? `${destination.title} — current destination`
+                : `Navigate to ${destination.title}`
+            }
+            aria-current={isActive(destination.id) ? "true" : undefined}
             onClick={() => handlePinClick(destination.id)}
+            onKeyDown={(e) => handlePinKeyDown(e, destination.id)}
+            className="travel-pin"
             style={{
               position: "absolute",
-              zIndex: activeDestination.id === destination.id ? 100 : 10,
+              zIndex: isActive(destination.id) ? 100 : 10,
               left: destination.mapPosition.x,
               top: destination.mapPosition.y,
               transform: "translate(-50%, -50%)",
@@ -185,8 +240,7 @@ export default function TravelMap() {
               style={{
                 marginBottom: "10px",
                 padding: "6px 12px",
-                background:
-                  activeDestination.id === destination.id
+                background: isActive(destination.id)
                     ? "rgba(255,255,255,0.96)"
                     : "rgba(255,255,255,0.65)",
                 border: "1px solid rgba(0,0,0,0.08)",
@@ -194,8 +248,7 @@ export default function TravelMap() {
                 fontSize: "0.72rem",
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                color:
-                  activeDestination.id === destination.id
+                color: isActive(destination.id)
                     ? "var(--fg)"
                     : "var(--fg-dim)",
                 backdropFilter: "blur(10px)",

@@ -1,10 +1,11 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 
-// ─── Config ────────────────────────────────────────────────────────────────────
+// ─── Desktop config ─────────────────────────────────────────────────────────────
 const NUM_COLS  = 5;
 const COL_WIDTH = 300; // px
 const GAP       = 4;   // px between columns and items
@@ -14,6 +15,13 @@ const COL_DURATIONS = [84, 72, 66, 72, 60]; // seconds per loop
 
 // Visual top margin stagger so columns sit at different heights
 const COL_STAGGER = [0, 60, 25, 90, 15]; // px
+
+// ─── Mobile config (≤700px) ─────────────────────────────────────────────────────
+const MOBILE_BREAKPOINT    = 700;
+const MOBILE_NUM_COLS      = 2;
+const MOBILE_COL_WIDTH     = 172; // px — 2 cols + gaps comfortably fit 375px+
+const MOBILE_COL_DURATIONS = [COL_DURATIONS[0], COL_DURATIONS[1]];
+const MOBILE_COL_STAGGER   = [COL_STAGGER[0],   COL_STAGGER[1]];
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const prioritySlugs = ['uni-link', 'volunteering', 'university', 'podcast'];
@@ -37,7 +45,8 @@ const allPhotos = [
   ...uniLinkImgs,
 ];
 
-const columns = buildColumns(allPhotos, NUM_COLS);
+const columns       = buildColumns(allPhotos, NUM_COLS);
+const mobileColumns = buildColumns(allPhotos, MOBILE_NUM_COLS);
 
 function buildColumns(photos, numCols) {
   const cols = Array.from({ length: numCols }, () => []);
@@ -100,25 +109,42 @@ function PhotoCard({ photo, eager }) {
 
 // ─── Home ──────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const totalW = NUM_COLS * COL_WIDTH + (NUM_COLS - 1) * GAP;
-  const horizColumns = [...columns, ...columns, ...columns];
+  const [isMobile, setIsMobile] = useState(window.innerWidth < MOBILE_BREAKPOINT);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  // Pick the right config for the current breakpoint
+  const activeCols      = isMobile ? mobileColumns  : columns;
+  const activeNumCols   = isMobile ? MOBILE_NUM_COLS  : NUM_COLS;
+  const activeColWidth  = isMobile ? MOBILE_COL_WIDTH : COL_WIDTH;
+  const activeDurations = isMobile ? MOBILE_COL_DURATIONS : COL_DURATIONS;
+  const activeStagger   = isMobile ? MOBILE_COL_STAGGER   : COL_STAGGER;
+
+  const totalW         = activeNumCols * activeColWidth + (activeNumCols - 1) * GAP;
+  const horizColumns   = [...activeCols, ...activeCols, ...activeCols];
+  // Bounce shift: one column-width on mobile (subtle), wider sweep on desktop
+  const bounceDistance = isMobile ? activeColWidth + GAP : 700;
 
   // ── Column grid renderer ─────────────────────────────────────────────────────
   const renderColumns = () =>
     horizColumns.map((colPhotos, colIdx) => {
-      const baseIdx   = colIdx % NUM_COLS;
-      const duration  = COL_DURATIONS[baseIdx];
+      const baseIdx  = colIdx % activeNumCols;
+      const duration = activeDurations[baseIdx];
 
       return (
         <div
           key={colIdx}
           className="mc-col-wrap"
           style={{
-            width: `${COL_WIDTH}px`,
+            width: `${activeColWidth}px`,
             flexShrink: 0,
             height: '100%',
             overflow: 'hidden',
-            paddingTop: `${COL_STAGGER[baseIdx]}px`,
+            paddingTop: `${activeStagger[baseIdx]}px`,
             boxSizing: 'border-box',
           }}
         >
@@ -126,10 +152,10 @@ export default function Home() {
           <div
             className="mc-col-inner"
             style={{
+              '--col-duration': `${duration}s`,
               display: 'flex',
               flexDirection: 'column',
               gap: `${GAP}px`,
-              animation: `marquee-up ${duration}s linear infinite`,
             }}
           >
             {colPhotos.map((photo, j) => (
@@ -181,19 +207,25 @@ export default function Home() {
           filter: contrast(1.04) brightness(1.02);
         }
 
-        /* ── Vertical marquee (CSS-driven, no JS conflict) ── */
+        /* ── Vertical marquee (animation declared in class so media query can override) ── */
         @keyframes marquee-up {
           from { transform: translateY(0); }
           to   { transform: translateY(-50%); }
+        }
+        .mc-col-inner {
+          animation: marquee-up var(--col-duration, 72s) linear infinite;
         }
         .mc-col-wrap:hover .mc-col-inner {
           animation-play-state: paused;
         }
 
-        /* ── Horizontal bounce (CSS-driven, hardware accelerated) ── */
+        /* ── Horizontal bounce (animation declared in class so media query can override) ── */
         @keyframes bounce-x {
-          0% { transform: translate3d(0, 0, 0); }
-          100% { transform: translate3d(-700px, 0, 0); }
+          0%   { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(var(--bounce-dist, -700px), 0, 0); }
+        }
+        .mc-bounce {
+          animation: bounce-x 20s alternate infinite linear;
         }
 
         /* ── Scroll container ── */
@@ -201,6 +233,20 @@ export default function Home() {
           overflow: hidden;
           cursor: default;
           user-select: none;
+        }
+
+        /* ── Reduced motion: stop all continuous animations ── */
+        @media (prefers-reduced-motion: reduce) {
+          .mc-col-inner {
+            animation: none;
+          }
+          .mc-bounce {
+            animation: none;
+            will-change: auto;
+          }
+          .mc-col-wrap:hover .mc-col-inner {
+            animation-play-state: running;
+          }
         }
       `}</style>
 
@@ -221,6 +267,7 @@ export default function Home() {
       >
         {/* Inner grid — 3× width for horizontal bounce room */}
         <div
+          className="mc-bounce"
           style={{
             display: 'flex',
             gap: `${GAP}px`,
@@ -229,8 +276,8 @@ export default function Home() {
             padding: `0 ${GAP}px`,
             alignItems: 'flex-start',
             boxSizing: 'border-box',
-            animation: 'bounce-x 20s alternate infinite linear',
             willChange: 'transform',
+            '--bounce-dist': `-${bounceDistance}px`,
           }}
         >
           {renderColumns()}
