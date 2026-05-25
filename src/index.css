@@ -1,4 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Great+Vibes&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap');
+@font-face {
+  font-family: 'Mocha';
+  src: url('./assets/fonts/mocha.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Kind Avenue';
+  src: url('./assets/fonts/kind-avenue.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 *, *::before, *::after {
   box-sizing: border-box;

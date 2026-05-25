@@ -480,15 +480,16 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div style={{ paddingTop: 'calc(var(--nav-h) + 100px)', textAlign: 'center', minHeight: '100vh' }}>
+      <main style={{ paddingTop: 'calc(var(--nav-h) + 100px)', textAlign: 'center', minHeight: '100vh' }}>
         <p style={{ marginBottom: '24px', fontFamily: "'EB Garamond', serif", fontSize: '1.5rem' }}>Blog not found.</p>
         <Link to="/" style={{ fontSize: '0.8rem', letterSpacing: '0.15em', borderBottom: '1px solid var(--fg)', paddingBottom: '2px' }}>RETURN TO GALLERY</Link>
-      </div>
+      </main>
     );
   }
 
   return (
     <motion.div
+      role="main"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -601,7 +602,8 @@ export default function ProjectDetail() {
           };
           const relatedSlug = relatedMap[project.slug];
           const relatedProj = relatedSlug ? projects.find(p => p.slug === relatedSlug) : null;
-          if (!relatedProj) return null;
+          // Hide the fixed sidebar on mobile — it overlaps the text column with no escape
+          if (!relatedProj || isMobile) return null;
           return (
             <motion.div
               initial={{ opacity: 0, x: 100 }}
@@ -710,8 +712,9 @@ export default function ProjectDetail() {
         >
           <h2
             style={{
-              fontFamily: "'EB Garamond', serif",
+              fontFamily: "'Kind Avenue', 'EB Garamond', serif",
               fontSize: isMobile ? "clamp(2rem, 8vw, 3rem)" : "clamp(2.8rem, 5vw, 5rem)",
+              fontWeight: "normal",
               marginBottom: "24px",
             }}
           >

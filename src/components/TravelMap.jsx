@@ -116,7 +116,7 @@ export default function TravelMap() {
 
       <style>{`
         .travel-pin:focus-visible {
-          outline: 2px solid #9a5c00;
+          outline: 2px solid #1e3a8a;
           outline-offset: 6px;
           border-radius: 6px;
         }
@@ -152,9 +152,9 @@ export default function TravelMap() {
           style={{
             width: "100%",
             objectFit: "contain",
-            opacity: 0.92,
+            opacity: 0.72,
             filter:
-              "invert(78%) sepia(38%) saturate(540%) hue-rotate(357deg) brightness(101%) contrast(98%)",
+              "brightness(0) saturate(100%) invert(86%) sepia(90%) saturate(850%) brightness(97%)",
             display: "block",
           }}
         />
@@ -183,7 +183,7 @@ export default function TravelMap() {
                   cx={`${pt.x}%`}
                   cy={`${pt.y}%`}
                   r={r}
-                  fill="#9a5c00"
+                  fill="#7EB8F7"
                   opacity={opacity}
                 />
               );
@@ -198,9 +198,9 @@ export default function TravelMap() {
             left: `${planePosition.x}%`,
             top: `${planePosition.y}%`,
             transform: `translate(-50%, -50%) rotate(${planeAngle}deg)`,
-            fontSize: "1.6rem",
-            color: "#9a5c00",
-            filter: "drop-shadow(0 0 6px rgba(154,92,0,0.45))",
+            fontSize: "2.1rem",
+            color: "#7EB8F7",
+            filter: "drop-shadow(0 0 8px rgba(126,184,247,0.70))",
             zIndex: 50,
             pointerEvents: "none",
           }}
@@ -245,7 +245,7 @@ export default function TravelMap() {
                     : "rgba(255,255,255,0.65)",
                 border: "1px solid rgba(0,0,0,0.08)",
                 borderRadius: "999px",
-                fontSize: "0.72rem",
+                fontSize: "0.60rem",
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 color: isActive(destination.id)
@@ -264,10 +264,10 @@ export default function TravelMap() {
                 position: "relative",
                 width: "20px",
                 height: "20px",
-                background: "#9a5c00",
+                background: "#1e3a8a",
                 borderRadius: "50% 50% 50% 0",
                 transform: "rotate(-45deg)",
-                boxShadow: "0 0 18px rgba(154,92,0,0.35)",
+                boxShadow: "0 0 18px rgba(30,58,138,0.45)",
                 border: "2px solid white",
                 transition: "transform 0.25s ease",
               }}

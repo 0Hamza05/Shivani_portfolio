@@ -2,44 +2,62 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
-import Welcome from './pages/Welcome';
+import LoadingScreen from './pages/LoadingScreen';
 import Home from './pages/Home';
 import About from './pages/About';
 import Work from './pages/Work';
 import ProjectDetail from './pages/ProjectDetail';
+import { TravelTransitionProvider } from './components/TravelTransitionOverlay';
 import './index.css';
 
 export default function App() {
-  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const [loadingDone, setLoadingDone] = useState(false);
 
   return (
     <Router>
-      <AnimatePresence mode="wait">
-        {/* Preload Home off-screen for image loading and animation start */}
-        {!welcomeDismissed && (
-          <div style={{ position: 'absolute', left: '-9999px', top: 0, visibility: 'hidden' }}>
+      <TravelTransitionProvider>
+        {/* Render Home off-screen while loading so the browser starts fetching
+            all grid images before the user ever sees them. Unmounts once done. */}
+        {!loadingDone && (
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: '-9999px',
+              top: 0,
+              visibility: 'hidden',
+              pointerEvents: 'none',
+            }}
+          >
             <Home />
           </div>
         )}
-        {!welcomeDismissed ? (
-          <Welcome key="welcome-screen" onDismiss={() => setWelcomeDismissed(true)} />
-        ) : (
-          <motion.div
-            key="main-content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Navbar />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/work" element={<Work />} />
-              <Route path="/work/:slug" element={<ProjectDetail />} />
-              <Route path="/about" element={<About />} />
-            </Routes>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+        <AnimatePresence mode="wait">
+          {!loadingDone ? (
+            <LoadingScreen
+              key="loading"
+              onComplete={() => setLoadingDone(true)}
+            />
+          ) : (
+            <motion.div
+              key="main-content"
+              id="main-wrap"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Navbar />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/work" element={<Work />} />
+                <Route path="/work/:slug" element={<ProjectDetail />} />
+                <Route path="/about" element={<About />} />
+              </Routes>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </TravelTransitionProvider>
     </Router>
   );
 }

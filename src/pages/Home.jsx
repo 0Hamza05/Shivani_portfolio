@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
+import { useTravelTransition } from '../components/TravelTransitionOverlay';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 
@@ -56,6 +57,9 @@ function buildColumns(photos, numCols) {
 
 // ─── Photo card ───────────────────────────────────────────────────────────────
 function PhotoCard({ photo, eager }) {
+  const navigate = useNavigate();
+  const { triggerTransition } = useTravelTransition();
+
   const isVideo = VIDEO_RE.test(photo.imgUrl);
   const media = isVideo ? (
     <video
@@ -95,6 +99,18 @@ function PhotoCard({ photo, eager }) {
         target="_blank" rel="noopener noreferrer"
         draggable={false} onDragStart={e => e.preventDefault()}
         className="mc-card"
+      >{media}</a>
+    );
+  }
+  // Travel cards get the cinematic cloud transition instead of an instant navigation
+  if (photo.project.slug === 'travel') {
+    return (
+      <a
+        href={`/work/travel`}
+        draggable={false}
+        onDragStart={e => e.preventDefault()}
+        className="mc-card"
+        onClick={(e) => { e.preventDefault(); triggerTransition(navigate); }}
       >{media}</a>
     );
   }
@@ -190,21 +206,26 @@ export default function Home() {
           flex-shrink: 0;
           transition: box-shadow 300ms ease, transform 300ms ease;
         }
-        .mc-card:hover {
-          box-shadow: 0 8px 28px rgba(0,0,0,0.14);
-          transform: scale(1.02);
-          z-index: 10;
-          position: relative;
-        }
         .mc-media {
           width: 100%;
           height: auto;
           display: block;
           pointer-events: none;
-          transition: filter 300ms ease;
+          /* No filter transition — filter is not GPU-composited and triggers
+             repaint on every one of the 420+ image elements on hover. */
         }
-        .mc-card:hover .mc-media {
-          filter: contrast(1.04) brightness(1.02);
+
+        /* Hover effects only on pointer devices — prevents paint overhead on touch/mobile */
+        @media (hover: hover) {
+          .mc-card:hover {
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+            transform: scale(1.02);
+            z-index: 10;
+            position: relative;
+          }
+          .mc-card:hover .mc-media {
+            filter: contrast(1.04) brightness(1.02);
+          }
         }
 
         /* ── Vertical marquee (animation declared in class so media query can override) ── */
@@ -252,6 +273,7 @@ export default function Home() {
 
       {/* Full-viewport panel below navbar */}
       <motion.div
+        role="main"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
