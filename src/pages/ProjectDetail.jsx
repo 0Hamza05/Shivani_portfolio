@@ -567,9 +567,9 @@ export default function ProjectDetail() {
       }}>
         {/* Editorial Description text */}
         <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: project.slug === 'travel' ? 0.15 : 0.5, duration: 0.8 }}
           style={{ 
             maxWidth: '760px', 
             width: '100%',

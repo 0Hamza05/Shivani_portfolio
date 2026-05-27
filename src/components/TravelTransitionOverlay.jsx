@@ -1,5 +1,9 @@
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+
+// ─── Cloud image paths ────────────────────────────────────────────────────────
+const CLOUD_A = '/clouds/download__1_-removebg-preview.png'; // bulkier mass
+const CLOUD_B = '/clouds/images-removebg-preview.png';       // wider, flatter
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const TravelTransitionContext = createContext(null);
@@ -10,18 +14,17 @@ export function useTravelTransition() {
   return ctx;
 }
 
-// ─── Airplane sound synthesis ─────────────────────────────────────────────────
-// Three independent filtered-noise bands layered to produce a convincing
-// flyover: low engine rumble + turbine whine + high-frequency air rush.
-// No audio asset required.
+// ─── Ambient travel sound ─────────────────────────────────────────────────────
+// Three filtered-noise bands mixed at very low volume.
+// The goal is subconscious atmosphere — felt rather than heard.
+// No sharp attack, no loud engine effect.
 function playAirplaneSweep() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
-    const ctx  = new AC();
-    const len  = Math.floor(ctx.sampleRate * 2.4);
+    const ctx = new AC();
+    const len = Math.floor(ctx.sampleRate * 2.8);
 
-    // Generate an independent noise buffer for each band
     function makeNoiseSrc() {
       const buf = ctx.createBuffer(1, len, ctx.sampleRate);
       const d   = buf.getChannelData(0);
@@ -31,31 +34,33 @@ function playAirplaneSweep() {
       return src;
     }
 
-    const src1 = makeNoiseSrc(); // engine rumble
-    const src2 = makeNoiseSrc(); // turbine whine
-    const src3 = makeNoiseSrc(); // air-rush presence
+    const src1 = makeNoiseSrc(); // engine presence
+    const src2 = makeNoiseSrc(); // distant turbine
+    const src3 = makeNoiseSrc(); // air texture
 
+    // Frequencies kept in the low-mid range — nothing harsh above 800Hz
     const bpf1 = ctx.createBiquadFilter();
-    bpf1.type = 'bandpass'; bpf1.frequency.value = 120; bpf1.Q.value = 1.0;
+    bpf1.type = 'bandpass'; bpf1.frequency.value = 110; bpf1.Q.value = 0.9;
 
     const bpf2 = ctx.createBiquadFilter();
-    bpf2.type = 'bandpass'; bpf2.frequency.value = 480; bpf2.Q.value = 1.4;
+    bpf2.type = 'bandpass'; bpf2.frequency.value = 420; bpf2.Q.value = 1.2;
 
     const bpf3 = ctx.createBiquadFilter();
-    bpf3.type = 'bandpass'; bpf3.frequency.value = 1100; bpf3.Q.value = 0.8;
+    bpf3.type = 'bandpass'; bpf3.frequency.value = 750; bpf3.Q.value = 0.7;
 
-    const g1 = ctx.createGain(); g1.gain.value = 1.00; // rumble is dominant
-    const g2 = ctx.createGain(); g2.gain.value = 0.45; // whine is secondary
-    const g3 = ctx.createGain(); g3.gain.value = 0.18; // presence is subtle
+    const g1 = ctx.createGain(); g1.gain.value = 1.00;
+    const g2 = ctx.createGain(); g2.gain.value = 0.28; // turbine much quieter
+    const g3 = ctx.createGain(); g3.gain.value = 0.08; // air texture barely there
 
-    // Master gain envelope: approach → peak as it passes → recede
+    // Master envelope: slow rise → gentle hold → long fade
+    // Peak at 0.13 — present but never startling
     const master = ctx.createGain();
     const t      = ctx.currentTime;
     master.gain.setValueAtTime(0,    t);
-    master.gain.linearRampToValueAtTime(0.22, t + 0.32); // plane approaches
-    master.gain.linearRampToValueAtTime(0.25, t + 0.85); // loudest as it passes overhead
-    master.gain.linearRampToValueAtTime(0.15, t + 1.40); // beginning to recede
-    master.gain.linearRampToValueAtTime(0,    t + 2.10); // gone
+    master.gain.linearRampToValueAtTime(0.13, t + 0.65); // slow approach
+    master.gain.linearRampToValueAtTime(0.14, t + 1.10); // barely perceptible peak
+    master.gain.linearRampToValueAtTime(0.08, t + 1.70); // receding
+    master.gain.linearRampToValueAtTime(0,    t + 2.60); // long natural fade
 
     src1.connect(bpf1); bpf1.connect(g1); g1.connect(master);
     src2.connect(bpf2); bpf2.connect(g2); g2.connect(master);
@@ -66,53 +71,19 @@ function playAirplaneSweep() {
 
     setTimeout(() => {
       try { src1.stop(); src2.stop(); src3.stop(); ctx.close(); } catch (_) {}
-    }, 2400);
+    }, 2900);
   } catch (_) { /* audio unavailable — silent fallback */ }
 }
 
-// ─── CloudShape ───────────────────────────────────────────────────────────────
-// A pill-shaped base + overlapping circles along the top edge.
-// Together they form a recognisable cumulus silhouette.
-// At high blur (bg layer) the shape dissolves into pure luminous mass.
-// At low blur (fg layer) the individual puffs read clearly.
-function CloudShape({ baseW, baseH, puffs, color }) {
-  return (
-    <div style={{ position: 'relative', width: baseW, height: baseH }}>
-      {/* Flat base — the cloud floor */}
-      <div style={{
-        position:     'absolute',
-        inset:         0,
-        borderRadius: '999px',
-        background:    color,
-      }} />
-      {/* Puffs — bumpy top edge */}
-      {puffs.map((p, i) => (
-        <div key={i} style={{
-          position:     'absolute',
-          width:         p.s,
-          height:        p.s,
-          borderRadius: '50%',
-          background:    color,
-          top:           p.t, // negative = extends above base
-          left:          p.l,
-        }} />
-      ))}
-    </div>
-  );
-}
-
 // ─── CloudLayer ───────────────────────────────────────────────────────────────
-// Full-viewport container that translates right → left, carrying its clouds
-// with it. Speed difference between layers creates parallax depth.
+// Full-viewport container that drifts right → left.
+// The narrowed x range ('108%' → '-115%') means less horizontal travel —
+// clouds float through, rather than sweep dramatically.
 //
-// x: '115%' starts the layer one-viewport-width off screen to the right.
-// x: '-130%' ends it one-viewport-width off screen to the left.
-// (percentages are of the element's own width = 100vw)
-//
-// Opacity keyframes with times: [0, 0.08, 0.88, 1.0] mean the layer fades in
-// very quickly at entry, holds at peak for the crossing, and fades out briefly
-// before exit — so it's fully opaque for most of its on-screen journey.
-function CloudLayer({ clouds, cloudColor, blur, duration, delay, peakOpacity, className }) {
+// Opacity times [0, 0.06, 0.76, 1.0]: fade in at entry (6%), hold through
+// most of the crossing, then begin dissolving early (76%) for a long,
+// lingering exit — the transition settles rather than stops.
+function CloudLayer({ clouds, blur, duration, delay, peakOpacity, className }) {
   return (
     <motion.div
       className={className}
@@ -127,119 +98,64 @@ function CloudLayer({ clouds, cloudColor, blur, duration, delay, peakOpacity, cl
         pointerEvents: 'none',
         willChange:    'transform, opacity',
       }}
-      initial={{ x: '115%', opacity: 0 }}
+      initial={{ x: '108%', opacity: 0 }}
       animate={{
-        x:       ['115%', '-130%'],
+        x:       ['108%', '-115%'],
         opacity: [0, peakOpacity, peakOpacity, 0],
       }}
       transition={{
         duration,
         delay,
-        // x: nearly linear — clouds move at consistent perceived speed
-        x:       { ease: [0.18, 0.00, 0.42, 1.0] },
-        // opacity: fast fade-in, long hold, brief fade-out
-        opacity: { times: [0, 0.08, 0.88, 1.0], ease: 'linear' },
+        x:       { ease: [0.20, 0.00, 0.38, 1.0] },
+        // fade starts dissolving at 76% of travel — early enough for a long tail
+        opacity: { times: [0, 0.06, 0.76, 1.0], ease: 'linear' },
       }}
     >
       {clouds.map((c, i) => (
-        <div key={i} style={{ position: 'absolute', top: c.top, left: c.left }}>
-          <CloudShape
-            baseW={c.baseW}
-            baseH={c.baseH}
-            puffs={c.puffs}
-            color={cloudColor}
-          />
-        </div>
+        <img
+          key={i}
+          src={c.src}
+          draggable={false}
+          style={{
+            position:      'absolute',
+            top:            c.top,
+            left:           c.left,
+            width:          c.width,
+            height:        'auto',
+            pointerEvents: 'none',
+            userSelect:    'none',
+          }}
+        />
       ))}
     </motion.div>
   );
 }
 
 // ─── Cloud data ───────────────────────────────────────────────────────────────
-// Each cloud: { top, left } = position within layer (% strings)
-//             baseW, baseH  = cloud body dimensions (px)
-//             puffs          = [{ s: size, t: top (neg = above base), l: left }]
-//
-// Clouds at different `left` positions within the same layer appear at
-// slightly different times as the layer sweeps — natural-looking stagger.
+// Clouds spread across the full layer width (left: 1%–70%) so as the layer
+// drifts right→left, the user sees a continuous procession of clouds rather
+// than a single band. Higher left% clouds enter the viewport later, creating
+// natural stagger within each layer.
 
-// Background — large, slow, heavy blur. Two masses at different heights.
 const BG_CLOUDS = [
-  {
-    top: '5%', left: '5%',
-    baseW: 520, baseH: 128,
-    puffs: [
-      { s: 196, t: -114, l: 18 },
-      { s: 250, t: -146, l: 132 },
-      { s: 205, t: -120, l: 300 },
-      { s: 163, t: -96,  l: 390 },
-    ],
-  },
-  {
-    top: '50%', left: '22%',
-    baseW: 420, baseH: 108,
-    puffs: [
-      { s: 160, t: -93,  l: 14 },
-      { s: 196, t: -114, l: 104 },
-      { s: 160, t: -93,  l: 246 },
-    ],
-  },
+  { src: CLOUD_A, top:  '2%', left:  '1%', width: '62vw' },
+  { src: CLOUD_B, top: '44%', left: '18%', width: '54vw' },
+  { src: CLOUD_A, top: '14%', left: '44%', width: '58vw' },
+  { src: CLOUD_B, top: '58%', left: '62%', width: '52vw' },
 ];
 
-// Midground — medium speed, 18px blur. Three clouds — the main visual event.
 const MID_CLOUDS = [
-  {
-    top: '14%', left: '3%',
-    baseW: 480, baseH: 116,
-    puffs: [
-      { s: 176, t: -102, l: 14  },
-      { s: 226, t: -132, l: 106 },
-      { s: 186, t: -108, l: 270 },
-      { s: 146, t: -85,  l: 380 },
-    ],
-  },
-  {
-    top: '55%', left: '18%',
-    baseW: 330, baseH: 86,
-    puffs: [
-      { s: 126, t: -73, l: 10 },
-      { s: 158, t: -92, l: 84 },
-      { s: 126, t: -73, l: 194 },
-    ],
-  },
-  {
-    top: '32%', left: '48%',
-    baseW: 258, baseH: 68,
-    puffs: [
-      { s: 96,  t: -56, l: 10 },
-      { s: 122, t: -71, l: 64 },
-      { s: 96,  t: -56, l: 146 },
-    ],
-  },
+  { src: CLOUD_B, top:  '7%', left:  '1%', width: '50vw' },
+  { src: CLOUD_A, top: '50%', left: '14%', width: '44vw' },
+  { src: CLOUD_B, top: '24%', left: '34%', width: '38vw' },
+  { src: CLOUD_A, top: '62%', left: '50%', width: '46vw' },
+  { src: CLOUD_B, top:  '9%', left: '68%', width: '42vw' },
 ];
 
-// Foreground — fastest, 6px blur. Two crisp wisps close to the viewer.
-// Positions kept low enough that puffs clear the viewport top edge.
 const FG_CLOUDS = [
-  {
-    top: '16%', left: '2%',
-    baseW: 360, baseH: 90,
-    puffs: [
-      { s: 132, t: -77, l: 10  },
-      { s: 166, t: -97, l: 86  },
-      { s: 136, t: -79, l: 216 },
-      { s: 106, t: -62, l: 294 },
-    ],
-  },
-  {
-    top: '62%', left: '10%',
-    baseW: 270, baseH: 70,
-    puffs: [
-      { s: 102, t: -59, l: 10 },
-      { s: 128, t: -74, l: 74 },
-      { s: 102, t: -59, l: 168 },
-    ],
-  },
+  { src: CLOUD_A, top: '10%', left:  '1%', width: '46vw' },
+  { src: CLOUD_B, top: '58%', left: '10%', width: '36vw' },
+  { src: CLOUD_A, top: '28%', left: '52%', width: '44vw' },
 ];
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -247,6 +163,13 @@ export function TravelTransitionProvider({ children }) {
   const [active,  setActive]  = useState(false);
   const activeRef             = useRef(false);
   const timers                = useRef([]);
+
+  useEffect(() => {
+    [CLOUD_A, CLOUD_B].forEach(src => {
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, []);
 
   const schedule = (fn, ms) => {
     const id = setTimeout(fn, ms);
@@ -261,24 +184,32 @@ export function TravelTransitionProvider({ children }) {
   const triggerTransition = useCallback((navigate, to = '/work/travel') => {
     if (activeRef.current) return;
     activeRef.current = true;
-
     clearAll();
-    setActive(true);
-    document.body.classList.add('tt-sweeping');
-    playAirplaneSweep();
 
-    // Navigate at t=620ms. At that point all three layers are at peak opacity
-    // and their clouds are mid-crossing — maximum coverage.
-    schedule(() => navigate(to), 620);
+    // ── 160ms anticipation pause ──────────────────────────────────────────────
+    // Nothing happens immediately after click. The brief stillness before
+    // movement begins is what makes a transition feel intentional rather than
+    // reactive. All timers run relative to this deferred start.
+    const startId = setTimeout(() => {
+      setActive(true);
+      document.body.classList.add('tt-sweeping');
+      playAirplaneSweep();
 
-    // Lift the page dim as the midground finishes (delay:0.06 + dur:1.3 = ~1360ms)
-    schedule(() => document.body.classList.remove('tt-sweeping'), 1400);
+      // Navigate early — new page renders behind the clouds immediately.
+      // The cloud sweep is the reveal; the page just needs to be there.
+      schedule(() => navigate(to), 500);
 
-    // Unmount after the background layer fully exits (dur:1.8s → done at ~1800ms)
-    schedule(() => {
-      setActive(false);
-      activeRef.current = false;
-    }, 1900);
+      // Lift page dim as midground finishes (0.06 + 4.0s ≈ 4060ms)
+      schedule(() => document.body.classList.remove('tt-sweeping'), 4100);
+
+      // Unmount after background fully dissolves (5.5s + buffer)
+      schedule(() => {
+        setActive(false);
+        activeRef.current = false;
+      }, 5700);
+    }, 160);
+
+    timers.current.push(startId);
   }, []);
 
   return (
@@ -287,27 +218,36 @@ export function TravelTransitionProvider({ children }) {
 
       {/* ── Global styles ── */}
       <style>{`
-        /* Subtle page dim while clouds sweep over — makes clouds pop */
+        /* Page drift during sweep — opacity + very slight scale carries
+           the atmospheric dissolve. Brightness only subtly reduced.     */
         #main-wrap {
-          transition: filter 320ms ease;
+          transition:
+            filter    420ms ease,
+            transform 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+            opacity   800ms ease;
         }
         body.tt-sweeping #main-wrap {
-          filter: brightness(0.86);
+          filter:  brightness(0.93);
+          opacity: 0.88;
         }
 
-        /* Reduced-motion: skip clouds entirely */
+        /* Reduced-motion: no clouds, no movement */
         @media (prefers-reduced-motion: reduce) {
           .tt-layer { display: none !important; }
-          body.tt-sweeping #main-wrap { filter: none !important; }
+          body.tt-sweeping #main-wrap {
+            filter:    none !important;
+            transform: none !important;
+            opacity:   1   !important;
+          }
         }
 
-        /* Mobile: drop background layer (saves paint) */
+        /* Mobile: skip background layer for paint savings */
         @media (max-width: 640px) {
           .tt-layer-bg { display: none !important; }
         }
       `}</style>
 
-      {/* ── Cloud overlay ── */}
+      {/* ── Overlay ── */}
       {active && (
         <div
           aria-hidden="true"
@@ -319,37 +259,80 @@ export function TravelTransitionProvider({ children }) {
             overflow:      'hidden',
           }}
         >
-          {/* Layer A — background: large, slow, blur 48px */}
+          {/* ── Atmospheric depth: vignette ───────────────────────────────────
+              Soft edge-darkening creates a sense of enclosure — like the
+              corners of a memory or a camera lens falling off at the border.
+              Tied to the background layer's 2.80s duration.              */}
+          <motion.div
+            style={{
+              position:   'absolute',
+              inset:       0,
+              background: 'radial-gradient(ellipse 88% 80% at 50% 50%, transparent 34%, rgba(5, 3, 1, 0.22) 100%)',
+              pointerEvents: 'none',
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0] }}
+            transition={{
+              duration: 5.50,
+              times:    [0, 0.05, 0.76, 1.0],
+              ease:     'linear',
+            }}
+          />
+
+          {/* ── Atmospheric depth: warm glow ──────────────────────────────────
+              A barely-there luminous bloom at the centre — the quality of
+              light through cloud cover at altitude. Opacity is intentionally
+              very low; this should be felt, not noticed.                  */}
+          <motion.div
+            style={{
+              position:   'absolute',
+              inset:       0,
+              background: 'radial-gradient(ellipse 54% 50% at 50% 46%, rgba(248, 236, 208, 0.22) 0%, transparent 66%)',
+              pointerEvents: 'none',
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0] }}
+            transition={{
+              duration: 5.50,
+              times:    [0, 0.06, 0.72, 1.0],
+              ease:     'linear',
+            }}
+          />
+
+          {/* Layer A — background: largest, very diffuse (blur 62px, opacity 0.36)
+              At this blur level the cloud shape is completely dissolved.
+              What remains is soft warm luminous mass — depth, not object.  */}
           <CloudLayer
             className="tt-layer tt-layer-bg"
             clouds={BG_CLOUDS}
-            cloudColor="rgba(246, 242, 232, 1)"
-            blur={48}
-            duration={1.80}
+            blur={62}
+            duration={5.50}
             delay={0}
-            peakOpacity={0.62}
+            peakOpacity={0.36}
           />
 
-          {/* Layer B — midground: main event, blur 18px */}
+          {/* Layer B — midground: main atmospheric event (blur 28px, opacity 0.54)
+              Edges are soft enough to feel like haze rather than a shape.
+              This is the layer the eye follows through the transition.      */}
           <CloudLayer
             className="tt-layer tt-layer-mid"
             clouds={MID_CLOUDS}
-            cloudColor="rgba(252, 250, 244, 1)"
-            blur={18}
-            duration={1.30}
+            blur={28}
+            duration={4.00}
             delay={0.06}
-            peakOpacity={0.90}
+            peakOpacity={0.54}
           />
 
-          {/* Layer C — foreground: fastest, crispest, blur 6px */}
+          {/* Layer C — foreground: closest and fastest (blur 11px, opacity 0.48)
+              Slightly sharper than midground — creates the sense of something
+              passing immediately in front. Still atmospheric, not graphic.  */}
           <CloudLayer
             className="tt-layer tt-layer-fg"
             clouds={FG_CLOUDS}
-            cloudColor="rgba(255, 254, 252, 1)"
-            blur={6}
-            duration={0.85}
+            blur={11}
+            duration={2.80}
             delay={0.04}
-            peakOpacity={0.80}
+            peakOpacity={0.48}
           />
         </div>
       )}

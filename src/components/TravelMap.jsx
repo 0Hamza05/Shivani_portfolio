@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { travelDestinations } from "../data/travelDestinations";
 
 // Minimum map-percentage distance between sampled trail dots.
@@ -97,7 +98,16 @@ export default function TravelMap() {
   };
 
   return (
-    <div style={{ width: "100%", background: "var(--bg)" }}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: 0.70,
+        delay:    0.15,
+        ease:     [0.25, 0.46, 0.45, 0.94],
+      }}
+      style={{ width: "100%", background: "var(--bg)" }}
+    >
       {/* Screen-reader live region: announces destination name when plane lands */}
       <div
         aria-live="polite"
@@ -294,6 +304,6 @@ export default function TravelMap() {
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
