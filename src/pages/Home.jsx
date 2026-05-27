@@ -12,7 +12,7 @@ const COL_WIDTH = 300; // px
 const GAP       = 4;   // px between columns and items
 
 // Each column animates at a different duration → different visual speed → parallax
-const COL_DURATIONS = [84, 72, 66, 72, 60]; // seconds per loop
+const COL_DURATIONS = [130, 112, 102, 112, 92]; // seconds per loop
 
 // Visual top margin stagger so columns sit at different heights
 const COL_STAGGER = [0, 60, 25, 90, 15]; // px
@@ -305,6 +305,7 @@ export default function Home() {
           {renderColumns()}
         </div>
       </motion.div>
+
     </>
   );
 }

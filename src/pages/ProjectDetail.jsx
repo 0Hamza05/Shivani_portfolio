@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import TravelMap from '../components/TravelMap';
 import { travelDestinations } from '../data/travelDestinations';
+import FamilyFlipbook from '../components/FamilyFlipbook';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 const carouselButtonStyle = {
@@ -485,6 +486,11 @@ export default function ProjectDetail() {
         <Link to="/" style={{ fontSize: '0.8rem', letterSpacing: '0.15em', borderBottom: '1px solid var(--fg)', paddingBottom: '2px' }}>RETURN TO GALLERY</Link>
       </main>
     );
+  }
+
+  // Family gets its own cinematic flipbook experience
+  if (project.slug === 'family') {
+    return <FamilyFlipbook />;
   }
 
   return (

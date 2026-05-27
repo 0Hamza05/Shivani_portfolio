@@ -8,6 +8,7 @@ import About from './pages/About';
 import Work from './pages/Work';
 import ProjectDetail from './pages/ProjectDetail';
 import { TravelTransitionProvider } from './components/TravelTransitionOverlay';
+import ScrapbookMemberNav from './components/ScrapbookMemberNav';
 import './index.css';
 
 export default function App() {
@@ -57,6 +58,10 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Member avatar nav — rendered outside #main-wrap so that framer-motion's
+            GPU-compositing transforms on #main-wrap don't break position:fixed here. */}
+        {loadingDone && <ScrapbookMemberNav />}
       </TravelTransitionProvider>
     </Router>
   );

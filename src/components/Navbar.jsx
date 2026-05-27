@@ -73,7 +73,7 @@ export default function Navbar() {
           boxShadow:          scrolled
             ? '0 6px 24px rgba(0, 0, 0, 0.45)'
             : '0 2px 14px rgba(0, 0, 0, 0.25)',
-          transition:         'box-shadow 0.4s ease, border-color 0.4s ease',
+          transition:         'box-shadow 0.4s ease, border-color 0.4s ease, filter 320ms ease',
         }}
       >
         {/* Logo */}
@@ -225,6 +225,7 @@ export default function Navbar() {
           >
             ABOUT
           </Link>
+
         </div>
 
         {/* Hamburger (mobile) */}
