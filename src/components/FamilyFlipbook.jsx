@@ -431,19 +431,6 @@ export default function FamilyFlipbook() {
     if (coverDone >= 2) setPhase('reading');
   }, [coverDone]);
 
-  // Respond to member-nav clicks while already on this page.
-  // The first render is handled by useState initialisers above, so we skip it.
-  const mountedRef = useRef(false);
-  useEffect(() => {
-    if (!mountedRef.current) { mountedRef.current = true; return; }
-    const s = location.state?.spread;
-    if (typeof s !== 'number') return;
-    const clamped = Math.max(0, Math.min(Math.round(s), SPREADS.length - 1));
-    setFlipState(null);
-    setSpreadIdx(clamped);
-    setPhase('reading');
-    setCoverDone(2);
-  }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function flipForward() {
     if (flipState || spreadIdx >= SPREADS.length - 1) return;

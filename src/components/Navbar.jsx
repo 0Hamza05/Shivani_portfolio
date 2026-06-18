@@ -6,8 +6,8 @@ import { useTravelTransition } from './TravelTransitionOverlay';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 const LEMON       = '#FFF44F';
-const LEMON_DIM   = 'rgba(255, 244, 79, 0.68)';
-const LEMON_FAINT = 'rgba(255, 244, 79, 0.40)';
+const LEMON_DIM   = 'rgba(255, 244, 79, 0.88)';
+const LEMON_FAINT = 'rgba(255, 244, 79, 0.65)';
 
 export default function Navbar() {
   const location = useLocation();

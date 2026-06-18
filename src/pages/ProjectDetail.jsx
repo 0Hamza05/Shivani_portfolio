@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TravelMap from '../components/TravelMap';
 import { travelDestinations } from '../data/travelDestinations';
 import FamilyFlipbook from '../components/FamilyFlipbook';
+import VolunteeringGallery3D from '../components/VolunteeringGallery3D';
+import LondonTransition from '../components/LondonTransition';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 const carouselButtonStyle = {
@@ -309,6 +311,73 @@ useEffect(() => {
   );
 }
 
+// ─── Polaroid Photo with board pin ───────────────────────────────────────────
+const PIN_COLORS = ['#e03a3a', '#3a7be0', '#27ae60', '#e0883a'];
+
+function PolaroidPhoto({ src, rotation = 0, pinColor = '#e03a3a' }) {
+  return (
+    <div style={{
+      transform: `rotate(${rotation}deg)`,
+      transformOrigin: 'top center',
+      position: 'relative',
+      display: 'inline-block',
+      filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.20))',
+      flexShrink: 0,
+    }}>
+      {/* Board pin */}
+      <div style={{
+        position: 'absolute',
+        top: '-10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        pointerEvents: 'none',
+      }}>
+        {/* Pin head */}
+        <div style={{
+          width: '13px',
+          height: '13px',
+          borderRadius: '50%',
+          background: `radial-gradient(circle at 35% 30%, ${pinColor}cc, ${pinColor})`,
+          boxShadow: `0 2px 5px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.4)`,
+        }} />
+        {/* Pin needle */}
+        <div style={{
+          width: '1.5px',
+          height: '6px',
+          background: 'rgba(0,0,0,0.25)',
+          marginTop: '-1px',
+        }} />
+      </div>
+
+      {/* Polaroid frame */}
+      <div style={{
+        background: '#fff',
+        padding: '7px 7px 26px 7px',
+        width: '110px',
+        boxSizing: 'border-box',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+      }}>
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          draggable={false}
+          style={{
+            width: '100%',
+            height: '88px',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ─── Vintage Voice Note Player ───────────────────────────────────────────────
 function VoiceNotePlayer({ src }) {
   const audioRef = useRef(null);
@@ -461,9 +530,11 @@ export default function ProjectDetail() {
   const project = projects.find(p => p.slug === slug);
   const [activeImage, setActiveImage] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
+  const [londonDone, setLondonDone] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setLondonDone(false);
   }, [slug]);
 
   useEffect(() => {
@@ -488,12 +559,19 @@ export default function ProjectDetail() {
     );
   }
 
-  // Family gets its own cinematic flipbook experience
   if (project.slug === 'family') {
     return <FamilyFlipbook />;
   }
 
+  if (project.slug === 'volunteering') {
+    return <VolunteeringGallery3D />;
+  }
+
   return (
+    <>
+      {slug === 'life-in-london' && !londonDone && (
+        <LondonTransition onComplete={() => setLondonDone(true)} />
+      )}
     <motion.div
       role="main"
       initial={{ opacity: 0 }}
@@ -650,14 +728,14 @@ export default function ProjectDetail() {
         })()}
 
         {/* Focused Editorial Film Strip horizontal scroll */}
-       {project.slug !== 'travel' &&
-  ((project.blogImages || project.gridImages || []).length > 0) && (
-          <PillarFilmStrip 
-            images={project.blogImages || project.gridImages}
-            title={project.title}
-            onZoom={setActiveImage}
-          />
-        )}
+        {project.slug !== 'travel' &&
+          ((project.blogImages || project.gridImages || []).length > 0) && (
+            <PillarFilmStrip
+              images={project.blogImages || project.gridImages}
+              title={project.title}
+              onZoom={setActiveImage}
+            />
+          )}
 
         {project.slug === 'travel' && (
   <div
@@ -705,40 +783,74 @@ export default function ProjectDetail() {
         paddingRight: isMobile ? "24px" : "64px",
       }}
     >
-      {travelDestinations.map((destination) => (
-        <section
-          key={destination.id}
-          id={destination.id}
-          style={{
-            minHeight: isMobile ? "50vh" : "90vh",
-            scrollMarginTop: isMobile
-              ? "calc(var(--nav-h) + max(56vw, 200px) + 24px)"
-              : "120px",
-          }}
-        >
-          <h2
-            style={{
-              fontFamily: "'Kind Avenue', 'EB Garamond', serif",
-              fontSize: isMobile ? "clamp(2rem, 8vw, 3rem)" : "clamp(2.8rem, 5vw, 5rem)",
-              fontWeight: "normal",
-              marginBottom: "24px",
-            }}
-          >
-            {destination.title}
-          </h2>
+      {travelDestinations.map((destination, idx) => {
+        const rot1 = -4 - (idx % 3);        // -4, -5, -6, -4, -5, -6, -4, -5
+        const rot2 =  3 + (idx % 3);        //  3,  4,  5,  3,  4,  5,  3,  4
+        const pinColor = PIN_COLORS[idx % PIN_COLORS.length];
 
-          <p
+        return (
+          <section
+            key={destination.id}
+            id={destination.id}
             style={{
-              maxWidth: "700px",
-              lineHeight: 1.9,
-              color: "var(--fg-dim)",
-              fontSize: isMobile ? "0.95rem" : "1.05rem",
+              minHeight: isMobile ? "50vh" : "90vh",
+              scrollMarginTop: isMobile
+                ? "calc(var(--nav-h) + max(56vw, 200px) + 24px)"
+                : "120px",
             }}
           >
-            Cinematic travel story section for {destination.title}.
-          </p>
-        </section>
-      ))}
+            {/* Polaroids floated right — text wraps around them */}
+            {destination.photos && !isMobile && (
+              <div style={{
+                float: 'right',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                margin: '14px 0 20px 28px',
+                paddingTop: '14px',
+              }}>
+                <PolaroidPhoto src={destination.photos[0]} rotation={rot1} pinColor={pinColor} />
+                <PolaroidPhoto src={destination.photos[1]} rotation={rot2} pinColor={pinColor} />
+              </div>
+            )}
+
+            <h2
+              style={{
+                fontFamily: "'Kind Avenue', 'EB Garamond', serif",
+                fontSize: isMobile ? "clamp(2rem, 8vw, 3rem)" : "clamp(2.8rem, 5vw, 5rem)",
+                fontWeight: "normal",
+                marginBottom: "24px",
+              }}
+            >
+              {destination.title}
+            </h2>
+
+            {/* Polaroids below heading on mobile */}
+            {destination.photos && isMobile && (
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                marginBottom: '24px',
+                paddingTop: '14px',
+              }}>
+                <PolaroidPhoto src={destination.photos[0]} rotation={rot1} pinColor={pinColor} />
+                <PolaroidPhoto src={destination.photos[1]} rotation={rot2} pinColor={pinColor} />
+              </div>
+            )}
+
+            <p
+              style={{
+                maxWidth: "700px",
+                lineHeight: 1.9,
+                color: "var(--fg-dim)",
+                fontSize: isMobile ? "0.95rem" : "1.05rem",
+              }}
+            >
+              Cinematic travel story section for {destination.title}.
+            </p>
+          </section>
+        );
+      })}
     </div>
   </div>
 )}
@@ -852,5 +964,6 @@ export default function ProjectDetail() {
         )}
       </AnimatePresence>
     </motion.div>
+    </>
   );
 }

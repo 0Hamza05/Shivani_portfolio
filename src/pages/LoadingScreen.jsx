@@ -139,17 +139,13 @@ function DrumSlot({ char, entryDelay, looping, loopDelay }) {
 }
 
 // ─── LoadingScreen ────────────────────────────────────────────────────────────
-export default function LoadingScreen({ onComplete }) {
+export default function LoadingScreen() {
   const [looping, setLooping] = useState(false);
 
   useEffect(() => {
-    const loopTimer = setTimeout(() => setLooping(true), LOOP_START_MS);
-    const doneTimer = setTimeout(onComplete, LOADING_TOTAL_MS);
-    return () => {
-      clearTimeout(loopTimer);
-      clearTimeout(doneTimer);
-    };
-  }, [onComplete]);
+    const t = setTimeout(() => setLooping(true), LOOP_START_MS);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <motion.div
