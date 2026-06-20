@@ -191,7 +191,7 @@ function Gallery3D({ onOpen }) {
         style={{
           position: 'absolute',
           left: '18%',
-          top: '52%',
+          top: '56%',
           transform: BASE_TRANSFORM,   // RAF overwrites this each frame
           transformStyle: 'preserve-3d',
         }}
