@@ -745,7 +745,7 @@ export default function ProjectDetail() {
         })()}
 
         {/* Focused Editorial Film Strip horizontal scroll */}
-        {project.slug !== 'travel' &&
+        {project.slug !== 'travel' && project.slug !== 'life-in-london' &&
           ((project.blogImages || project.gridImages || []).length > 0) && (
             <PillarFilmStrip
               images={project.blogImages || project.gridImages}
