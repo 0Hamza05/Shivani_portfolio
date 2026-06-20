@@ -13,6 +13,14 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: 'Cote Lumiere';
+  src: url('/cote-lumiere-font/cote-lumiere.otf') format('opentype'),
+       url('/cote-lumiere-font/cote-lumiere.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 
 *, *::before, *::after {
   box-sizing: border-box;

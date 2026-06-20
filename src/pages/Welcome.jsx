@@ -1,4 +1,47 @@
+import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+
+const COUNT_DURATION_MS = 2200;
+
+function NumberCounter({ onComplete }) {
+  const [count, setCount] = useState(1);
+  const startRef = useRef(null);
+  const doneRef = useRef(false);
+
+  useEffect(() => {
+    let raf;
+    const tick = now => {
+      if (startRef.current === null) startRef.current = now;
+      const t = Math.min((now - startRef.current) / COUNT_DURATION_MS, 1);
+      const eased = 1 - Math.pow(1 - t, 4);
+      setCount(Math.max(1, Math.round(eased * 100)));
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else if (!doneRef.current) {
+        doneRef.current = true;
+        setTimeout(onComplete, 450);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [onComplete]);
+
+  return (
+    <span style={{
+      fontFamily: "'Inter', sans-serif",
+      fontWeight: 300,
+      fontVariantNumeric: 'tabular-nums',
+      fontSize: 'clamp(2.2rem, 6vw, 4rem)',
+      color: 'var(--fg)',
+      letterSpacing: '0.04em',
+      display: 'inline-block',
+      minWidth: '2.4ch',
+      textAlign: 'center',
+    }}>
+      {count}
+    </span>
+  );
+}
 
 export default function Welcome({ onDismiss }) {
   const shouldReduceMotion = useReducedMotion();
@@ -57,34 +100,7 @@ export default function Welcome({ onDismiss }) {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: shouldReduceMotion ? 0 : 1, duration: shouldReduceMotion ? 0 : 1 }}
         >
-          <button
-            onClick={onDismiss}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: '0.8rem',
-              letterSpacing: '0.3em',
-              color: 'var(--fg)',
-              border: '1px solid var(--border)',
-              padding: '16px 32px',
-              textDecoration: 'none',
-              transition: 'all 0.3s ease',
-              backgroundColor: 'rgba(255,255,255,0.4)',
-              backdropFilter: 'blur(10px)',
-              display: 'inline-block',
-              borderRadius: '30px',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = 'var(--fg)';
-              e.currentTarget.style.color = '#FAFABE';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.4)';
-              e.currentTarget.style.color = 'var(--fg)';
-            }}
-          >
-            LET'S GET STARTED
-          </button>
+          <NumberCounter onComplete={onDismiss} />
         </motion.div>
       </div>
     </motion.div>

@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
-import LoadingScreen from './pages/LoadingScreen';
+import Welcome from './pages/Welcome';
 import Home from './pages/Home';
 import About from './pages/About';
 import Work from './pages/Work';
@@ -11,19 +11,14 @@ import { TravelTransitionProvider } from './components/TravelTransitionOverlay';
 import './index.css';
 
 export default function App() {
-  const [loadingDone, setLoadingDone] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoadingDone(true), 5000);
-    return () => clearTimeout(t);
-  }, []);
+  const [welcomeDone, setWelcomeDone] = useState(false);
 
   return (
     <Router>
       <TravelTransitionProvider>
         <AnimatePresence>
-          {!loadingDone ? (
-            <LoadingScreen key="loading" />
+          {!welcomeDone ? (
+            <Welcome key="welcome" onDismiss={() => setWelcomeDone(true)} />
           ) : (
             <motion.div
               key="main-content"
