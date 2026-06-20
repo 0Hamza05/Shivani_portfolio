@@ -6,9 +6,26 @@ import TravelMap from '../components/TravelMap';
 import { travelDestinations } from '../data/travelDestinations';
 import FamilyFlipbook from '../components/FamilyFlipbook';
 import VolunteeringGallery3D from '../components/VolunteeringGallery3D';
-import LondonTransition from '../components/LondonTransition';
+import CursorImageTrail from '../components/CursorImageTrail';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
+
+const LONDON_TRAIL_IMAGES = [
+  '020c2cc1257769319789413081745a20.png',
+  '0e29df6bec5bc11b2ef7189ca95654b2.png',
+  '17bd2cada40e58768afbe5ad08d60436.png',
+  '296a935d6739aed3d5b79ce4b9112cc2.png',
+  '4015da25ca9839ef2a8e5357757e7cf5.png',
+  '403ce403ec0ad03c9ece68e400356110.png',
+  '56f9f7484a6214f6a2405422505f3c7e.png',
+  '58f3c8b0f22d3831744580ab12d70069.png',
+  '66d1b41eec09c8025c4d3cfa37d35d45.png',
+  '6a06f20618a4d3ce8e4aa2f109c35a0a.png',
+  'b0b6ac056e2c3b3c939035d242a57632.png',
+  'b4f08520a9e4e57ed6282ea3399f8bc0.png',
+  'f8453ca368fb8919376c47b234ed8c5f.png',
+  'f8ddba46620a2535383ebabaeee89c42.png',
+].map(name => encodeURI(`/London Stickers/${name}`));
 const carouselButtonStyle = {
   border: '1px solid var(--border)',
   background: 'rgba(255, 255, 255, 0.8)',
@@ -530,11 +547,9 @@ export default function ProjectDetail() {
   const project = projects.find(p => p.slug === slug);
   const [activeImage, setActiveImage] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
-  const [londonDone, setLondonDone] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    setLondonDone(false);
   }, [slug]);
 
   useEffect(() => {
@@ -568,10 +583,6 @@ export default function ProjectDetail() {
   }
 
   return (
-    <>
-      {slug === 'life-in-london' && !londonDone && (
-        <LondonTransition onComplete={() => setLondonDone(true)} />
-      )}
     <motion.div
       role="main"
       initial={{ opacity: 0 }}
@@ -584,7 +595,12 @@ export default function ProjectDetail() {
         <>
       {/* Hero Banner Image */}
       <div style={{ height: '70vh', width: '100%', position: 'relative', overflow: 'hidden' }}>
-        {(() => {
+        {project.slug === 'life-in-london' ? (
+          <>
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'var(--bg)' }} />
+            <CursorImageTrail images={LONDON_TRAIL_IMAGES} />
+          </>
+        ) : (() => {
           const isVideo = isVideoUrl(project.cover);
           if (isVideo) {
             return (
@@ -599,27 +615,28 @@ export default function ProjectDetail() {
             );
           }
           return (
-            <motion.img 
+            <motion.img
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}
               transition={{ duration: 1.5, ease: 'easeOut' }}
-              src={project.cover} 
-              alt={project.title} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              src={project.cover}
+              alt={project.title}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           );
         })()}
-        <div style={{ 
-          position: 'absolute', 
-          inset: 0, 
-          backgroundColor: 'rgba(255,255,255,0.4)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', 
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: project.slug === 'life-in-london' ? 'transparent' : 'rgba(255,255,255,0.4)',
+          backdropFilter: project.slug === 'life-in-london' ? 'none' : 'blur(4px)',
+          display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', 
+          alignItems: 'center',
           justifyContent: 'center',
           padding: '32px',
-          textAlign: 'center'
+          textAlign: 'center',
+          pointerEvents: project.slug === 'life-in-london' ? 'none' : 'auto',
         }}>
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
@@ -964,6 +981,5 @@ export default function ProjectDetail() {
         )}
       </AnimatePresence>
     </motion.div>
-    </>
   );
 }

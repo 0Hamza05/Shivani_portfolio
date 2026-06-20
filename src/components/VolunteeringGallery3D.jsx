@@ -41,7 +41,7 @@ const CLAMP = CARDS.length - 1;
 // Cards are at fixed positions in scene space.
 // Scrolling moves the SCENE forward/backward along its local Z axis via translateZ.
 // This is one DOM write per frame instead of 18.
-const STEP_Z = 220;
+const STEP_Z = 300;
 const BASE_TRANSFORM = 'rotateX(-24deg) rotateY(-55deg)';
 
 function Gallery3D({ onOpen }) {
@@ -145,7 +145,7 @@ function Gallery3D({ onOpen }) {
         left: 0, right: 0, bottom: 0,
         top: 'var(--nav-h)',
         // Perspective on the wrapper — children get depth distortion
-        perspective: '1000px',
+        perspective: '1300px',
         perspectiveOrigin: '50% 50%',
         background: 'oklch(96.5% 0.003 65)',
         cursor: grabbingCursor ? 'grabbing' : 'grab',
@@ -202,10 +202,10 @@ function Gallery3D({ onOpen }) {
             key={card.img}
             style={{
               position: 'absolute',
-              width: '220px',
-              height: '340px',
-              marginLeft: '-110px',
-              marginTop: '-170px',
+              width: '300px',
+              height: '460px',
+              marginLeft: '-150px',
+              marginTop: '-230px',
               transform: `translate3d(0px, 0px, ${idx * -STEP_Z}px)`,
             }}
           >

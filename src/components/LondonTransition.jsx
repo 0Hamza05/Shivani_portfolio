@@ -1,336 +1,248 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 
-const COVER = '/images/life-in-london/optimised/life-in-london-op-1.webp';
-const N = 7;
+const PHOTOS = {
+  bigBen:      '/images/life-in-london/optimised/life-in-london-op-2.webp',
+  bridge:      '/images/life-in-london/optimised/life-in-london-op-6.webp',
+  shard:       '/images/life-in-london/optimised/life-in-london-op-4.webp',
+  eye:         '/images/life-in-london/optimised/life-in-london-op-3.webp',
+  canaryWharf: '/images/life-in-london/optimised/life-in-london-op-9.webp',
+};
+const HERO = '/images/life-in-london/optimised/life-in-london-op-1.webp';
 
-// Skeleton key — 200×340 viewBox
-const KEY =
-  'M 100 8 a 82 82 0 1 0 0.001 0 Z ' +
-  'M 100 48 a 42 42 0 1 0 0.001 0 Z ' +
-  'M 86 172 L 86 312 L 114 312 L 114 172 Z ' +
-  'M 114 240 L 158 240 L 158 262 L 114 262 Z ' +
-  'M 114 278 L 142 278 L 142 298 L 114 298 Z';
+const NAVY      = '#0a0e1a';
+const NAVY_EDGE = '#050710';
+const GOLD_BACK  = 'rgba(201,168,117,0.34)';
+const GOLD_MID   = 'rgba(201,168,117,0.58)';
+const GOLD_FRONT = 'rgba(201,168,117,0.92)';
 
-// Full-bleed dark mask punched out with key shape
-const MASK = 'M -200 -200 L 400 -200 L 400 540 L -200 540 Z ' + KEY;
-
-const EASE      = [0.16, 1, 0.3, 1];
-const EASE_RUSH = [0.7, 0, 1, 1];
-
-const PARTICLES = Array.from({ length: 30 }, (_, i) => {
-  const r = s => ((s * 9301 + 49297) % 233280) / 233280;
-  const s = i + 1;
-  return {
-    id:     i,
-    left:   3  + r(s)      * 94,
-    top:    3  + r(s * 7)  * 94,
-    size:   0.8 + r(s * 13) * 2.6,
-    dur:    5  + r(s * 17) * 7,
-    delay:  r(s * 23) * 9,
-    driftY: -(22 + r(s * 29) * 85),
-    driftX: (r(s * 31) - 0.5) * 55,
-    alpha:  0.35 + r(s * 37) * 0.5,
-  };
-});
+const EASE = [0.22, 1, 0.36, 1];
 
 export default function LondonTransition({ onComplete }) {
-  const [phase, setPhase]   = useState(0);
-  const [mobile, setMobile] = useState(false);
+  const [phase, setPhase] = useState(0);
 
   const prefersReduced = useRef(
     typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
   ).current;
 
-  useEffect(() => { const img = new Image(); img.src = COVER; }, []);
-
   useEffect(() => {
-    setMobile(window.innerWidth < 760);
-    const h = () => setMobile(window.innerWidth < 760);
-    window.addEventListener('resize', h);
-    return () => window.removeEventListener('resize', h);
+    [HERO, ...Object.values(PHOTOS)].forEach(src => { const img = new Image(); img.src = src; });
   }, []);
 
   useEffect(() => {
     if (prefersReduced) { setTimeout(onComplete, 400); return; }
     const ts = [
-      setTimeout(() => setPhase(1),  500),   // key outline draws + bloom
-      setTimeout(() => setPhase(2),  2600),  // slices converge + text
-      setTimeout(() => setPhase(3),  4600),  // unlock flash → camera rush
-      setTimeout(() => setPhase(4),  6000),  // key dissolves
-      setTimeout(() => setPhase(5),  7000),  // fade to black
-      setTimeout(onComplete,         8300),
+      setTimeout(() => setPhase(1), 400),
+      setTimeout(() => setPhase(2), 3100),
+      setTimeout(() => setPhase(3), 5100),
+      setTimeout(() => setPhase(4), 6700),
+      setTimeout(() => setPhase(5), 8200),
+      setTimeout(onComplete, 9500),
     ];
     return () => ts.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Slices spread on both axes so they converge from a "scattered" state
-  const mid    = (N - 1) / 2;
-  const slices = Array.from({ length: N }, (_, i) => {
-    const d   = i - mid;
-    const abs = Math.abs(d);
-    return {
-      i,
-      colLeft:    (i / N) * 100,
-      colRight:   100 - ((i + 1) / N) * 100,
-      scale:      1 + (mid - abs) * 0.055,
-      brightness: 0.35 + (mid - abs) * 0.15,
-      blur:       abs * 0.9,
-      y:          d * 28,
-      x:          d * 12,
-      delay:      abs * 0.13,
-    };
-  });
+  const drawn      = phase >= 1;
+  const separated  = phase >= 2;
+  const lit        = phase >= 3;
+  const dissolving = phase >= 4;
+  const revealed   = phase >= 5;
 
-  const kW = mobile ? 162 : 272;
-  const kH = mobile ? 275 : 462;
+  const draw = (delay, duration = 0.9) => ({
+    initial:    { pathLength: 0 },
+    animate:    { pathLength: drawn ? 1 : 0 },
+    transition: { duration, delay, ease: EASE },
+  });
 
   return (
     <motion.div
-      initial={{ opacity: 1 }}
-      animate={{ opacity: phase >= 5 ? 0 : 1 }}
-      transition={{ duration: phase >= 5 ? 1.4 : 0.35, ease: 'easeInOut' }}
+      animate={{ opacity: revealed ? 0 : 1 }}
+      transition={{ duration: revealed ? 1.3 : 0, ease: 'easeInOut' }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: '#060609',
+        background: NAVY,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        perspective: '1200px', perspectiveOrigin: '50% 44%',
         overflow: 'hidden',
+        perspective: '1400px', perspectiveOrigin: '50% 46%',
       }}
     >
-      {/* Cinematic vignette */}
       <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
-        background: 'radial-gradient(ellipse 80% 72% at 50% 50%, transparent 35%, rgba(0,0,0,0.75) 100%)',
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: `radial-gradient(ellipse 85% 75% at 50% 48%, transparent 40%, ${NAVY_EDGE} 100%)`,
       }} />
 
-      {/* Large outer amber bloom */}
+      {/* ─── 3D skyline scene ─── */}
       <motion.div
-        style={{
-          position: 'absolute', zIndex: 0,
-          width: '110vmax', height: '110vmax',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(160,132,58,0.10) 0%, rgba(90,65,18,0.04) 55%, transparent 72%)',
-          pointerEvents: 'none',
-        }}
         animate={{
-          scale:   phase >= 3 ? 4.2 : phase >= 1 ? 1 : 0.25,
-          opacity: phase >= 4 ? 0   : phase >= 1 ? 1 : 0,
+          scale:   dissolving ? 2.4 : separated ? 1.08 : 1,
+          z:       dissolving ? 360 : separated ? 60 : 0,
+          opacity: dissolving ? 0 : 1,
         }}
-        transition={{ duration: phase >= 3 ? 3.2 : 1.6, ease: EASE }}
-      />
-
-      {/* Tight inner warm bloom */}
-      <motion.div
+        transition={{
+          scale:   { duration: dissolving ? 2.0 : 1.8, ease: EASE },
+          z:       { duration: dissolving ? 2.0 : 1.8, ease: EASE },
+          opacity: { duration: 1.3, ease: 'easeInOut', delay: dissolving ? 0.3 : 0 },
+        }}
         style={{
-          position: 'absolute', zIndex: 0,
-          width: '42vmax', height: '42vmax',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(215,175,80,0.20) 0%, rgba(145,105,35,0.09) 55%, transparent 76%)',
-          pointerEvents: 'none',
-        }}
-        animate={{
-          scale:   phase >= 3 ? 6.0 : phase >= 1 ? 1 : 0.25,
-          opacity: phase >= 4 ? 0   : phase >= 1 ? 1 : 0,
-        }}
-        transition={{ duration: phase >= 3 ? 3.2 : 1.1, ease: EASE, delay: 0.15 }}
-      />
-
-      {/* Dust particles */}
-      {phase >= 1 && PARTICLES.map(p => (
-        <motion.div
-          key={p.id}
-          style={{
-            position: 'absolute', zIndex: 2,
-            left: `${p.left}%`, top: `${p.top}%`,
-            width: `${p.size}px`, height: `${p.size}px`,
-            borderRadius: '50%',
-            background: `rgba(220,190,110,${p.alpha})`,
-            pointerEvents: 'none',
-            willChange: 'transform, opacity',
-          }}
-          initial={{ opacity: 0, x: 0, y: 0 }}
-          animate={{ opacity: [0, p.alpha, 0], x: p.driftX, y: p.driftY }}
-          transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      ))}
-
-      {/* ─── Key container ─── */}
-      <motion.div
-        style={{
-          position: 'relative', zIndex: 3,
-          width: `${kW}px`, height: `${kH}px`,
+          position: 'relative',
+          width: 'min(92vw, 1400px)',
+          aspectRatio: '1600 / 640',
           transformStyle: 'preserve-3d',
           willChange: 'transform',
         }}
-        animate={{
-          opacity:  phase >= 1 ? (phase >= 4 ? 0 : 1) : 0,
-          scale:    phase >= 3 ? 5.2 : phase >= 1 ? 1 : 0.46,
-          rotateY:  phase >= 3 ? 1   : phase >= 1 ? -5 : -20,
-          z:        phase >= 3 ? 520 : 0,
-        }}
-        transition={{
-          opacity:  { duration: 0.9 },
-          scale:    { duration: phase >= 3 ? 3.2 : 1.15, ease: phase >= 3 ? EASE_RUSH : EASE },
-          rotateY:  { duration: phase >= 3 ? 3.2 : 1.45, ease: EASE },
-          z:        { duration: 3.2, ease: EASE_RUSH },
-        }}
       >
-        {/* Slices — scattered then converge */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-          {slices.map(({ i, colLeft, colRight, scale, brightness, blur, y, x, delay }) => (
-            <motion.div
-              key={i}
-              style={{
-                position: 'absolute', inset: 0,
-                clipPath: `inset(0 ${colRight}% 0 ${colLeft}%)`,
-                willChange: 'transform, filter, opacity',
-              }}
-              animate={
-                phase >= 2
-                  ? { opacity: 1, y: 0, x: 0, scale: 1, filter: 'brightness(1) blur(0px)' }
-                  : { opacity: 0, y, x, scale, filter: `brightness(${brightness}) blur(${blur}px)` }
-              }
-              transition={{
-                duration: mobile ? 0.95 : 1.55,
-                delay:    phase >= 2 ? delay : 0,
-                ease:     EASE,
-              }}
-            >
-              <img
-                src={COVER} loading="lazy" alt="" aria-hidden="true"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', pointerEvents: 'none', userSelect: 'none' }}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* SVG overlay — mask + animated border */}
-        <svg
-          viewBox="0 0 200 340"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
-          aria-hidden="true"
+        {/* back plane — Canary Wharf cluster */}
+        <motion.div
+          animate={{ z: separated ? -130 : -30 }}
+          transition={{ duration: 1.8, ease: EASE }}
+          style={{ position: 'absolute', inset: 0 }}
         >
-          <defs>
-            <linearGradient id="ltG1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%"   stopColor="rgba(248,228,140,0.96)" />
-              <stop offset="20%"  stopColor="rgba(202,170,72,0.89)" />
-              <stop offset="50%"  stopColor="rgba(255,248,182,0.99)" />
-              <stop offset="80%"  stopColor="rgba(222,188,88,0.92)" />
-              <stop offset="100%" stopColor="rgba(180,150,58,0.86)" />
-            </linearGradient>
-            {/* SVG-native clipPath for the shine sweep */}
-            <clipPath id="ltKeyClip">
-              <path d={KEY} fillRule="evenodd" />
-            </clipPath>
-            <filter id="ltHalo" x="-40%" y="-32%" width="180%" height="164%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="7" result="b" />
-              <feColorMatrix in="b" type="matrix"
-                values="0 0 0 0 0.92 0 0 0 0 0.78 0 0 0 0 0.28 0 0 0 0.7 0" result="g" />
-              <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="ltEdge" x="-28%" y="-22%" width="156%" height="144%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="b" />
-              <feColorMatrix in="b" type="matrix"
-                values="0 0 0 0 0.90 0 0 0 0 0.76 0 0 0 0 0.26 0 0 0 0.95 0" result="g" />
-              <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
+          <svg viewBox="0 0 1600 640" style={{ width: '100%', height: '100%' }}>
+            <defs>
+              <clipPath id="lt-clip-cw">
+                <rect x="70" y="320" width="58" height="240" />
+                <rect x="160" y="260" width="66" height="300" />
+                <polygon points="160,260 193,205 226,260" />
+                <rect x="250" y="360" width="50" height="200" />
+              </clipPath>
+            </defs>
+            <motion.g animate={{ opacity: lit ? 1 : 0 }} transition={{ duration: 1.1, ease: 'easeInOut' }}>
+              <image href={PHOTOS.canaryWharf} x="60" y="200" width="250" height="360" clipPath="url(#lt-clip-cw)" preserveAspectRatio="xMidYMid slice" />
+            </motion.g>
+            <g fill="none" stroke={GOLD_BACK} strokeWidth="1.6">
+              <motion.rect x="70" y="320" width="58" height="240" {...draw(0.30, 1.0)} />
+              <motion.rect x="160" y="260" width="66" height="300" {...draw(0.38, 1.0)} />
+              <motion.polygon points="160,260 193,205 226,260" {...draw(0.70, 0.7)} />
+              <motion.rect x="250" y="360" width="50" height="200" {...draw(0.46, 1.0)} />
+              <motion.rect x="1430" y="420" width="46" height="140" opacity={0.55} {...draw(0.90, 0.9)} />
+              <motion.rect x="1490" y="450" width="40" height="110" opacity={0.55} {...draw(0.96, 0.9)} />
+              <motion.rect x="1540" y="400" width="44" height="160" opacity={0.55} {...draw(1.02, 0.9)} />
+            </g>
+          </svg>
+        </motion.div>
 
-          {/* Dark mask — everything outside the key */}
-          <path d={MASK} fill="#060609" fillRule="evenodd" />
+        {/* mid plane — The Shard + London Eye */}
+        <motion.div
+          animate={{ z: separated ? -20 : -10 }}
+          transition={{ duration: 1.8, ease: EASE }}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          <svg viewBox="0 0 1600 640" style={{ width: '100%', height: '100%' }}>
+            <defs>
+              <clipPath id="lt-clip-shard">
+                <polygon points="900,560 980,560 940,180" />
+              </clipPath>
+              <clipPath id="lt-clip-eye">
+                <circle cx="1190" cy="400" r="140" />
+              </clipPath>
+            </defs>
+            <motion.g animate={{ opacity: lit ? 1 : 0 }} transition={{ duration: 1.1, ease: 'easeInOut' }}>
+              <image href={PHOTOS.shard} x="895" y="175" width="90" height="390" clipPath="url(#lt-clip-shard)" preserveAspectRatio="xMidYMid slice" />
+              <image href={PHOTOS.eye} x="1045" y="255" width="290" height="290" clipPath="url(#lt-clip-eye)" preserveAspectRatio="xMidYMid slice" />
+            </motion.g>
+            <g fill="none" stroke={GOLD_MID} strokeWidth="1.8">
+              <motion.polygon points="900,560 980,560 940,180" {...draw(1.30, 1.0)} />
+              <motion.line x1="920" y1="560" x2="940" y2="180" opacity={0.5} {...draw(1.50, 0.9)} />
+              <motion.line x1="960" y1="560" x2="940" y2="180" opacity={0.5} {...draw(1.50, 0.9)} />
+              <motion.circle cx="1190" cy="400" r="140" {...draw(1.60, 1.1)} />
+              <motion.line x1="1190" y1="400" x2="1190" y2="260" {...draw(2.00, 0.6)} />
+              <motion.line x1="1190" y1="400" x2="1311" y2="330" {...draw(2.00, 0.6)} />
+              <motion.line x1="1190" y1="400" x2="1311" y2="470" {...draw(2.00, 0.6)} />
+              <motion.line x1="1190" y1="400" x2="1190" y2="540" {...draw(2.00, 0.6)} />
+              <motion.line x1="1190" y1="400" x2="1069" y2="470" {...draw(2.00, 0.6)} />
+              <motion.line x1="1190" y1="400" x2="1069" y2="330" {...draw(2.00, 0.6)} />
+              <motion.line x1="1190" y1="400" x2="1100" y2="560" opacity={0.6} {...draw(2.10, 0.7)} />
+              <motion.line x1="1190" y1="400" x2="1280" y2="560" opacity={0.6} {...draw(2.10, 0.7)} />
+            </g>
+          </svg>
+        </motion.div>
 
-          {/* Solid metallic fill — fades out as photo appears */}
-          <motion.path
-            d={KEY} fill="url(#ltG1)" fillRule="evenodd"
-            animate={{ opacity: phase >= 2 ? 0 : 0.80 }}
-            transition={{ duration: 1.2 }}
-          />
-
-          {/* Outer soft halo border */}
-          <motion.path
-            d={KEY} fill="none" stroke="url(#ltG1)" strokeWidth="7"
-            fillRule="evenodd" filter="url(#ltHalo)"
-            animate={{ opacity: phase >= 4 ? 0 : phase >= 1 ? 0.50 : 0 }}
-            transition={{ duration: 1.0 }}
-          />
-
-          {/* Primary border — draws itself in */}
-          <motion.path
-            d={KEY} fill="none" stroke="url(#ltG1)" strokeWidth="2.8"
-            fillRule="evenodd" filter="url(#ltEdge)"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{
-              pathLength: phase >= 1 ? 1 : 0,
-              opacity:    phase >= 4 ? 0 : phase >= 1 ? 1 : 0,
-            }}
-            transition={{
-              pathLength: { duration: 2.1, ease: [0.4, 0, 0.6, 1], delay: 0.05 },
-              opacity:    { duration: 0.35 },
-            }}
-          />
-
-          {/* Shimmer sweep — plays once when slices converge */}
-          {phase >= 2 && phase < 3 && (
-            <motion.rect
-              width="90" height="340" y="0"
-              fill="rgba(255,252,200,0.22)"
-              clipPath="url(#ltKeyClip)"
-              initial={{ x: -90 }}
-              animate={{ x: 290 }}
-              transition={{ duration: 1.0, delay: 1.0, ease: [0.4, 0, 0.6, 1] }}
-            />
-          )}
-
-          {/* Unlock flash — gold pulse when camera starts rushing */}
-          {phase >= 3 && (
-            <motion.path
-              key="flash"
-              d={KEY} fill="rgba(255,248,190,0.55)" fillRule="evenodd"
-              stroke="rgba(255,252,210,0.95)" strokeWidth="3.5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.85, 0] }}
-              transition={{ duration: 0.7, times: [0, 0.22, 1], ease: 'easeOut' }}
-            />
-          )}
-        </svg>
+        {/* front plane — Big Ben + Tower Bridge + horizon */}
+        <motion.div
+          animate={{ z: separated ? 95 : 20 }}
+          transition={{ duration: 1.8, ease: EASE }}
+          style={{ position: 'absolute', inset: 0 }}
+        >
+          <svg viewBox="0 0 1600 640" style={{ width: '100%', height: '100%' }}>
+            <defs>
+              <clipPath id="lt-clip-bigben">
+                <rect x="430" y="300" width="40" height="260" />
+                <polygon points="430,300 450,225 470,300" />
+                <circle cx="450" cy="335" r="15" />
+              </clipPath>
+              <clipPath id="lt-clip-bridge">
+                <rect x="560" y="380" width="28" height="180" />
+                <rect x="700" y="380" width="28" height="180" />
+                <rect x="588" y="455" width="112" height="10" />
+              </clipPath>
+            </defs>
+            <motion.g animate={{ opacity: lit ? 1 : 0 }} transition={{ duration: 1.1, ease: 'easeInOut' }}>
+              <image href={PHOTOS.bigBen} x="420" y="215" width="60" height="345" clipPath="url(#lt-clip-bigben)" preserveAspectRatio="xMidYMid slice" />
+              <image href={PHOTOS.bridge} x="550" y="360" width="190" height="200" clipPath="url(#lt-clip-bridge)" preserveAspectRatio="xMidYMid slice" />
+            </motion.g>
+            <g fill="none" stroke={GOLD_FRONT} strokeWidth="2">
+              <motion.line x1="0" y1="560" x2="1600" y2="560" opacity={0.45} {...draw(0, 1.0)} />
+              <motion.rect x="430" y="300" width="40" height="260" {...draw(0.70, 0.9)} />
+              <motion.polygon points="430,300 450,225 470,300" {...draw(1.00, 0.6)} />
+              <motion.circle cx="450" cy="335" r="15" {...draw(1.10, 0.6)} />
+              <motion.rect x="560" y="380" width="28" height="180" {...draw(1.00, 0.9)} />
+              <motion.rect x="556" y="368" width="36" height="14" {...draw(1.30, 0.5)} />
+              <motion.rect x="700" y="380" width="28" height="180" {...draw(1.05, 0.9)} />
+              <motion.rect x="696" y="368" width="36" height="14" {...draw(1.35, 0.5)} />
+              <motion.rect x="588" y="455" width="112" height="10" {...draw(1.40, 0.7)} />
+              <motion.line x1="574" y1="368" x2="588" y2="455" opacity={0.6} {...draw(1.50, 0.5)} />
+              <motion.line x1="714" y1="368" x2="700" y2="455" opacity={0.6} {...draw(1.50, 0.5)} />
+            </g>
+          </svg>
+        </motion.div>
       </motion.div>
 
-      {/* Text block — appears with slices */}
-      <motion.div
+      {/* hero dissolve */}
+      <motion.img
+        src={HERO}
+        alt=""
+        aria-hidden="true"
+        animate={{ opacity: dissolving ? 1 : 0 }}
+        transition={{ duration: 1.8, ease: EASE, delay: dissolving ? 0.2 : 0 }}
         style={{
-          position: 'absolute', bottom: '10%', zIndex: 4,
+          position: 'absolute', inset: 0, width: '100%', height: '100%',
+          objectFit: 'cover', pointerEvents: 'none',
+        }}
+      />
+
+      {/* caption */}
+      <motion.div
+        animate={{ opacity: separated && !dissolving ? 1 : 0, y: separated ? 0 : 14 }}
+        transition={{ duration: 1.0, ease: EASE }}
+        style={{
+          position: 'absolute', bottom: '11%', zIndex: 2,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '9px',
           pointerEvents: 'none',
         }}
-        animate={{
-          opacity: phase >= 2 && phase < 5 ? 1 : 0,
-          y:       phase >= 2 ? 0 : 20,
-        }}
-        transition={{ duration: 1.1, ease: EASE }}
       >
         <p style={{
           margin: 0,
           fontFamily: "'EB Garamond', serif",
-          color: 'rgba(228, 198, 118, 0.94)',
-          fontSize: mobile ? '0.78rem' : '1.00rem',
-          letterSpacing: '0.52em',
+          color: 'rgba(214,190,150,0.92)',
+          fontSize: '1.0rem',
+          letterSpacing: '0.5em',
           textTransform: 'uppercase',
           whiteSpace: 'nowrap',
         }}>
           Life in London
         </p>
         <div style={{
-          width: mobile ? '44px' : '58px', height: '1px',
-          background: 'linear-gradient(to right, transparent, rgba(215,178,88,0.65), transparent)',
+          width: '54px', height: '1px',
+          background: 'linear-gradient(to right, transparent, rgba(201,168,117,0.6), transparent)',
         }} />
         <p style={{
           margin: 0,
           fontFamily: "'EB Garamond', serif",
-          color: 'rgba(188,155,72,0.52)',
-          fontSize: mobile ? '0.58rem' : '0.66rem',
-          letterSpacing: '0.38em',
+          color: 'rgba(180,160,125,0.5)',
+          fontSize: '0.64rem',
+          letterSpacing: '0.36em',
           textTransform: 'uppercase',
           whiteSpace: 'nowrap',
         }}>
