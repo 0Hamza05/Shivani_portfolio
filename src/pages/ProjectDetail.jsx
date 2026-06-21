@@ -757,8 +757,7 @@ export default function ProjectDetail() {
         {project.slug === 'travel' && (
   <div
     style={{
-      width: "100vw",
-      marginLeft: "calc(-50vw + 50%)",
+      width: "100%",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
       alignItems: "flex-start",
@@ -855,16 +854,33 @@ export default function ProjectDetail() {
               </div>
             )}
 
-            <p
-              style={{
-                maxWidth: "700px",
-                lineHeight: 1.9,
-                color: "var(--fg-dim)",
-                fontSize: isMobile ? "0.95rem" : "1.05rem",
-              }}
-            >
-              Cinematic travel story section for {destination.title}.
-            </p>
+            {destination.story ? (
+              destination.story.map((paragraph, pIdx) => (
+                <p
+                  key={pIdx}
+                  style={{
+                    maxWidth: "700px",
+                    lineHeight: 1.9,
+                    color: "var(--fg-dim)",
+                    fontSize: isMobile ? "0.95rem" : "1.05rem",
+                    marginBottom: pIdx === destination.story.length - 1 ? 0 : "1.4em",
+                  }}
+                >
+                  {paragraph}
+                </p>
+              ))
+            ) : (
+              <p
+                style={{
+                  maxWidth: "700px",
+                  lineHeight: 1.9,
+                  color: "var(--fg-dim)",
+                  fontSize: isMobile ? "0.95rem" : "1.05rem",
+                }}
+              >
+                Cinematic travel story section for {destination.title}.
+              </p>
+            )}
           </section>
         );
       })}

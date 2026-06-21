@@ -9,6 +9,15 @@ export const travelDestinations = [
     mapPosition: { x: "47.69%", y: "45.83%" },
     labelOffset: { x: -8.5, y: 0 },
     photos: ["/images/travel/travel-1.webp", "/images/travel/travel-2.webp"],
+    story: [
+      "When I was 17, I moved from India to the UK with a suitcase and very little else. On one of my first days in the university accommodation, I spotted another Indian girl unpacking across the hall. We've been inseparable ever since.",
+      "Divya and I made three promises to each other somewhere between those early university days and figuring out what adulthood was supposed to look like - get jobs in London, visit Paris, visit New York.",
+      "The kind of dreams that feel almost too bright to say out loud when you're new to a country and still finding your footing.",
+      "A few years after graduating, we finally made it to Paris.",
+      "It was everything and nothing extravagant. Hot chocolate, pastries, cobblestone streets, and the Eiffel Tower sparkling at night like it had been waiting for us. Simple things that felt enormous, because of everything they represented. Two girls who had held onto a dream for seven years and then quietly, steadily, made it real.",
+      "Two out of three done.",
+      "New York, we're coming.",
+    ],
   },
   {
     id: "prague",

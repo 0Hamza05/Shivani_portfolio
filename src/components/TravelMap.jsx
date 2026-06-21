@@ -108,7 +108,17 @@ export default function TravelMap() {
         rafRef.current = null;
         setActiveDestination(destination);
         const section = document.getElementById(id);
-        if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (section) {
+          const rect = section.getBoundingClientRect();
+          const scrollMarginTop = parseFloat(getComputedStyle(section).scrollMarginTop) || 0;
+          const targetY = Math.max(0, window.scrollY + rect.top - scrollMarginTop);
+          // Skip the scroll entirely for negligible deltas — smooth-scrolling
+          // a few px triggers browser overscroll/bounce without moving anything
+          // meaningfully, which read as the map glitching on the first click.
+          if (Math.abs(targetY - window.scrollY) > 24) {
+            window.scrollTo({ top: targetY, behavior: "smooth" });
+          }
+        }
       }
     };
 
