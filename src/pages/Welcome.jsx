@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
-const COUNT_DURATION_MS = 2200;
+const COUNT_DURATION_MS = 2800;
 
 function NumberCounter({ onComplete }) {
   const [count, setCount] = useState(1);
@@ -13,8 +13,7 @@ function NumberCounter({ onComplete }) {
     const tick = now => {
       if (startRef.current === null) startRef.current = now;
       const t = Math.min((now - startRef.current) / COUNT_DURATION_MS, 1);
-      const eased = 1 - Math.pow(1 - t, 4);
-      setCount(Math.max(1, Math.round(eased * 100)));
+      setCount(Math.max(1, Math.round(t * 100)));
       if (t < 1) {
         raf = requestAnimationFrame(tick);
       } else if (!doneRef.current) {

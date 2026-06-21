@@ -16,25 +16,23 @@ export default function App() {
   return (
     <Router>
       <TravelTransitionProvider>
+        <motion.div
+          id="main-wrap"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/work" element={<Work />} />
+            <Route path="/work/:slug" element={<ProjectDetail />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </motion.div>
         <AnimatePresence>
-          {!welcomeDone ? (
+          {!welcomeDone && (
             <Welcome key="welcome" onDismiss={() => setWelcomeDone(true)} />
-          ) : (
-            <motion.div
-              key="main-content"
-              id="main-wrap"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/work" element={<Work />} />
-                <Route path="/work/:slug" element={<ProjectDetail />} />
-                <Route path="/about" element={<About />} />
-              </Routes>
-            </motion.div>
           )}
         </AnimatePresence>
       </TravelTransitionProvider>
