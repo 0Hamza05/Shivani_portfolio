@@ -547,6 +547,9 @@ export default function ProjectDetail() {
   const project = projects.find(p => p.slug === slug);
   const [activeImage, setActiveImage] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
+  // Shared across the hero + both gutter trail instances so the image
+  // sequence continues smoothly instead of resetting per section.
+  const londonTrailCycleRef = useRef(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -598,7 +601,7 @@ export default function ProjectDetail() {
         {project.slug === 'life-in-london' ? (
           <>
             <div style={{ position: 'absolute', inset: 0, backgroundColor: 'var(--bg)' }} />
-            <CursorImageTrail images={LONDON_TRAIL_IMAGES} />
+            <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
           </>
         ) : (() => {
           const isVideo = isVideoUrl(project.cover);
@@ -667,25 +670,52 @@ export default function ProjectDetail() {
         alignItems: 'center'
       }}>
         {/* Editorial Description text */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: project.slug === 'travel' ? 0.15 : 0.5, duration: 0.8 }}
-          style={{ 
-            maxWidth: '760px', 
-            width: '100%',
-            fontSize: isMobile ? '1.15rem' : '1.25rem', 
-            lineHeight: '1.9', 
-            color: 'var(--fg)', 
-            fontFamily: "'EB Garamond', serif",
-            textAlign: 'center',
-            marginBottom: '32px'
-          }}
-        >
-          {project.description.split('\n').map((paragraph, index) => (
-            paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
-          ))}
-        </motion.div>
+        <div style={{ position: 'relative', width: '100%' }}>
+          {project.slug === 'life-in-london' && !isMobile && (
+            <div style={{
+              position: 'absolute',
+              // Stretches up by exactly this section's own top padding (72px)
+              // so this trail's top edge lands flush against the hero's bottom
+              // edge — zero gap and zero overlap, so chips near the seam are
+              // ever only clipped by one box instead of two overlapping ones.
+              top: '-72px',
+              bottom: 0,
+              left: '50%',
+              width: '100vw',
+              transform: 'translateX(-50%)',
+            }}>
+              {/* Two clipped strips, one per gutter — each stops exactly at the
+                  text column's edge so chips can never render behind it. */}
+              <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 'calc(50vw - 380px)', overflow: 'hidden' }}>
+                <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
+              </div>
+              <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: 'calc(50vw - 380px)', overflow: 'hidden' }}>
+                <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
+              </div>
+            </div>
+          )}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: project.slug === 'travel' ? 0.15 : 0.5, duration: 0.8 }}
+            style={{
+              position: 'relative',
+              maxWidth: '760px',
+              width: '100%',
+              margin: '0 auto',
+              fontSize: isMobile ? '1.15rem' : '1.25rem',
+              lineHeight: '1.9',
+              color: 'var(--fg)',
+              fontFamily: "'EB Garamond', serif",
+              textAlign: 'center',
+              marginBottom: '32px'
+            }}
+          >
+            {project.description.split('\n').map((paragraph, index) => (
+              paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
+            ))}
+          </motion.div>
+        </div>
 
         
 

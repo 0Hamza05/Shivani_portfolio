@@ -4,11 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 const CHIP_LIFETIME_MS = 1100;
 const MIN_SPAWN_DIST   = 70;
 
-export default function CursorImageTrail({ images }) {
+export default function CursorImageTrail({ images, cycleIndexRef }) {
   const [chips, setChips] = useState([]);
-  const lastPos     = useRef(null);
-  const cycleIndex  = useRef(0);
-  const nextId      = useRef(0);
+  const lastPos        = useRef(null);
+  const localCycleIndex = useRef(0);
+  // Accepts a shared ref so multiple instances (e.g. separate page sections)
+  // can continue the same image sequence instead of each restarting at 0.
+  const cycleIndex     = cycleIndexRef || localCycleIndex;
+  const nextId          = useRef(0);
 
   const handleMouseMove = useCallback((e) => {
     const { left, top } = e.currentTarget.getBoundingClientRect();
@@ -33,6 +36,7 @@ export default function CursorImageTrail({ images }) {
 
   return (
     <div
+      onMouseEnter={() => { lastPos.current = null; }}
       onMouseMove={handleMouseMove}
       style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}
     >

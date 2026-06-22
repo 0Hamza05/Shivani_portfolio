@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
-import { useTravelTransition } from '../components/TravelTransitionOverlay';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 
@@ -57,9 +56,6 @@ function buildColumns(photos, numCols) {
 
 // ─── Photo card ───────────────────────────────────────────────────────────────
 function PhotoCard({ photo, eager }) {
-  const navigate = useNavigate();
-  const { triggerTransition } = useTravelTransition();
-
   const isVideo = VIDEO_RE.test(photo.imgUrl);
   const media = isVideo ? (
     <video
@@ -99,18 +95,6 @@ function PhotoCard({ photo, eager }) {
         target="_blank" rel="noopener noreferrer"
         draggable={false} onDragStart={e => e.preventDefault()}
         className="mc-card"
-      >{media}</a>
-    );
-  }
-  // Travel cards get the cinematic cloud transition instead of an instant navigation
-  if (photo.project.slug === 'travel') {
-    return (
-      <a
-        href={`/work/travel`}
-        draggable={false}
-        onDragStart={e => e.preventDefault()}
-        className="mc-card"
-        onClick={(e) => { e.preventDefault(); triggerTransition(navigate); }}
       >{media}</a>
     );
   }
@@ -235,6 +219,7 @@ export default function Home() {
         }
         .mc-col-inner {
           animation: marquee-up var(--col-duration, 72s) linear infinite;
+          will-change: transform;
         }
         .mc-col-wrap:hover .mc-col-inner {
           animation-play-state: paused;

@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { projects } from '../data/projects';
-import { useTravelTransition } from './TravelTransitionOverlay';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 const LEMON       = '#FFF44F';
 const LEMON_DIM   = 'rgba(255, 244, 79, 0.88)';
 const LEMON_FAINT = 'rgba(255, 244, 79, 0.65)';
 
+// ─── Pillars ──────────────────────────────────────────────────────────────────
+const PILLAR_SLUGS = ['life-in-india', 'dance', 'travel', 'university', 'life-in-london', 'volunteering'];
+const pillarLinks = PILLAR_SLUGS.map(slug => projects.find(p => p.slug === slug)).filter(Boolean);
+
 export default function Navbar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { triggerTransition } = useTravelTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -33,18 +34,20 @@ export default function Navbar() {
 
   const navLinkStyle = (active = false) => ({
     fontFamily:      "'Mocha'",
-    fontSize:        '0.68rem',
-    letterSpacing:   '0.2em',
+    fontSize:        '0.78rem',
+    letterSpacing:   '0.12em',
     fontWeight:      400,
+    textTransform:   'uppercase',
+    whiteSpace:      'nowrap',
     color:           active ? LEMON : LEMON_DIM,
     transition:      'color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease',
     borderWidth:     '1px',
     borderStyle:     'solid',
     borderColor:     active ? 'rgba(255, 244, 79, 0.60)' : 'transparent',
-    padding:         '7px 9px 6px',
+    padding:         '7px 11px 6px',
     borderRadius:    '999px',
     backgroundColor: active ? 'rgba(255, 244, 79, 0.15)' : 'transparent',
-    textShadow:      '0 1px 4px rgba(0, 0, 0, 0.55)',
+    textShadow:      '0 1px 5px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.9)',
   });
 
   return (
@@ -79,12 +82,6 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           to="/"
-          onClick={(e) => {
-            if (location.pathname === '/') {
-              e.preventDefault();
-              window.location.reload();
-            }
-          }}
           style={{
             fontFamily:    "'Mocha'",
             fontSize:      '2.0rem',
@@ -106,105 +103,43 @@ export default function Navbar() {
         {/* Desktop Links */}
         <div
           style={{
-            display:    'flex',
-            gap:        '32px',
-            alignItems: 'center',
-            height:     '100%',
+            display:         'flex',
+            gap:             '16px',
+            alignItems:      'center',
+            height:          'calc(100% - 16px)',
+            padding:         '0 16px',
+            borderRadius:    '999px',
+            backgroundColor: 'rgba(0, 0, 0, 0.32)',
+            backdropFilter:  'blur(6px)',
           }}
           className="desktop-nav"
         >
-          {/* WORK */}
-          <Link
-            to="/"
-            style={navLinkStyle(isActive('/'))}
-            onMouseEnter={e => {
-              e.currentTarget.style.color = LEMON;
-              if (!isActive('/')) {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 244, 79, 0.08)';
-                e.currentTarget.style.borderColor     = 'rgba(255, 244, 79, 0.35)';
-              }
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.color           = isActive('/') ? LEMON : LEMON_DIM;
-              e.currentTarget.style.backgroundColor = isActive('/') ? 'rgba(255, 244, 79, 0.15)' : 'transparent';
-              e.currentTarget.style.borderColor     = isActive('/') ? 'rgba(255, 244, 79, 0.60)' : 'transparent';
-            }}
-          >
-            WORK
-          </Link>
-
-          {/* PILLARS dropdown */}
-          <div
-            className="pillars-dropdown-container"
-            style={{
-              position:   'relative',
-              height:     '100%',
-              display:    'flex',
-              alignItems: 'center',
-              cursor:     'pointer',
-            }}
-          >
-            <span
-              style={{ ...navLinkStyle(false), display: 'inline-block' }}
-              className="pillars-trigger-text"
-            >
-              PILLARS
-            </span>
-            <div
-              className="pillars-dropdown"
-              style={{
-                position:            'absolute',
-                top:                 '80%',
-                right:               '-160px',
-                width:               '600px',
-                backgroundColor:     'rgba(255, 255, 255, 0.96)',
-                backdropFilter:      'blur(25px)',
-                boxShadow:           '0 20px 40px rgba(0, 0, 0, 0.12)',
-                border:              '1px solid var(--border)',
-                borderRadius:        '8px',
-                padding:             '24px',
-                display:             'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap:                 '12px 18px',
-                opacity:             0,
-                transform:           'translateY(10px)',
-                pointerEvents:       'none',
-                transition:          'all 0.3s cubic-bezier(0.16,1,0.3,1)',
-                zIndex:              999,
-              }}
-            >
-              {projects.filter(proj => !proj.youtubeUrl).map(proj => (
-                <Link
-                  key={proj.id}
-                  to={`/work/${proj.slug}`}
-                  onClick={proj.slug === 'travel' ? (e) => {
-                    e.preventDefault();
-                    triggerTransition(navigate);
-                  } : undefined}
-                  style={{
-                    fontFamily:   "'Mocha'",
-                    fontSize:     '1.05rem',
-                    color:        location.pathname === `/work/${proj.slug}` ? 'var(--fg)' : 'var(--fg-dim)',
-                    transition:   'all 0.2s ease',
-                    textAlign:    'left',
-                    padding:      '6px 10px',
-                    borderRadius: '4px',
-                    textShadow:   'none',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.color = 'var(--fg)';
-                    e.currentTarget.style.backgroundColor = 'rgba(69, 42, 35, 0.03)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.color = location.pathname === `/work/${proj.slug}` ? 'var(--fg)' : 'var(--fg-dim)';
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }}
-                >
-                  {proj.title}
-                </Link>
-              ))}
-            </div>
-          </div>
+          {/* PILLARS */}
+          {pillarLinks.map(proj => {
+            const path = `/work/${proj.slug}`;
+            const active = isActive(path);
+            return (
+              <Link
+                key={proj.id}
+                to={path}
+                style={navLinkStyle(active)}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = LEMON;
+                  if (!active) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 244, 79, 0.08)';
+                    e.currentTarget.style.borderColor     = 'rgba(255, 244, 79, 0.35)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color           = active ? LEMON : LEMON_DIM;
+                  e.currentTarget.style.backgroundColor = active ? 'rgba(255, 244, 79, 0.15)' : 'transparent';
+                  e.currentTarget.style.borderColor     = active ? 'rgba(255, 244, 79, 0.60)' : 'transparent';
+                }}
+              >
+                {proj.title}
+              </Link>
+            );
+          })}
 
           {/* ABOUT */}
           <Link
@@ -283,20 +218,6 @@ export default function Navbar() {
               overflowY:     'auto',
               paddingBottom: '40px',
             }}>
-              <Link
-                to="/"
-                style={{
-                  fontFamily:    "'Mocha'",
-                  fontSize:      '2.2rem',
-                  fontWeight:    400,
-                  letterSpacing: '0.1em',
-                  color:         isActive('/') ? LEMON : LEMON_DIM,
-                  textShadow:    '0 1px 4px rgba(0, 0, 0, 0.5)',
-                }}
-              >
-                WORK
-              </Link>
-
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', margin: '16px 0' }}>
                 <span style={{
                   fontFamily:    "'Mocha'",
@@ -308,14 +229,10 @@ export default function Navbar() {
                 }}>
                   PILLARS
                 </span>
-                {projects.filter(proj => !proj.youtubeUrl).map(proj => (
+                {pillarLinks.map(proj => (
                   <Link
                     key={proj.id}
                     to={`/work/${proj.slug}`}
-                    onClick={proj.slug === 'travel' ? (e) => {
-                      e.preventDefault();
-                      triggerTransition(navigate);
-                    } : undefined}
                     style={{
                       fontFamily: "'Mocha'",
                       fontSize:   '1.25rem',
@@ -351,16 +268,6 @@ export default function Navbar() {
         @media (max-width: 640px) {
           .desktop-nav { display: none !important; }
           .mobile-hamburger { display: flex !important; }
-        }
-        .pillars-dropdown-container:hover .pillars-dropdown {
-          opacity: 1 !important;
-          transform: translateY(0) !important;
-          pointer-events: auto !important;
-        }
-        .pillars-dropdown-container:hover .pillars-trigger-text {
-          color:            ${LEMON} !important;
-          background-color: rgba(255, 244, 79, 0.08) !important;
-          border-color:     rgba(255, 244, 79, 0.35) !important;
         }
       `}</style>
     </>
