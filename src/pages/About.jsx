@@ -5,7 +5,6 @@ const PEACH      = 'oklch(93% 0.025 58)';
 const INK        = 'oklch(27% 0.035 40)';
 const INK_DIM    = 'oklch(42% 0.03 45)';
 const CARD_CREAM = 'oklch(98% 0.01 70)';
-const TAG_CREAM  = 'oklch(97% 0.012 65)';
 const VINYL_LABEL = 'rgba(240,158,167,0.95)';
 
 // "Love Story (Taylor's Version)" — Taylor Swift, played via Spotify's official embed/IFrame API
@@ -33,8 +32,6 @@ function loadSpotifyIframeApi() {
   });
   return spotifyApiLoadPromise;
 }
-
-const TORN_EDGE = 'polygon(2% 8%, 12% 0%, 30% 4%, 55% 0%, 78% 5%, 96% 0%, 100% 20%, 97% 45%, 100% 70%, 95% 92%, 80% 100%, 60% 96%, 38% 100%, 18% 97%, 3% 100%, 0% 75%, 4% 50%, 0% 25%)';
 
 function BookIcon() {
   return (
@@ -155,23 +152,11 @@ const MEMENTOS = [
     mobile:  { right: '2%', bottom: '4%', rotate: -7, size: 'clamp(56px, 7.5vh, 80px)' } },
 ];
 
-const TAGS = ['memory', 'movement', 'stillness', 'story'];
-
 function MailIcon() {
   return (
     <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <path d="M3 7l9 6 9-6" />
-    </svg>
-  );
-}
-
-function NewsletterIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 17v-5a6 6 0 1 1 12 0v5" />
-      <path d="M4 17h16" />
-      <path d="M10 20.5a2 2 0 0 0 4 0" />
     </svg>
   );
 }
@@ -275,7 +260,6 @@ function Vinyl({ pos, controllerRef }) {
 
 const SOCIAL_LINKS = [
   { href: 'mailto:hello@shivani.com', label: 'Email', Icon: MailIcon },
-  { href: '#', label: 'Newsletter', Icon: NewsletterIcon },
   { href: '#', label: 'Instagram', Icon: InstagramIcon },
   { href: 'https://www.linkedin.com/in/shivanipawar9', label: 'LinkedIn', Icon: LinkedinIcon, external: true, className: 'linkedin' },
 ];
@@ -409,43 +393,6 @@ export default function About() {
           }}>
             A life, told in stages.
           </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          style={{
-            position: 'relative',
-            zIndex: 2,
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 'clamp(6px, 1vh, 12px)',
-            marginTop: 'clamp(10px, 2vh, 26px)',
-          }}
-        >
-          {TAGS.map((tag, i) => (
-            <motion.span
-              key={tag}
-              initial={{ opacity: 0, scale: 0.85, rotate: (i % 2 === 0 ? -1 : 1) * 5 }}
-              animate={{ opacity: 1, scale: 1, rotate: (i % 2 === 0 ? -1 : 1) * 3 }}
-              transition={{ duration: 0.5, delay: 0.7 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
-              style={{
-                display: 'inline-block',
-                background: TAG_CREAM,
-                clipPath: TORN_EDGE,
-                padding: 'clamp(5px, 0.9vh, 8px) clamp(10px, 1.8vh, 18px)',
-                fontFamily: "'EB Garamond', serif",
-                fontStyle: 'italic',
-                fontSize: 'clamp(0.68rem, 1.5vh, 0.92rem)',
-                color: INK,
-                boxShadow: '0 4px 10px rgba(60,40,20,0.12)',
-              }}
-            >
-              {tag}
-            </motion.span>
-          ))}
         </motion.div>
 
         <motion.div

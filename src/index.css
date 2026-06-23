@@ -29,7 +29,7 @@
 }
 
 :root {
-  --bg: #ffffff;
+  --bg: oklch(93% 0.025 58);
   --fg: #111111;
   --fg-dim: rgba(17, 17, 17, 0.6);
   --fg-hover: #000000;

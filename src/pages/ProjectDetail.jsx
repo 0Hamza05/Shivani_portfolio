@@ -601,7 +601,6 @@ export default function ProjectDetail() {
         {project.slug === 'life-in-london' ? (
           <>
             <div style={{ position: 'absolute', inset: 0, backgroundColor: 'var(--bg)' }} />
-            <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
           </>
         ) : (() => {
           const isVideo = isVideoUrl(project.cover);
@@ -654,6 +653,26 @@ export default function ProjectDetail() {
     </>
 )}
 
+      {/* One single trail spanning the full hero + content height, with a
+          notch clipped out of its bottom matching the text column. This is
+          ONE shape (no separate overlapping boxes), so there are no internal
+          seams anywhere — not across the hero/content boundary, and not
+          between the hero and either side gutter. */}
+      {project.slug === 'life-in-london' && !isMobile && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          clipPath: `polygon(
+            0 0, 100% 0, 100% 100%,
+            calc(50% + 380px) 100%, calc(50% + 380px) 70vh,
+            calc(50% - 380px) 70vh, calc(50% - 380px) 100%,
+            0 100%
+          )`,
+        }}>
+          <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
+        </div>
+      )}
+
       {/* Main Content Layout (Centered & Elegant) */}
       <div style={{ 
         padding: isMobile
@@ -670,52 +689,25 @@ export default function ProjectDetail() {
         alignItems: 'center'
       }}>
         {/* Editorial Description text */}
-        <div style={{ position: 'relative', width: '100%' }}>
-          {project.slug === 'life-in-london' && !isMobile && (
-            <div style={{
-              position: 'absolute',
-              // Stretches up by exactly this section's own top padding (72px)
-              // so this trail's top edge lands flush against the hero's bottom
-              // edge — zero gap and zero overlap, so chips near the seam are
-              // ever only clipped by one box instead of two overlapping ones.
-              top: '-72px',
-              bottom: 0,
-              left: '50%',
-              width: '100vw',
-              transform: 'translateX(-50%)',
-            }}>
-              {/* Two clipped strips, one per gutter — each stops exactly at the
-                  text column's edge so chips can never render behind it. */}
-              <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 'calc(50vw - 380px)', overflow: 'hidden' }}>
-                <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
-              </div>
-              <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: 'calc(50vw - 380px)', overflow: 'hidden' }}>
-                <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
-              </div>
-            </div>
-          )}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: project.slug === 'travel' ? 0.15 : 0.5, duration: 0.8 }}
-            style={{
-              position: 'relative',
-              maxWidth: '760px',
-              width: '100%',
-              margin: '0 auto',
-              fontSize: isMobile ? '1.15rem' : '1.25rem',
-              lineHeight: '1.9',
-              color: 'var(--fg)',
-              fontFamily: "'EB Garamond', serif",
-              textAlign: 'center',
-              marginBottom: '32px'
-            }}
-          >
-            {project.description.split('\n').map((paragraph, index) => (
-              paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
-            ))}
-          </motion.div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: project.slug === 'travel' ? 0.15 : 0.5, duration: 0.8 }}
+          style={{
+            maxWidth: '760px',
+            width: '100%',
+            fontSize: isMobile ? '1.15rem' : '1.25rem',
+            lineHeight: '1.9',
+            color: 'var(--fg)',
+            fontFamily: "'EB Garamond', serif",
+            textAlign: 'center',
+            marginBottom: '32px'
+          }}
+        >
+          {project.description.split('\n').map((paragraph, index) => (
+            paragraph.trim() ? <p key={index} style={{ marginBottom: '24px' }}>{paragraph}</p> : null
+          ))}
+        </motion.div>
 
         
 

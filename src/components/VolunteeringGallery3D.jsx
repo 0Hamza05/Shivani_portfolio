@@ -26,6 +26,13 @@ const CARDS = [
 
 const CLAMP = CARDS.length - 1;
 
+// Repeat the card array several times so scrolling/dragging through the
+// gallery loops seamlessly instead of hard-stopping at the first/last card.
+const LOOP_REPEATS = 5;
+const LOOPED_CARDS = Array.from({ length: CARDS.length * LOOP_REPEATS }, (_, i) => CARDS[i % CARDS.length]);
+const LOOPED_CLAMP = LOOPED_CARDS.length - 1;
+const LOOP_START = Math.floor(LOOP_REPEATS / 2) * CARDS.length;
+
 // ── Gallery (3D diagonal line, like the reference) ────────────────────────────
 //
 // Scene is tilted via  rotateX(-14deg) rotateY(55deg)
@@ -47,8 +54,8 @@ const BASE_TRANSFORM = 'rotateX(-24deg) rotateY(-55deg)';
 function Gallery3D({ onOpen }) {
   const viewportRef   = useRef(null);
   const sceneRef      = useRef(null);  // one scene element updated by RAF
-  const progRef       = useRef(0);
-  const targetRef     = useRef(0);
+  const progRef       = useRef(LOOP_START);
+  const targetRef     = useRef(LOOP_START);
   const rafRef        = useRef(null);
   const snapTimer     = useRef(null);
   const isDragging    = useRef(false);
@@ -82,7 +89,7 @@ function Gallery3D({ onOpen }) {
   // ── Wheel (passive: false to allow preventDefault) ───────────────────────
   const onWheel = useCallback((e) => {
     e.preventDefault();
-    targetRef.current = Math.max(0, Math.min(CLAMP, targetRef.current + e.deltaY / 90));
+    targetRef.current = Math.max(0, Math.min(LOOPED_CLAMP, targetRef.current + e.deltaY / 90));
     scheduleSnap();
   }, [scheduleSnap]);
 
@@ -105,7 +112,7 @@ function Gallery3D({ onOpen }) {
     if (!isDragging.current) return;
     const dy = e.clientY - dragStart.current;
     if (Math.abs(dy) > 4) hasDragged.current = true;
-    targetRef.current = Math.max(0, Math.min(CLAMP, progAtDrag.current - dy / 55));
+    targetRef.current = Math.max(0, Math.min(LOOPED_CLAMP, progAtDrag.current - dy / 55));
   };
   const onMouseUp = () => {
     if (!isDragging.current) return;
@@ -120,14 +127,14 @@ function Gallery3D({ onOpen }) {
   const onTouchStart  = (e) => { touchStartY.current = e.touches[0].clientY; progAtTouch.current = targetRef.current; };
   const onTouchMove   = (e) => {
     const dy = e.touches[0].clientY - touchStartY.current;
-    targetRef.current = Math.max(0, Math.min(CLAMP, progAtTouch.current - dy / 55));
+    targetRef.current = Math.max(0, Math.min(LOOPED_CLAMP, progAtTouch.current - dy / 55));
   };
   const onTouchEnd    = () => { targetRef.current = Math.round(targetRef.current); };
 
   // ── Card click ──────────────────────────────────────────────────────────────
   const handleCardClick = (idx) => {
     if (hasDragged.current) return;
-    onOpen(idx);
+    onOpen(idx % CARDS.length);
   };
 
   return (
@@ -142,12 +149,17 @@ function Gallery3D({ onOpen }) {
       onTouchEnd={onTouchEnd}
       style={{
         position: 'fixed',
-        left: 0, right: 0, bottom: 0,
-        top: 'var(--nav-h)',
+        top: 'calc(var(--nav-h) + 2vh)',
+        left: '10%',
+        width: '80%',
+        height: '82vh',
+        borderRadius: '20px',
         // Perspective on the wrapper — children get depth distortion
         perspective: '1300px',
         perspectiveOrigin: '50% 50%',
         background: 'oklch(96.5% 0.003 65)',
+        boxShadow: '0 40px 100px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.05)',
+        overflow: 'hidden',
         cursor: grabbingCursor ? 'grabbing' : 'grab',
         userSelect: 'none',
         WebkitUserSelect: 'none',
@@ -190,16 +202,16 @@ function Gallery3D({ onOpen }) {
         ref={sceneRef}
         style={{
           position: 'absolute',
-          left: '18%',
-          top: '56%',
+          left: '50%',
+          top: '50%',
           transform: BASE_TRANSFORM,   // RAF overwrites this each frame
           transformStyle: 'preserve-3d',
         }}
       >
-        {CARDS.map((card, idx) => (
+        {LOOPED_CARDS.map((card, idx) => (
           // Static position in scene space — never updated after mount
           <div
-            key={card.img}
+            key={`${card.img}-${idx}`}
             style={{
               position: 'absolute',
               width: '300px',
@@ -221,7 +233,7 @@ function Gallery3D({ onOpen }) {
               <img
                 src={card.opt}
                 alt={card.title}
-                loading={idx < 6 ? 'eager' : 'lazy'}
+                loading={Math.abs(idx - LOOP_START) < 6 ? 'eager' : 'lazy'}
                 draggable={false}
               />
             </div>
