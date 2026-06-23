@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { projects } from '../data/projects';
+import { useVolunteeringTransition } from './VolunteeringTransitionOverlay';
+import { useLondonTransition } from './LondonTransitionOverlay';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 const LEMON       = '#FFF44F';
@@ -12,8 +14,13 @@ const LEMON_FAINT = 'rgba(255, 244, 79, 0.65)';
 const PILLAR_SLUGS = ['life-in-india', 'dance', 'travel', 'university', 'life-in-london', 'volunteering'];
 const pillarLinks = PILLAR_SLUGS.map(slug => projects.find(p => p.slug === slug)).filter(Boolean);
 
+const volunteeringProject = projects.find(p => p.slug === 'volunteering');
+
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { triggerTransition } = useVolunteeringTransition();
+  const { triggerTransition: triggerLondonTransition } = useLondonTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -30,6 +37,28 @@ export default function Navbar() {
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
+  };
+
+  // Same dive-into-the-shelf transition used by the Home grid's volunteering
+  // thumbnails, triggered from the nav pill instead of a clicked photo.
+  const diveToVolunteering = (e) => {
+    e.preventDefault();
+    if (!volunteeringProject) return;
+    setMenuOpen(false);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ghostSrcs = volunteeringProject.gridImages.filter(src => src !== volunteeringProject.cover).slice(0, 3);
+    triggerTransition(navigate, '/work/volunteering', {
+      src: volunteeringProject.cover,
+      rect,
+      startIndex: 0,
+      ghostSrcs,
+    });
+  };
+
+  const diveToLondon = (e) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    triggerLondonTransition(navigate, '/work/life-in-london');
   };
 
   const navLinkStyle = (active = false) => ({
@@ -118,23 +147,52 @@ export default function Navbar() {
           {pillarLinks.map(proj => {
             const path = `/work/${proj.slug}`;
             const active = isActive(path);
+            const sharedHover = {
+              onMouseEnter: e => {
+                e.currentTarget.style.color = LEMON;
+                if (!active) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 244, 79, 0.08)';
+                  e.currentTarget.style.borderColor     = 'rgba(255, 244, 79, 0.35)';
+                }
+              },
+              onMouseLeave: e => {
+                e.currentTarget.style.color           = active ? LEMON : LEMON_DIM;
+                e.currentTarget.style.backgroundColor = active ? 'rgba(255, 244, 79, 0.15)' : 'transparent';
+                e.currentTarget.style.borderColor     = active ? 'rgba(255, 244, 79, 0.60)' : 'transparent';
+              },
+            };
+            if (proj.slug === 'volunteering') {
+              return (
+                <a
+                  key={proj.id}
+                  href={path}
+                  style={navLinkStyle(active)}
+                  onClick={diveToVolunteering}
+                  {...sharedHover}
+                >
+                  {proj.title}
+                </a>
+              );
+            }
+            if (proj.slug === 'life-in-london') {
+              return (
+                <a
+                  key={proj.id}
+                  href={path}
+                  style={navLinkStyle(active)}
+                  onClick={diveToLondon}
+                  {...sharedHover}
+                >
+                  {proj.title}
+                </a>
+              );
+            }
             return (
               <Link
                 key={proj.id}
                 to={path}
                 style={navLinkStyle(active)}
-                onMouseEnter={e => {
-                  e.currentTarget.style.color = LEMON;
-                  if (!active) {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 244, 79, 0.08)';
-                    e.currentTarget.style.borderColor     = 'rgba(255, 244, 79, 0.35)';
-                  }
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.color           = active ? LEMON : LEMON_DIM;
-                  e.currentTarget.style.backgroundColor = active ? 'rgba(255, 244, 79, 0.15)' : 'transparent';
-                  e.currentTarget.style.borderColor     = active ? 'rgba(255, 244, 79, 0.60)' : 'transparent';
-                }}
+                {...sharedHover}
               >
                 {proj.title}
               </Link>
@@ -229,21 +287,34 @@ export default function Navbar() {
                 }}>
                   PILLARS
                 </span>
-                {pillarLinks.map(proj => (
-                  <Link
-                    key={proj.id}
-                    to={`/work/${proj.slug}`}
-                    style={{
-                      fontFamily: "'Mocha'",
-                      fontSize:   '1.25rem',
-                      color:      location.pathname === `/work/${proj.slug}` ? LEMON : LEMON_DIM,
-                      transition: 'color 0.2s',
-                      textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
-                    }}
-                  >
-                    {proj.title}
-                  </Link>
-                ))}
+                {pillarLinks.map(proj => {
+                  const mobileStyle = {
+                    fontFamily: "'Mocha'",
+                    fontSize:   '1.25rem',
+                    color:      location.pathname === `/work/${proj.slug}` ? LEMON : LEMON_DIM,
+                    transition: 'color 0.2s',
+                    textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
+                  };
+                  if (proj.slug === 'volunteering') {
+                    return (
+                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToVolunteering}>
+                        {proj.title}
+                      </a>
+                    );
+                  }
+                  if (proj.slug === 'life-in-london') {
+                    return (
+                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToLondon}>
+                        {proj.title}
+                      </a>
+                    );
+                  }
+                  return (
+                    <Link key={proj.id} to={`/work/${proj.slug}`} style={mobileStyle}>
+                      {proj.title}
+                    </Link>
+                  );
+                })}
               </div>
 
               <Link

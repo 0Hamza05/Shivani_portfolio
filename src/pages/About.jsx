@@ -373,7 +373,7 @@ export default function About() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: '500px' }}
+          style={{ position: 'relative', zIndex: 2, textAlign: 'center', maxWidth: '560px' }}
         >
           <h1 style={{
             fontFamily: "'Cote Lumiere'",
@@ -385,14 +385,17 @@ export default function About() {
           }}>
             Shivani Pawar
           </h1>
-          <p style={{
+          <div style={{
             fontFamily: "'EB Garamond', serif",
-            fontStyle: 'italic',
-            fontSize: 'clamp(0.82rem, 1.9vh, 1.25rem)',
+            fontSize: 'clamp(0.78rem, 1.75vh, 1.1rem)',
+            lineHeight: 1.55,
             color: INK_DIM,
           }}>
-            A life, told in stages.
-          </p>
+            <p style={{ marginBottom: '0.6em' }}>Hey, this is Shivani! I hope you’ve enjoyed your time here and getting to know a little more about me.</p>
+            <p style={{ marginBottom: '0.6em' }}>I’m London-based, working in data privacy and cybersecurity. By every other hour, you’ll find me dancing, painting, experimenting in the kitchen, playing with someone’s dog, eating cake or stumbling into whatever new experience London has decided to offer that weekend.</p>
+            <p style={{ marginBottom: '0.6em' }}>I believe in giving back through volunteering, through showing up and through using whatever I have to contribute something worthwhile.</p>
+            <p>This is my world. Thank you for being part of it 👒</p>
+          </div>
         </motion.div>
 
         <motion.div

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
+import { useVolunteeringTransition } from '../components/VolunteeringTransitionOverlay';
+import { useLondonTransition } from '../components/LondonTransitionOverlay';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 
@@ -56,6 +58,9 @@ function buildColumns(photos, numCols) {
 
 // ─── Photo card ───────────────────────────────────────────────────────────────
 function PhotoCard({ photo, eager }) {
+  const navigate = useNavigate();
+  const { triggerTransition } = useVolunteeringTransition();
+  const { triggerTransition: triggerLondonTransition } = useLondonTransition();
   const isVideo = VIDEO_RE.test(photo.imgUrl);
   const media = isVideo ? (
     <video
@@ -98,6 +103,36 @@ function PhotoCard({ photo, eager }) {
       >{media}</a>
     );
   }
+  if (photo.project.slug === 'volunteering') {
+    return (
+      <a
+        href="/work/volunteering"
+        draggable={false} onDragStart={e => e.preventDefault()}
+        className="mc-card"
+        onClick={e => {
+          e.preventDefault();
+          const rect = e.currentTarget.getBoundingClientRect();
+          const startIndex = photo.project.gridImages.indexOf(photo.imgUrl);
+          const ghostSrcs = photo.project.gridImages.filter(src => src !== photo.imgUrl).slice(0, 3);
+          triggerTransition(navigate, '/work/volunteering', { src: photo.imgUrl, rect, startIndex, ghostSrcs });
+        }}
+      >{media}</a>
+    );
+  }
+  if (photo.project.slug === 'life-in-london') {
+    return (
+      <a
+        href="/work/life-in-london"
+        draggable={false} onDragStart={e => e.preventDefault()}
+        className="mc-card"
+        onClick={e => {
+          e.preventDefault();
+          triggerLondonTransition(navigate, '/work/life-in-london');
+        }}
+      >{media}</a>
+    );
+  }
+
   return (
     <Link
       to={`/work/${photo.project.slug}`}

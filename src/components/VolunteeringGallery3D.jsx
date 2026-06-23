@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 // ── Card metadata ─────────────────────────────────────────────────────────────
 const CARDS = [
@@ -52,10 +52,17 @@ const STEP_Z = 300;
 const BASE_TRANSFORM = 'rotateX(-24deg) rotateY(-55deg)';
 
 function Gallery3D({ onOpen }) {
+  // If we arrived via the home-grid "dive" transition, open already centred
+  // on the card the user clicked instead of always starting at card 0.
+  const location  = useLocation();
+  const rawIndex  = location.state?.startIndex;
+  const startCard = (typeof rawIndex === 'number' && rawIndex >= 0) ? rawIndex % CARDS.length : 0;
+  const startProg = LOOP_START + startCard;
+
   const viewportRef   = useRef(null);
   const sceneRef      = useRef(null);  // one scene element updated by RAF
-  const progRef       = useRef(LOOP_START);
-  const targetRef     = useRef(LOOP_START);
+  const progRef       = useRef(startProg);
+  const targetRef     = useRef(startProg);
   const rafRef        = useRef(null);
   const snapTimer     = useRef(null);
   const isDragging    = useRef(false);
@@ -149,10 +156,10 @@ function Gallery3D({ onOpen }) {
       onTouchEnd={onTouchEnd}
       style={{
         position: 'fixed',
-        top: 'calc(var(--nav-h) + 2vh)',
+        top: 'calc(var(--nav-h) + 3vh)',
+        bottom: '3vh',
         left: '10%',
         width: '80%',
-        height: '82vh',
         borderRadius: '20px',
         // Perspective on the wrapper — children get depth distortion
         perspective: '1300px',
@@ -233,7 +240,7 @@ function Gallery3D({ onOpen }) {
               <img
                 src={card.opt}
                 alt={card.title}
-                loading={Math.abs(idx - LOOP_START) < 6 ? 'eager' : 'lazy'}
+                loading={Math.abs(idx - startProg) < 6 ? 'eager' : 'lazy'}
                 draggable={false}
               />
             </div>
