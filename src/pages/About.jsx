@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+import Butterfly, { BUTTERFLY_FLAP_CSS } from '../components/Butterfly';
 
 const PEACH      = 'oklch(93% 0.025 58)';
 const INK        = 'oklch(27% 0.035 40)';
@@ -301,6 +302,98 @@ function SocialLink({ href, label, Icon, external, className }) {
   );
 }
 
+// Reuses the page's own palette (terracotta, gold, the dusty pink already on
+// the vinyl label and HouseHeartIcon) so these read as part of the existing
+// memento set rather than a new decorative system.
+const ABOUT_BUTTERFLY_PALETTE = [
+  { wing: '#d98a78', accent: '#f3c9bd', body: '#7a3f30' }, // terracotta
+  { wing: '#d9b86a', accent: '#f0ddae', body: '#6b5526' }, // gold
+  { wing: VINYL_LABEL,  accent: '#f8dde1', body: '#7a4a55' }, // dusty pink
+];
+
+// Tucked into the negative space near existing mementos rather than roaming
+// the whole page — small, local, lazy loops so they read as perched/drifting,
+// not as a swarm competing with the bio text. Anchors are laid out as a left
+// column, right column, top row and bottom row (6+6+4+4=20) so the dead-center
+// content column (bio text, vinyl, social row) always stays clear.
+function buildAboutButterflies() {
+  const anchors = [];
+
+  const leftY = [8, 24, 40, 56, 72, 88];
+  const leftX = ['3%', '7%', '2%', '8%', '4%', '6%'];
+  leftY.forEach((y, k) => anchors.push({
+    desktop: { left: leftX[k], top: `${y}%` },
+    mobile: k % 2 === 0 ? { left: '2%', top: `${Math.max(4, y - 4)}%` } : null,
+  }));
+
+  const rightY = [10, 26, 42, 58, 74, 90];
+  const rightX = ['3%', '7%', '2%', '8%', '4%', '6%'];
+  rightY.forEach((y, k) => anchors.push({
+    desktop: { right: rightX[k], top: `${y}%` },
+    mobile: k % 2 === 0 ? { right: '2%', top: `${Math.max(4, y - 4)}%` } : null,
+  }));
+
+  const topX = [15, 38, 62, 85];
+  topX.forEach((x, k) => anchors.push({
+    desktop: { left: `${x}%`, top: `${4 + (k % 2) * 3}%` },
+    mobile: { left: `${x}%`, top: '3%' },
+  }));
+
+  const bottomX = [20, 42, 58, 80];
+  bottomX.forEach((x, k) => anchors.push({
+    desktop: { left: `${x}%`, bottom: `${4 + (k % 2) * 3}%` },
+    mobile: null,
+  }));
+
+  return anchors.map((a, i) => {
+    const radius = 12 + (i % 4) * 3;
+    const angleOffset = ((i * 53) % 360) * (Math.PI / 180);
+    const x = [0, 1, 2, 3, 0].map(k => Math.round(Math.cos(angleOffset + (k / 4) * Math.PI * 2) * radius));
+    const y = [0, 1, 2, 3, 0].map(k => Math.round(Math.sin(angleOffset + (k / 4) * Math.PI * 2) * radius * 0.75));
+    return {
+      palette: i % ABOUT_BUTTERFLY_PALETTE.length,
+      size: 16 + (i % 6) * 2,
+      flap: 0.55 + (i % 5) * 0.045,
+      duration: 11 + (i % 7) * 1.1,
+      desktop: a.desktop,
+      mobile: a.mobile,
+      x, y,
+      rotate: i % 2 === 0 ? [0, -8, 7, -5, 0] : [0, 7, -6, 5, 0],
+    };
+  });
+}
+
+const ABOUT_BUTTERFLIES = buildAboutButterflies();
+
+function FlutteringButterfly({ data, pos, delay, shouldReduceMotion }) {
+  const c = ABOUT_BUTTERFLY_PALETTE[data.palette];
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.6 }}
+      animate={
+        shouldReduceMotion
+          ? { opacity: 0.95, scale: 1 }
+          : { opacity: [0, 0.95, 0.95, 0.95, 0.95], scale: 1, x: data.x, y: data.y, rotate: data.rotate }
+      }
+      transition={
+        shouldReduceMotion
+          ? { duration: 0.7, delay }
+          : { duration: data.duration, delay, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut' }
+      }
+      style={{ position: 'absolute', ...pos, pointerEvents: 'none' }}
+    >
+      <Butterfly
+        size={data.size}
+        wingColor={c.wing}
+        wingAccent={c.accent}
+        bodyColor={c.body}
+        flapDuration={data.flap}
+        flap={!shouldReduceMotion}
+      />
+    </motion.div>
+  );
+}
+
 function FloatingObject({ photo, pos, delay }) {
   const rotate = pos.rotate;
   const { Icon } = photo;
@@ -323,6 +416,7 @@ function FloatingObject({ photo, pos, delay }) {
 
 export default function About() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 860);
+  const shouldReduceMotion = useReducedMotion();
   const spotifyControllerRef = useRef(null);
   const embedMountRef = useRef(null);
 
@@ -346,12 +440,14 @@ export default function About() {
   }, []);
 
   const photos = MEMENTOS.filter(p => !isMobile || p.mobile);
+  const butterflies = ABOUT_BUTTERFLIES.filter(b => !isMobile || b.mobile);
   const vinylPos = isMobile
     ? { right: '2%', top: '2%' }
     : { right: '2%', top: '3%' };
 
   return (
     <main style={{ position: 'relative', height: '100vh', overflow: 'hidden', backgroundColor: PEACH }}>
+      <style>{BUTTERFLY_FLAP_CSS}</style>
       <div style={{
         position: 'absolute',
         top: 'var(--nav-h)', left: 0, right: 0, bottom: 0,
@@ -364,6 +460,16 @@ export default function About() {
       }}>
         {photos.map((photo, i) => (
           <FloatingObject key={photo.Icon.name} photo={photo} pos={isMobile ? photo.mobile : photo.desktop} delay={0.12 + i * 0.08} />
+        ))}
+
+        {butterflies.map((b, i) => (
+          <FlutteringButterfly
+            key={i}
+            data={b}
+            pos={isMobile ? b.mobile : b.desktop}
+            delay={0.4 + (i % 10) * 0.16}
+            shouldReduceMotion={shouldReduceMotion}
+          />
         ))}
 
         <Vinyl pos={vinylPos} controllerRef={spotifyControllerRef} />

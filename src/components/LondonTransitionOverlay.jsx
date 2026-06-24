@@ -23,6 +23,7 @@ export function LondonTransitionProvider({ children }) {
   const [showVideo, setShowVideo] = useState(false);
   const videoRef    = useRef(null);
   const activeRef   = useRef(false);
+  const srcLoadedRef = useRef(false);
   const timers      = useRef([]);
 
   const schedule = (fn, ms) => { const id = setTimeout(fn, ms); timers.current.push(id); };
@@ -38,6 +39,14 @@ export function LondonTransitionProvider({ children }) {
       navigate(to);
       activeRef.current = false;
       return;
+    }
+
+    // Only fetch the clip the first time it's actually needed — without a
+    // src attribute the browser never requests it, so visiting unrelated
+    // pages doesn't pull in a 12s video for no reason.
+    if (!srcLoadedRef.current && videoRef.current) {
+      videoRef.current.src = TUBE_VIDEO;
+      srcLoadedRef.current = true;
     }
 
     // 1 — current page slides out to the left.
@@ -120,10 +129,9 @@ export function LondonTransitionProvider({ children }) {
       >
         <video
           ref={videoRef}
-          src={TUBE_VIDEO}
           muted
           playsInline
-          preload="metadata"
+          preload="none"
           aria-hidden="true"
           onTimeUpdate={e => {
             if (e.currentTarget.currentTime * 1000 >= TUBE_CLIP_MS) e.currentTarget.pause();
