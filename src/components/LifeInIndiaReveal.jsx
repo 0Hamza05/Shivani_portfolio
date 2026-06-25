@@ -115,9 +115,9 @@ function FamilyMember({ member, index, scrollYProgress, offset }) {
       >
         <div
           style={{
-            width: 'clamp(76px, 9vw, 122px)',
-            height: 'clamp(76px, 9vw, 122px)',
-            borderRadius: '50%',
+            width: 'clamp(66px, 7.8vw, 104px)',
+            height: 'clamp(86px, 10.2vw, 136px)',
+            borderRadius: '12px',
             overflow: 'hidden',
             border: `3px solid ${GOLD}`,
             boxShadow: '0 10px 26px rgba(60, 40, 20, 0.22)',
@@ -157,7 +157,7 @@ function StaticFamilyMember({ member, offset }) {
         gap: '8px',
       }}
     >
-      <div style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', border: `3px solid ${GOLD}`, boxShadow: '0 10px 26px rgba(60,40,20,0.22)' }}>
+      <div style={{ width: 84, height: 110, borderRadius: '12px', overflow: 'hidden', border: `3px solid ${GOLD}`, boxShadow: '0 10px 26px rgba(60,40,20,0.22)' }}>
         <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
       <span style={{ fontFamily: "'EB Garamond', serif", fontSize: '0.85rem', color: INK }}>{member.name}</span>
@@ -357,7 +357,7 @@ export default function LifeInIndiaReveal() {
         <div style={{ position: 'relative', height: '70vh', minHeight: '460px' }}>
           {sectionTitle}
           <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: 140, height: 140, borderRadius: '50%', overflow: 'hidden', border: `4px solid ${TERRACOTTA}`, boxShadow: '0 16px 40px rgba(60,40,20,0.28)' }}>
+            <div style={{ width: 130, height: 172, borderRadius: '18px', overflow: 'hidden', border: `4px solid ${TERRACOTTA}`, boxShadow: '0 16px 40px rgba(60,40,20,0.28)' }}>
               <img src={ME_IMAGE} alt="Me" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <span style={{ fontFamily: "'EB Garamond', serif", fontSize: '0.95rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: INK }}>Me</span>
@@ -380,9 +380,9 @@ export default function LifeInIndiaReveal() {
             <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
               <div
                 style={{
-                  width: 'clamp(120px, 15vw, 200px)',
-                  height: 'clamp(120px, 15vw, 200px)',
-                  borderRadius: '50%',
+                  width: 'clamp(112px, 14vw, 180px)',
+                  height: 'clamp(148px, 18.5vw, 238px)',
+                  borderRadius: '18px',
                   overflow: 'hidden',
                   border: `4px solid ${TERRACOTTA}`,
                   boxShadow: '0 16px 40px rgba(60, 40, 20, 0.28)',
