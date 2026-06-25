@@ -6,6 +6,7 @@ import TravelMap from '../components/TravelMap';
 import { travelDestinations } from '../data/travelDestinations';
 import FamilyFlipbook from '../components/FamilyFlipbook';
 import VolunteeringGallery3D from '../components/VolunteeringGallery3D';
+import LifeInIndiaReveal from '../components/LifeInIndiaReveal';
 import CursorImageTrail from '../components/CursorImageTrail';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
@@ -583,6 +584,10 @@ export default function ProjectDetail() {
 
   if (project.slug === 'volunteering') {
     return <VolunteeringGallery3D />;
+  }
+
+  if (project.slug === 'life-in-india') {
+    return <LifeInIndiaReveal />;
   }
 
   return (
