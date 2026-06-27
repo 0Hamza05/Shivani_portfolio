@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useRef, useState } from 'react'
 import { motion } from 'framer-motion';
 
 const TUBE_VIDEO    = '/london%20tube.mp4';
-const TUBE_CLIP_MS  = 2800; // how much of the clip is ever allowed to play
+const TUBE_CLIP_MS  = 1000; // how much of the clip is ever allowed to play
 const EXIT_MS       = 550;  // current page sliding out left
 const ENTER_MS      = 600;  // destination sliding in from the right
 const VIDEO_FADE_MS = 320;
