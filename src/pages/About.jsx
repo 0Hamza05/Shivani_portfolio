@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import Butterfly, { BUTTERFLY_FLAP_CSS } from '../components/Butterfly';
 
@@ -34,123 +35,105 @@ function loadSpotifyIframeApi() {
   return spotifyApiLoadPromise;
 }
 
-function BookIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <path d="M50 25c-10-7-25-9-38-5v55c13-4 28-2 38 5z" fill="#f3e8d8" stroke="#c0654a" strokeWidth="2.4" />
-      <path d="M50 25c10-7 25-9 38-5v55c-13-4-28-2-38 5z" fill="#f3e8d8" stroke="#c0654a" strokeWidth="2.4" />
-      <line x1="50" y1="25" x2="50" y2="80" stroke="#c0654a" strokeWidth="2.4" />
-    </svg>
-  );
-}
+const ABOUT_PHOTOS_DIR = '/images/About';
 
-function GhungrooIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <path d="M15 30c18 10 52 10 70 0" stroke="#8a4a3a" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <circle cx="22" cy="42" r="7.5" fill="#c9a04f" />
-      <circle cx="40" cy="50" r="7.5" fill="#c9a04f" />
-      <circle cx="60" cy="50" r="7.5" fill="#c9a04f" />
-      <circle cx="78" cy="42" r="7.5" fill="#c9a04f" />
-      <circle cx="22" cy="46" r="1.8" fill="#7a5a20" />
-      <circle cx="40" cy="54" r="1.8" fill="#7a5a20" />
-      <circle cx="60" cy="54" r="1.8" fill="#7a5a20" />
-      <circle cx="78" cy="46" r="1.8" fill="#7a5a20" />
-    </svg>
-  );
-}
-
-function GraduationCapIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <path d="M10 40L50 22l40 18-40 18z" fill="#2b3a55" />
-      <path d="M28 48v18c0 5 10 9 22 9s22-4 22-9V48" fill="none" stroke="#2b3a55" strokeWidth="3.5" />
-      <circle cx="50" cy="40" r="2.6" fill="#c9a04f" />
-      <line x1="78" y1="40" x2="78" y2="62" stroke="#c9a04f" strokeWidth="2.6" />
-      <circle cx="78" cy="65" r="4.2" fill="#c9a04f" />
-    </svg>
-  );
-}
-
-function PlaneIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <path d="M8 52L88 14 56 88l-10-30-26-6z" fill="#d97757" />
-      <path d="M46 58l10 30 10-22z" fill="#b85a3e" />
-    </svg>
-  );
-}
-
-function HouseHeartIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <path d="M15 48L50 18l35 30" fill="none" stroke="#c0654a" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="24" y="46" width="52" height="36" fill="#f3e8d8" />
-      <path d="M50 70c-5-5-13-5-15 1-2 5 2 10 15 18 13-8 17-13 15-18-2-6-10-6-15-1z" fill="rgba(240,158,167,0.95)" />
-    </svg>
-  );
-}
-
-function UmbrellaIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <path d="M12 45a38 38 0 0 1 76 0z" fill="#2b3a55" />
-      <path d="M12 45a38 19 0 0 0 76 0" fill="none" stroke="#1d2840" strokeWidth="2" />
-      <line x1="50" y1="45" x2="50" y2="82" stroke="#f3e8d8" strokeWidth="3.5" />
-      <path d="M50 82c0 5-4 8-9 6" fill="none" stroke="#f3e8d8" strokeWidth="3.5" strokeLinecap="round" />
-      <line x1="50" y1="10" x2="50" y2="18" stroke="#c9a04f" strokeWidth="3.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CameraIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <rect x="12" y="32" width="76" height="50" rx="6" fill="#2a2420" />
-      <rect x="30" y="20" width="24" height="14" rx="3" fill="#2a2420" />
-      <circle cx="50" cy="58" r="18" fill="#7c8a96" />
-      <circle cx="50" cy="58" r="11" fill="#2a2420" />
-      <circle cx="74" cy="42" r="4" fill="#c9a04f" />
-    </svg>
-  );
-}
-
-function PlantIcon() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <path d="M50 60c-18-4-26-22-22-38 16 2 26 14 26 30z" fill="#7c9473" />
-      <path d="M50 60c18-4 26-22 22-38-16 2-26 14-26 30z" fill="#6a8262" />
-      <line x1="50" y1="60" x2="50" y2="82" stroke="#5c7355" strokeWidth="2.6" />
-      <path d="M32 80h36l-4 14h-28z" fill="#c0654a" />
-    </svg>
-  );
-}
-
+// Real snapshots (die-cut sticker photos) instead of drawn icons — natural
+// aspect ratio per photo (measured from each file) drives the height/width
+// pairing below so nothing looks stretched.
 const MEMENTOS = [
-  { Icon: BookIcon,
-    desktop: { left: '2%', top: '5%', rotate: -8, size: 'clamp(72px, 10vh, 112px)' },
-    mobile:  { left: '2%', top: '5%', rotate: -8, size: 'clamp(60px, 8vh, 85px)' } },
-  { Icon: PlantIcon,
-    desktop: { left: '1%', top: '30%', rotate: 10, size: 'clamp(56px, 8vh, 88px)' },
+  // Left column — two lanes side by side rather than one single-file strip.
+  // The bio text block leaves roughly 360px of completely empty margin on
+  // each side at desktop widths, far more than a single column of 5 photos
+  // ever used; splitting into a near-edge lane (bigger photos) and a second
+  // lane further in (smaller) uses that space and lets each photo be larger
+  // without the 5 of them needing to out-compete each other for height.
+  { src: `${ABOUT_PHOTOS_DIR}/1-removebg-preview.png`,
+    desktop: { left: '2%', top: '3%', rotate: -9, height: 'clamp(128px, 19vh, 176px)' },
+    narrow:  { left: '2%', top: '4%', rotate: -9, height: 'clamp(105px, 15.5vh, 160px)' },
+    mobile:  { left: '3%', top: '5%', rotate: -9, height: 'clamp(85px, 12vh, 122px)' } },
+  { src: `${ABOUT_PHOTOS_DIR}/2-removebg-preview.png`,
+    // Links through to the "Overcoming Fears" story, like photos 4 and 5.
+    linkTo: '/work/overcoming-fears',
+    desktop: { left: '16.5%', top: '21%', rotate: 5, height: 'clamp(95px, 14vh, 140px)' },
+    // Below ~1100px, the inner lane has nowhere to go (see isNarrowDesktop
+    // above) — falls back to a smaller single-file spot, same as before
+    // this lane layout existed.
+    narrow:  { left: '2%', top: '25%', rotate: 5, height: 'clamp(74px, 10.5vh, 106px)' },
     mobile:  null },
-  { Icon: GraduationCapIcon,
-    desktop: { left: '4%', top: '56%', rotate: 7, size: 'clamp(66px, 9vh, 100px)' },
-    mobile:  { left: '2%', bottom: '22%', rotate: 7, size: 'clamp(58px, 8vh, 82px)' } },
-  { Icon: GhungrooIcon,
-    desktop: { left: '9%', bottom: '4%', rotate: -6, size: 'clamp(60px, 8vh, 92px)' },
-    mobile:  { left: '2%', bottom: '4%', rotate: -6, size: 'clamp(55px, 7.5vh, 78px)' } },
-  { Icon: CameraIcon,
-    desktop: { right: '2%', top: '30%', rotate: 9, size: 'clamp(58px, 8vh, 86px)' },
+  { src: `${ABOUT_PHOTOS_DIR}/3-removebg-preview.png`,
+    // No mobile slot: at this rotation/size it would sit across the bio
+    // paragraph band (roughly 25%-90% of viewport height on narrow screens)
+    // and, unlike the old line-art icons, a solid photo there blocks text.
+    desktop: { left: '2%', top: '36%', rotate: -13, height: 'clamp(133px, 20vh, 184px)' },
+    narrow:  { left: '3%', top: '42%', rotate: -13, height: 'clamp(116px, 17vh, 176px)' },
     mobile:  null },
-  { Icon: PlaneIcon,
-    desktop: { right: '1%', top: '52%', rotate: -10, size: 'clamp(50px, 7vh, 76px)' },
+  { src: `${ABOUT_PHOTOS_DIR}/4-removebg-preview.png`,
+    linkTo: '/work/overcoming-fears',
+    desktop: { left: '16.5%', top: '55%', rotate: 0, height: 'clamp(101px, 15vh, 138px)' },
+    narrow:  { left: '2%', top: '64%', rotate: 0, height: 'clamp(78px, 11vh, 118px)' },
     mobile:  null },
-  { Icon: HouseHeartIcon,
-    desktop: { right: '4%', top: '70%', rotate: 8, size: 'clamp(64px, 9vh, 96px)' },
-    mobile:  { right: '2%', top: '30%', rotate: 8, size: 'clamp(58px, 8vh, 82px)' } },
-  { Icon: UmbrellaIcon,
-    desktop: { right: '3%', bottom: '4%', rotate: -7, size: 'clamp(62px, 8.5vh, 94px)' },
-    mobile:  { right: '2%', bottom: '4%', rotate: -7, size: 'clamp(56px, 7.5vh, 80px)' } },
+  { src: `${ABOUT_PHOTOS_DIR}/5-removebg-preview.png`,
+    linkTo: '/work/overcoming-fears',
+    desktop: { left: '2%', top: '71%', rotate: 8, height: 'clamp(108px, 15.5vh, 150px)' },
+    narrow:  { left: '1%', top: '80%', rotate: 8, height: 'clamp(72px, 10.5vh, 104px)' },
+    mobile:  { left: '3%', bottom: '5%', rotate: 8, height: 'clamp(83px, 12vh, 120px)' } },
+
+  // Right column — same two-lane idea, mirrored. Only 4 photos (not 5): the
+  // vinyl record eats the top of the near-edge lane, so it has less total
+  // room than the left side. Photo 8 lives in the top row instead.
+  { src: `${ABOUT_PHOTOS_DIR}/6-removebg-preview.png`,
+    // Pushed below the vinyl record, which claims the top-right corner.
+    desktop: { right: '1%', top: '24%', rotate: 7, height: 'clamp(118px, 17.5vh, 164px)' },
+    narrow:  { right: '1%', top: '24%', rotate: 7, height: 'clamp(86px, 13vh, 130px)' },
+    // Sits beside photo 1 on mobile (not stacked under it — there isn't
+    // enough vertical gap above the bio text for that).
+    mobile:  { left: '22%', top: '5%', rotate: 7, height: 'clamp(64px, 8.5vh, 92px)' } },
+  { src: `${ABOUT_PHOTOS_DIR}/7-removebg-preview.png`,
+    // Inner lane, starts below the top row's band (not near the very top)
+    // so it doesn't run into photo 13 sitting in the same horizontal range.
+    desktop: { right: '16.5%', top: '22%', rotate: -11, height: 'clamp(112px, 16vh, 144px)' },
+    narrow:  { right: '4%', top: '46%', rotate: -11, height: 'clamp(108px, 15.5vh, 159px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/9-removebg-preview.png`,
+    desktop: { right: '1%', top: '63%', rotate: -6, height: 'clamp(108px, 16vh, 152px)' },
+    narrow:  { right: '5%', top: '66%', rotate: -6, height: 'clamp(97px, 14vh, 146px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/10-removebg-preview.png`,
+    desktop: { right: '16.5%', top: '58%', rotate: 12, height: 'clamp(85px, 12.5vh, 124px)' },
+    narrow:  { right: '2%', top: '86%', rotate: 12, height: 'clamp(81px, 11.5vh, 119px)' },
+    mobile:  { right: '3%', bottom: '5%', rotate: 12, height: 'clamp(80px, 11.5vh, 118px)' } },
+
+  // Top row, left to right (4 here, including photo 8 moved from the right
+  // column above)
+  { src: `${ABOUT_PHOTOS_DIR}/11-removebg-preview.png`,
+    desktop: { left: '14%', top: '1%', rotate: -5, height: 'clamp(102px, 15vh, 140px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/12-removebg-preview.png`,
+    desktop: { left: '36%', top: '2%', rotate: 9, height: 'clamp(90px, 13vh, 124px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/8-removebg-preview.png`,
+    // No mobile slot, same reasoning as photo 3 above.
+    desktop: { left: '64%', top: '2%', rotate: 4, height: 'clamp(88px, 12.5vh, 119px)' },
+    narrow:  { left: '64%', top: '2%', rotate: 4, height: 'clamp(76px, 11vh, 113px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/13-removebg-preview.png`,
+    // Positioned from the right (like the vinyl record itself) rather than
+    // the left, so the gap between them stays proportionally consistent
+    // across viewport widths instead of drifting at narrower desktop sizes.
+    desktop: { right: '17%', top: '1%', rotate: -8, height: 'clamp(110px, 16vh, 152px)' },
+    narrow:  { right: '17%', top: '1%', rotate: -8, height: 'clamp(95px, 13.5vh, 140px)' },
+    mobile:  null },
+
+  // Bottom row, left to right
+  { src: `${ABOUT_PHOTOS_DIR}/14-removebg-preview.png`,
+    desktop: { left: '20%', bottom: '1%', rotate: 6, height: 'clamp(118px, 17vh, 162px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/sticker-1.webp`,
+    desktop: { left: '50%', bottom: '2%', rotate: -10, height: 'clamp(95px, 13.5vh, 132px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/sticker-2.webp`,
+    desktop: { left: '68%', bottom: '1%', rotate: 3, height: 'clamp(100px, 14.5vh, 140px)' },
+    mobile:  null },
 ];
 
 function MailIcon() {
@@ -394,9 +377,26 @@ function FlutteringButterfly({ data, pos, delay, shouldReduceMotion }) {
   );
 }
 
+// Flat paw-print badge — the same hand-cut SVG language as the playing-card
+// pip and the SVG mementos this page used to have — marking the handful of
+// photos that link through to another page, since a sticker photo gives no
+// other hint that it's clickable rather than decorative.
+function PawBadge() {
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="14.5" r="6.2" fill={CARD_CREAM} stroke="#c0654a" strokeWidth="1.1" />
+      <ellipse cx="7.4" cy="11.8" rx="2.1" ry="2.6" fill="#c0654a" transform="rotate(-18 7.4 11.8)" />
+      <ellipse cx="12" cy="9.6" rx="2.2" ry="2.8" fill="#c0654a" />
+      <ellipse cx="16.6" cy="11.8" rx="2.1" ry="2.6" fill="#c0654a" transform="rotate(18 16.6 11.8)" />
+      <ellipse cx="12" cy="15.2" rx="3.4" ry="3" fill="#c0654a" />
+    </svg>
+  );
+}
+
 function FloatingObject({ photo, pos, delay }) {
   const rotate = pos.rotate;
-  const { Icon } = photo;
+  const img = <img src={photo.src} alt="" style={{ height: '100%', width: 'auto', display: 'block' }} draggable={false} />;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 18, rotate: rotate * 1.6, scale: 0.8 }}
@@ -405,23 +405,49 @@ function FloatingObject({ photo, pos, delay }) {
       style={{
         position: 'absolute',
         ...pos,
-        width: pos.size,
+        width: 'auto',
         filter: 'drop-shadow(0 10px 16px rgba(60,40,20,0.22))',
       }}
     >
-      <Icon />
+      {photo.linkTo ? (
+        <Link
+          to={photo.linkTo}
+          className="about-clickable-photo"
+          aria-label="View the Overcoming Fears story"
+          style={{ position: 'relative', display: 'block', height: '100%', width: 'auto' }}
+        >
+          {img}
+          <span className="about-clickable-badge" style={{
+            position: 'absolute', right: '-9%', bottom: '-9%',
+            width: '30%', minWidth: '22px', maxWidth: '34px',
+            aspectRatio: '1 / 1',
+          }}>
+            <PawBadge />
+          </span>
+        </Link>
+      ) : img}
     </motion.div>
   );
 }
 
 export default function About() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 860);
+  // The bio text block has a fixed pixel width, so its side margins shrink
+  // faster than the (vh-sized) photo lanes as the window narrows. Below
+  // ~1300px there's no longer reliable room for two side-by-side lanes, so
+  // the inner lane's photos (2, 4, 7, 10) fall back to a tighter single-file
+  // position. (Measured: margin = 0.5*viewportWidth - 280px; verified safe
+  // at 1300px+, breaks down between 1100-1280px.)
+  const [isNarrowDesktop, setIsNarrowDesktop] = useState(window.innerWidth < 1300);
   const shouldReduceMotion = useReducedMotion();
   const spotifyControllerRef = useRef(null);
   const embedMountRef = useRef(null);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 860);
+    const onResize = () => {
+      setIsMobile(window.innerWidth < 860);
+      setIsNarrowDesktop(window.innerWidth < 1300);
+    };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -448,6 +474,17 @@ export default function About() {
   return (
     <main style={{ position: 'relative', height: '100vh', overflow: 'hidden', backgroundColor: PEACH }}>
       <style>{BUTTERFLY_FLAP_CSS}</style>
+      <style>{`
+        .about-clickable-photo { transition: transform 0.25s ease; }
+        .about-clickable-photo:hover, .about-clickable-photo:focus-visible {
+          transform: scale(1.06) translateY(-3px);
+        }
+        .about-clickable-badge { animation: aboutBadgePulse 2.6s ease-in-out infinite; }
+        @keyframes aboutBadgePulse {
+          0%, 100% { transform: scale(1); }
+          50%      { transform: scale(1.12); }
+        }
+      `}</style>
       <div style={{
         position: 'absolute',
         top: 'var(--nav-h)', left: 0, right: 0, bottom: 0,
@@ -459,7 +496,12 @@ export default function About() {
         padding: '0 16px',
       }}>
         {photos.map((photo, i) => (
-          <FloatingObject key={photo.Icon.name} photo={photo} pos={isMobile ? photo.mobile : photo.desktop} delay={0.12 + i * 0.08} />
+          <FloatingObject
+            key={photo.src}
+            photo={photo}
+            pos={isMobile ? photo.mobile : (isNarrowDesktop && photo.narrow) || photo.desktop}
+            delay={0.12 + i * 0.08}
+          />
         ))}
 
         {butterflies.map((b, i) => (

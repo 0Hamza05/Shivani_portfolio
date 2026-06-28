@@ -411,16 +411,11 @@ export const projects = [
       '/images/overcoming-fears/dog-1.webp',
       '/images/overcoming-fears/dog-2.webp',
       '/images/overcoming-fears/dog-3.webp',
+      '/images/overcoming-fears/dog-4.webp',
+      '/images/overcoming-fears/dog-5.webp',
+      '/images/overcoming-fears/dog-6.webp',
     ],
-    blogImages: [
-      '/images/dance/dance-1.webp',
-      '/images/dance/dance-2.webp',
-      '/images/dance/dance-3.webp',
-      '/images/dance/dance-4.mp4',
-      '/images/dance/dance-5.webp',
-      '/images/dance/dance-6.mp4',
-    ],
-    description: "What means hand-eye coordination to some means soul food for me. DANCE.\n\nDance has been part of my existence since I believe I could walk. Strongly encouraged by my parents to learn a disciplined and difficult dance form, I began learning Kathak (An indian classical dance form). This dance form is beyond coordination; it is a prayer to Lord Shiva (from whom I get my name). From strict back posture to feet syncing with tabla beats at over 8times the speed, the neck following your arms and sometimes not, and the face emoting not less than an actor - it has it all. \n\nAt 10, I played sports in school and came back ever excited to go to my dance class. My teacher was ever warm and beautiful, always making me feel like the best of the lot. Well, i also have my exam certificates to prove my distinction!\n\nAs an overthinker, worrier and bearer of all the stress in the world, this one place felt like a sanctuary. Music beats lowered my mind, and worries hid behind the emotion of the performance, as I grew up.\n\nMy commitment to this dance lasts beyond the class and beyond India. During my time at Warwick, I was the president of the Indian Classical Dance Society, and after uni, I signed up as a Kathak teacher on Superprof. "
+    description: "The moment we decide that what we want is more important than what we are afraid of.\n\nOvercoming fear is not about the absence of terror, but the courage to take the step anyway. It is the trembling leap into the unknown that redefines our limits. Each fear conquered becomes a stepping stone to a stronger, more authentic version of ourselves, proving that our boundaries are often just illusions."
   },
   {
     id: 12,
@@ -587,30 +582,6 @@ export const projects = [
       '/images/travel/travel-19.webp',
     ],
     description: ""
-  },
-  {
-    id: 18,
-    slug: 'overcoming-fears',
-    title: 'Overcoming Fears',
-    category: 'Stage 18',
-    cover: '/images/overcoming-fears/optimised/dog-op-1.webp',
-    gridImages: [
-      '/images/overcoming-fears/optimised/dog-op-1.webp',
-      '/images/overcoming-fears/optimised/dog-op-2.webp',
-      '/images/overcoming-fears/optimised/dog-op-3.webp',
-      '/images/overcoming-fears/optimised/dog-op-4.webp',
-      '/images/overcoming-fears/optimised/dog-op-5.webp',
-      '/images/overcoming-fears/optimised/dog-op-6.webp',
-    ],
-    blogImages: [
-      '/images/overcoming-fears/dog-1.webp',
-      '/images/overcoming-fears/dog-2.webp',
-      '/images/overcoming-fears/dog-3.webp',
-      '/images/overcoming-fears/dog-4.webp',
-      '/images/overcoming-fears/dog-5.webp',
-      '/images/overcoming-fears/dog-6.webp',
-    ],
-    description: "The moment we decide that what we want is more important than what we are afraid of.\n\nOvercoming fear is not about the absence of terror, but the courage to take the step anyway. It is the trembling leap into the unknown that redefines our limits. Each fear conquered becomes a stepping stone to a stronger, more authentic version of ourselves, proving that our boundaries are often just illusions."
   },
   {
     id: 19,
