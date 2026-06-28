@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { travelDestinations } from "../data/travelDestinations";
 
-const SVG_RATIO = 1009.6727 / 665.96301;
+// The map SVG is cropped (via its viewBox) to just the region around the
+// used pins, so this ratio matches that cropped region, not the full world.
+const SVG_RATIO = 555.32 / 279.7045;
 const TRAIL_SAMPLE_DIST = 0.7;
 // Offset (px) from pin center before the leader line starts — enough to clear the teardrop body
 const PIN_RADIUS = 9;
