@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { projects } from '../data/projects';
-import { useVolunteeringTransition } from './VolunteeringTransitionOverlay';
 import { useLondonTransition } from './LondonTransitionOverlay';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
@@ -14,12 +13,9 @@ const LEMON_FAINT = 'rgba(255, 244, 79, 0.65)';
 const PILLAR_SLUGS = ['life-in-india', 'dance', 'travel', 'university', 'life-in-london', 'volunteering'];
 const pillarLinks = PILLAR_SLUGS.map(slug => projects.find(p => p.slug === slug)).filter(Boolean);
 
-const volunteeringProject = projects.find(p => p.slug === 'volunteering');
-
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { triggerTransition } = useVolunteeringTransition();
   const { triggerTransition: triggerLondonTransition } = useLondonTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -37,22 +33,6 @@ export default function Navbar() {
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
-  };
-
-  // Same dive-into-the-shelf transition used by the Home grid's volunteering
-  // thumbnails, triggered from the nav pill instead of a clicked photo.
-  const diveToVolunteering = (e) => {
-    e.preventDefault();
-    if (!volunteeringProject) return;
-    setMenuOpen(false);
-    const rect = e.currentTarget.getBoundingClientRect();
-    const ghostSrcs = volunteeringProject.gridImages.filter(src => src !== volunteeringProject.cover).slice(0, 3);
-    triggerTransition(navigate, '/work/volunteering', {
-      src: volunteeringProject.cover,
-      rect,
-      startIndex: 0,
-      ghostSrcs,
-    });
   };
 
   const diveToLondon = (e) => {
@@ -161,19 +141,6 @@ export default function Navbar() {
                 e.currentTarget.style.borderColor     = active ? 'rgba(255, 244, 79, 0.60)' : 'transparent';
               },
             };
-            if (proj.slug === 'volunteering') {
-              return (
-                <a
-                  key={proj.id}
-                  href={path}
-                  style={navLinkStyle(active)}
-                  onClick={diveToVolunteering}
-                  {...sharedHover}
-                >
-                  {proj.title}
-                </a>
-              );
-            }
             if (proj.slug === 'life-in-london') {
               return (
                 <a
@@ -295,13 +262,6 @@ export default function Navbar() {
                     transition: 'color 0.2s',
                     textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
                   };
-                  if (proj.slug === 'volunteering') {
-                    return (
-                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToVolunteering}>
-                        {proj.title}
-                      </a>
-                    );
-                  }
                   if (proj.slug === 'life-in-london') {
                     return (
                       <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToLondon}>

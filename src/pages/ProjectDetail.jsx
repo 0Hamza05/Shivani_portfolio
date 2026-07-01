@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TravelMap from '../components/TravelMap';
 import { travelDestinations } from '../data/travelDestinations';
 import FamilyFlipbook from '../components/FamilyFlipbook';
-import VolunteeringGallery3D from '../components/VolunteeringGallery3D';
+import VolunteeringBoard from '../components/VolunteeringBoard';
 import LifeInIndiaReveal from '../components/LifeInIndiaReveal';
 import UniversityPuzzle from '../components/UniversityPuzzle';
 import CursorImageTrail from '../components/CursorImageTrail';
@@ -585,7 +585,7 @@ export default function ProjectDetail() {
   }
 
   if (project.slug === 'volunteering') {
-    return <VolunteeringGallery3D />;
+    return <VolunteeringBoard />;
   }
 
   if (project.slug === 'life-in-india') {
