@@ -105,8 +105,8 @@ function PuzzlePiece({ piece, index, onOpen, reduce }) {
       transition={reduce ? { duration: 0.3 } : {
         // organic momentum: a spring with a touch of overshoot, staggered
         type: 'spring', stiffness: 42, damping: 11, mass: 1.05,
-        delay: 0.45 + index * 0.14,
-        opacity: { duration: 0.5, delay: 0.45 + index * 0.14 },
+        delay: 0.08 + index * 0.09,
+        opacity: { duration: 0.4, delay: 0.08 + index * 0.09 },
       }}
       style={{
         position: 'absolute',
@@ -128,7 +128,9 @@ function PuzzlePiece({ piece, index, onOpen, reduce }) {
         onHoverEnd={() => setHovered(false)}
         onFocus={() => setHovered(true)}
         onBlur={() => setHovered(false)}
-        animate={{ y: hovered ? -10 : 0, scale: hovered ? 1.03 : 1 }}
+        // Rest slightly under 1 so a small, even gap opens along every seam;
+        // hover grows past it to fill in and lift the piece forward.
+        animate={{ y: hovered ? -10 : 0, scale: hovered ? 1.01 : 0.975 }}
         transition={{ type: 'spring', stiffness: 300, damping: 22 }}
         className="uni-piece"
         style={{
@@ -349,12 +351,12 @@ export default function UniversityPuzzle() {
 
   // Anticipation beat, then reveal.
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), reduce ? 0 : 380);
+    const t = setTimeout(() => setReady(true), reduce ? 0 : 140);
     return () => clearTimeout(t);
   }, [reduce]);
 
   // Heading fades in once the pieces have (roughly) settled.
-  const headingDelay = reduce ? 0.15 : 0.45 + universityPieces.length * 0.14 + 0.5;
+  const headingDelay = reduce ? 0.15 : 0.08 + universityPieces.length * 0.09 + 0.35;
 
   return (
     <main
