@@ -1,5 +1,5 @@
 import { projects } from '../data/projects';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useId } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import TravelMap from '../components/TravelMap';
@@ -333,6 +333,7 @@ useEffect(() => {
 const PIN_COLORS = ['#e03a3a', '#3a7be0', '#27ae60', '#e0883a'];
 
 function PolaroidPhoto({ src, rotation = 0, pinColor = '#e03a3a' }) {
+  const gid = useId();
   return (
     <div style={{
       transform: `rotate(${rotation}deg)`,
@@ -342,33 +343,33 @@ function PolaroidPhoto({ src, rotation = 0, pinColor = '#e03a3a' }) {
       filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.20))',
       flexShrink: 0,
     }}>
-      {/* Board pin */}
+      {/* Paper clip hooked over the top edge */}
       <div style={{
         position: 'absolute',
-        top: '-10px',
+        top: '-19px',
         left: '50%',
-        transform: 'translateX(-50%)',
+        transform: 'translateX(-50%) rotate(-8deg)',
         zIndex: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
         pointerEvents: 'none',
+        filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.30))',
       }}>
-        {/* Pin head */}
-        <div style={{
-          width: '13px',
-          height: '13px',
-          borderRadius: '50%',
-          background: `radial-gradient(circle at 35% 30%, ${pinColor}cc, ${pinColor})`,
-          boxShadow: `0 2px 5px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.4)`,
-        }} />
-        {/* Pin needle */}
-        <div style={{
-          width: '1.5px',
-          height: '6px',
-          background: 'rgba(0,0,0,0.25)',
-          marginTop: '-1px',
-        }} />
+        <svg width="20" height="44" viewBox="0 0 20 44" fill="none" style={{ display: 'block' }}>
+          <defs>
+            {/* Coated-metal sheen tinted with the destination colour */}
+            <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0"    stopColor="#ffffff" />
+              <stop offset="0.30" stopColor={pinColor} />
+              <stop offset="0.62" stopColor={pinColor} />
+              <stop offset="1"    stopColor="rgba(0,0,0,0.45)" />
+            </linearGradient>
+          </defs>
+          {/* Outer loop */}
+          <rect x="3.4" y="2.6" width="13.2" height="38.8" rx="6.6"
+            stroke={`url(#${gid})`} strokeWidth="2.6" />
+          {/* Inner loop, offset up for the classic double-bend look */}
+          <rect x="6.6" y="5.4" width="6.8" height="24" rx="3.4"
+            stroke={`url(#${gid})`} strokeWidth="2.6" />
+        </svg>
       </div>
 
       {/* Polaroid frame */}

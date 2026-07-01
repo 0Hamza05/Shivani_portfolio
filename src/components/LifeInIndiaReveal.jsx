@@ -19,7 +19,9 @@ const SCROLL_PAGE_DIR = '/images/life-in-india/scroll-page';
 // varies per photo, not the shape. Corner radius scales with size so the
 // rounding looks consistent across the smaller and bigger frames.
 const PHOTO_ASPECT = 0.82;
-const photoShape = w => ({ w, h: Math.round(w / PHOTO_ASPECT), r: Math.round(w * 0.14) });
+const photoShape = (w, circle = false) => circle
+  ? { w, h: w, r: w / 2 }
+  : { w, h: Math.round(w / PHOTO_ASPECT), r: Math.round(w * 0.14) };
 
 // Both photo folders combined, interleaved one-for-one so the two sources
 // mix around the ring instead of each clumping on its own side. The
@@ -28,7 +30,7 @@ const photoShape = w => ({ w, h: Math.round(w / PHOTO_ASPECT), r: Math.round(w *
 const FAMILY_PHOTO_FILES = [
   { dir: FAMILY_PHOTOS_DIR, file: 'family-op-1.webp', name: 'Family 1' },
   { dir: SCROLL_PAGE_DIR, file: 'Mom_result.webp', name: 'Mom' },
-  { dir: FAMILY_PHOTOS_DIR, file: 'family-op-2.webp', name: 'Family 2' },
+  { dir: FAMILY_PHOTOS_DIR, file: 'family-op-2.webp', name: 'Family 2', wOverride: 160 },
   { dir: SCROLL_PAGE_DIR, file: 'Nani_result.webp', name: 'Nani' },
   { dir: FAMILY_PHOTOS_DIR, file: 'family-op-3.webp', name: 'Family 3' },
   { dir: SCROLL_PAGE_DIR, file: 'Nanu_result.webp', name: 'Nanu' },
@@ -36,11 +38,11 @@ const FAMILY_PHOTO_FILES = [
   { dir: SCROLL_PAGE_DIR, file: 'Mamu_result.webp', name: 'Mamu' },
   { dir: FAMILY_PHOTOS_DIR, file: 'family-op-5.webp', name: 'Family 5' },
   { dir: SCROLL_PAGE_DIR, file: 'Sharu_result.webp', name: 'Sharu' },
-  { dir: FAMILY_PHOTOS_DIR, file: 'family-op-6.webp', name: 'Family 6' },
+  { dir: FAMILY_PHOTOS_DIR, file: 'family-op-6.webp', name: 'Family 6', wOverride: 160 },
   { dir: SCROLL_PAGE_DIR, file: 'img-1_result.webp', name: 'img-1' },
   { dir: FAMILY_PHOTOS_DIR, file: 'family-op-7.webp', name: 'Family 7' },
-  { dir: SCROLL_PAGE_DIR, file: 'img-2_result.webp', name: 'img-2' },
-  { dir: FAMILY_PHOTOS_DIR, file: 'family-op-8.webp', name: 'Family 8' },
+  { dir: SCROLL_PAGE_DIR, file: 'img-2_result_result.webp', name: 'img-2', circle: true },
+  { dir: FAMILY_PHOTOS_DIR, file: 'family-op-8.webp', name: 'Family 8', circle: true },
   { dir: SCROLL_PAGE_DIR, file: 'img-3_result.webp', name: 'img-3' },
   { dir: FAMILY_PHOTOS_DIR, file: 'family-op-9.webp', name: 'Family 9' },
   { dir: SCROLL_PAGE_DIR, file: 'img-4_result.webp', name: 'img-4' },
@@ -66,7 +68,8 @@ function bellWidth(i, count) {
 const FAMILY_MEMBERS = FAMILY_PHOTO_FILES.map((f, i) => ({
   name: f.name,
   image: `${f.dir}/${f.file}`,
-  shape: photoShape(bellWidth(i, FAMILY_PHOTO_FILES.length)),
+  circle: f.circle ?? false,
+  shape: photoShape(f.wOverride ?? bellWidth(i, FAMILY_PHOTO_FILES.length), f.circle),
 }));
 
 // A small fixed tilt per photo (deterministic hash, not Math.random, so the
@@ -84,9 +87,9 @@ const SIZE_SCALE = { desktop: 1, tablet: 0.8, mobile: 0.48 };
 // CSS clamp() values used where it's rendered) — only needed so the layout
 // solver below can keep family photos clear of it.
 const ME_SIZE = {
-  desktop: { w: 175, h: 232 },
-  tablet: { w: 135, h: 178 },
-  mobile: { w: 116, h: 153 },
+  desktop: { w: 175, h: 175 },
+  tablet: { w: 135, h: 135 },
+  mobile: { w: 116, h: 116 },
 };
 
 // All photos share the same scroll window so they emerge together rather
@@ -129,10 +132,14 @@ function rotatedHalfExtents(w, h, deg) {
 // ray from center — with 20+ photos that forced too many similarly-sized
 // ones onto the same radius cap near the bottom edge, flattening them into
 // a visible straight line instead of a natural scatter.
-function computeFamilyLayout(breakpoint, stageW, stageH) {
+function computeFamilyLayout(breakpoint, stageW, stageH, aspectRatios) {
   const count = FAMILY_MEMBERS.length;
   const sizeScale = SIZE_SCALE[breakpoint];
-  const shapes = FAMILY_MEMBERS.map(m => ({ w: m.shape.w * sizeScale, h: m.shape.h * sizeScale }));
+  const shapes = FAMILY_MEMBERS.map((m, i) => {
+    const w = m.shape.w * sizeScale;
+    const ratio = aspectRatios?.[i] ?? (m.circle ? 1 : PHOTO_ASPECT);
+    return { w, h: w / ratio };
+  });
   const me = ME_SIZE[breakpoint];
   const margin = breakpoint === 'mobile' ? 6 : breakpoint === 'tablet' ? 10 : 14;
   const titleClearance = breakpoint === 'mobile' ? 70 : 92;
@@ -222,14 +229,13 @@ function FamilyMember({ member, index, scrollYProgress, offset, shape, rotation,
           height: `${shape.h}px`,
           borderRadius: `${shape.r}px`,
           overflow: 'hidden',
-          border: `3px solid ${GOLD}`,
           boxShadow: '0 10px 26px rgba(60, 40, 20, 0.22)',
           willChange: 'transform, opacity',
           pointerEvents: 'auto',
           cursor: 'pointer',
         }}
       >
-        <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+        <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', objectFit: member.circle ? 'cover' : 'contain' }} draggable={false} />
       </motion.div>
     </div>
   );
@@ -252,12 +258,11 @@ function StaticFamilyMember({ member, offset, shape, rotation, onOpen }) {
         height: `${shape.h}px`,
         borderRadius: `${shape.r}px`,
         overflow: 'hidden',
-        border: `3px solid ${GOLD}`,
         boxShadow: '0 10px 26px rgba(60,40,20,0.22)',
         cursor: 'pointer',
       }}
     >
-      <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <img src={member.image} alt={member.name} style={{ width: '100%', height: '100%', objectFit: member.circle ? 'cover' : 'contain' }} />
     </div>
   );
 }
@@ -534,6 +539,7 @@ export default function LifeInIndiaReveal() {
   const [openPost, setOpenPost] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const openLightbox = (src, alt) => setLightbox({ src, alt });
+  const [imgRatios, setImgRatios] = useState(null);
 
   useEffect(() => {
     const onResize = () => {
@@ -544,10 +550,28 @@ export default function LifeInIndiaReveal() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  useEffect(() => {
+    Promise.all(
+      FAMILY_MEMBERS.map(m => new Promise(resolve => {
+        if (m.circle) { resolve(1); return; }
+        const img = new Image();
+        img.onload = () => resolve(img.naturalWidth / img.naturalHeight);
+        img.onerror = () => resolve(PHOTO_ASPECT);
+        img.src = m.image;
+      }))
+    ).then(setImgRatios);
+  }, []);
+
   const { scrollYProgress } = useScroll({ target: trackRef, offset: ['start start', 'end end'] });
-  const offsets = computeFamilyLayout(breakpoint, stageSize.w, stageSize.h);
+  const offsets = computeFamilyLayout(breakpoint, stageSize.w, stageSize.h, imgRatios);
   const sizeScale = SIZE_SCALE[breakpoint];
-  const shapes = FAMILY_MEMBERS.map(m => ({ w: Math.round(m.shape.w * sizeScale), h: Math.round(m.shape.h * sizeScale), r: Math.round(m.shape.r * sizeScale) }));
+  const shapes = FAMILY_MEMBERS.map((m, i) => {
+    const w = Math.round(m.shape.w * sizeScale);
+    const r = Math.round(m.shape.r * sizeScale);
+    const ratio = imgRatios?.[i] ?? (m.circle ? 1 : PHOTO_ASPECT);
+    const h = Math.round(w / ratio);
+    return { w, h, r };
+  });
   const trackHeight = breakpoint === 'mobile' ? '220vh' : '280vh';
 
   const sectionTitle = (
@@ -572,7 +596,7 @@ export default function LifeInIndiaReveal() {
             tabIndex={0}
             aria-label="View photo of Me"
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(ME_IMAGE, 'Me'); } }}
-            style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, width: 130, height: 172, borderRadius: '18px', overflow: 'hidden', border: `4px solid ${TERRACOTTA}`, boxShadow: '0 16px 40px rgba(60,40,20,0.28)', cursor: 'pointer' }}
+            style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, width: 130, height: 130, borderRadius: '50%', overflow: 'hidden', border: `4px solid ${TERRACOTTA}`, boxShadow: '0 16px 40px rgba(60,40,20,0.28)', cursor: 'pointer' }}
           >
             <img src={ME_IMAGE} alt="Me" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
@@ -604,8 +628,8 @@ export default function LifeInIndiaReveal() {
                 transform: 'translate(-50%, -50%)',
                 zIndex: 20,
                 width: 'clamp(112px, 14vw, 180px)',
-                height: 'clamp(148px, 18.5vw, 238px)',
-                borderRadius: '18px',
+                height: 'clamp(112px, 14vw, 180px)',
+                borderRadius: '50%',
                 overflow: 'hidden',
                 border: `4px solid ${TERRACOTTA}`,
                 boxShadow: '0 16px 40px rgba(60, 40, 20, 0.28)',

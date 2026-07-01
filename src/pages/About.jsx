@@ -40,99 +40,84 @@ const ABOUT_PHOTOS_DIR = '/images/About';
 // Real snapshots (die-cut sticker photos) instead of drawn icons — natural
 // aspect ratio per photo (measured from each file) drives the height/width
 // pairing below so nothing looks stretched.
+// Two dense collage clusters flanking the central "desk mat" card — objects
+// overlap each other and bleed onto the card's edges, like a scattered
+// personal workspace. All widths are vh-based so the clusters keep constant
+// pixel size and stay tucked against the left/right edges as the window
+// widens. Desktop (>=1300px): full two-lane clusters. narrow (860-1300px):
+// pulled tighter to the edge / single-file so they never reach the centered
+// bio text. mobile (<860px): four corner anchors only.
 const MEMENTOS = [
-  // Left column — two lanes side by side rather than one single-file strip.
-  // The bio text block leaves roughly 360px of completely empty margin on
-  // each side at desktop widths, far more than a single column of 5 photos
-  // ever used; splitting into a near-edge lane (bigger photos) and a second
-  // lane further in (smaller) uses that space and lets each photo be larger
-  // without the 5 of them needing to out-compete each other for height.
+  // ── LEFT cluster ─────────────────────────────────────────────────────────
+  // Outer lane (hugs the edge, biggest photos), overlapping top-to-bottom.
   { src: `${ABOUT_PHOTOS_DIR}/1-removebg-preview.png`,
-    desktop: { left: '2%', top: '3%', rotate: -9, height: 'clamp(128px, 19vh, 176px)' },
-    narrow:  { left: '2%', top: '4%', rotate: -9, height: 'clamp(105px, 15.5vh, 160px)' },
-    mobile:  { left: '3%', top: '5%', rotate: -9, height: 'clamp(85px, 12vh, 122px)' } },
-  { src: `${ABOUT_PHOTOS_DIR}/2-removebg-preview.png`,
-    // Links through to the "Overcoming Fears" story, like photos 4 and 5.
-    linkTo: '/work/overcoming-fears',
-    desktop: { left: '16.5%', top: '21%', rotate: 5, height: 'clamp(95px, 14vh, 140px)' },
-    // Below ~1100px, the inner lane has nowhere to go (see isNarrowDesktop
-    // above) — falls back to a smaller single-file spot, same as before
-    // this lane layout existed.
-    narrow:  { left: '2%', top: '25%', rotate: 5, height: 'clamp(74px, 10.5vh, 106px)' },
-    mobile:  null },
+    desktop: { left: '0.5%', top: '11%', rotate: -8,  height: 'clamp(205px, 28vh, 272px)' },
+    narrow:  { left: '1%',   top: '3%',  rotate: -8,  height: 'clamp(120px, 16vh, 172px)' },
+    mobile:  { left: '2%',   top: '4%',  rotate: -8,  height: 'clamp(90px,  13vh, 130px)' } },
   { src: `${ABOUT_PHOTOS_DIR}/3-removebg-preview.png`,
-    // No mobile slot: at this rotation/size it would sit across the bio
-    // paragraph band (roughly 25%-90% of viewport height on narrow screens)
-    // and, unlike the old line-art icons, a solid photo there blocks text.
-    desktop: { left: '2%', top: '36%', rotate: -13, height: 'clamp(133px, 20vh, 184px)' },
-    narrow:  { left: '3%', top: '42%', rotate: -13, height: 'clamp(116px, 17vh, 176px)' },
-    mobile:  null },
-  { src: `${ABOUT_PHOTOS_DIR}/4-removebg-preview.png`,
-    linkTo: '/work/overcoming-fears',
-    desktop: { left: '16.5%', top: '55%', rotate: 0, height: 'clamp(101px, 15vh, 138px)' },
-    narrow:  { left: '2%', top: '64%', rotate: 0, height: 'clamp(78px, 11vh, 118px)' },
+    desktop: { left: '1%',   top: '36%', rotate: -13, height: 'clamp(215px, 29vh, 288px)' },
+    narrow:  { left: '1%',   top: '38%', rotate: -13, height: 'clamp(130px, 18vh, 188px)' },
     mobile:  null },
   { src: `${ABOUT_PHOTOS_DIR}/5-removebg-preview.png`,
     linkTo: '/work/overcoming-fears',
-    desktop: { left: '2%', top: '71%', rotate: 8, height: 'clamp(108px, 15.5vh, 150px)' },
-    narrow:  { left: '1%', top: '80%', rotate: 8, height: 'clamp(72px, 10.5vh, 104px)' },
-    mobile:  { left: '3%', bottom: '5%', rotate: 8, height: 'clamp(83px, 12vh, 120px)' } },
-
-  // Right column — same two-lane idea, mirrored. Only 4 photos (not 5): the
-  // vinyl record eats the top of the near-edge lane, so it has less total
-  // room than the left side. Photo 8 lives in the top row instead.
-  { src: `${ABOUT_PHOTOS_DIR}/6-removebg-preview.png`,
-    // Pushed below the vinyl record, which claims the top-right corner.
-    desktop: { right: '1%', top: '24%', rotate: 7, height: 'clamp(118px, 17.5vh, 164px)' },
-    narrow:  { right: '1%', top: '24%', rotate: 7, height: 'clamp(86px, 13vh, 130px)' },
-    // Sits beside photo 1 on mobile (not stacked under it — there isn't
-    // enough vertical gap above the bio text for that).
-    mobile:  { left: '22%', top: '5%', rotate: 7, height: 'clamp(64px, 8.5vh, 92px)' } },
-  { src: `${ABOUT_PHOTOS_DIR}/7-removebg-preview.png`,
-    // Inner lane, starts below the top row's band (not near the very top)
-    // so it doesn't run into photo 13 sitting in the same horizontal range.
-    desktop: { right: '16.5%', top: '22%', rotate: -11, height: 'clamp(112px, 16vh, 144px)' },
-    narrow:  { right: '4%', top: '46%', rotate: -11, height: 'clamp(108px, 15.5vh, 159px)' },
+    desktop: { left: '0.5%', top: '62%', rotate: 8,   height: 'clamp(200px, 27vh, 262px)' },
+    narrow:  { left: '1%',   top: '74%', rotate: 8,   height: 'clamp(118px, 16vh, 168px)' },
+    mobile:  { left: '2%',   bottom: '4%', rotate: 8, height: 'clamp(88px, 12vh, 125px)' } },
+  // Inner lane (tucked behind/over the outer lane, reaches toward the card).
+  { src: `${ABOUT_PHOTOS_DIR}/11-removebg-preview.png`,
+    desktop: { left: '12%',  top: '4%',  rotate: -4, height: 'clamp(142px, 19vh, 184px)' },
+    narrow:  { left: '13%',  top: '3%',  rotate: -4, height: 'clamp(96px,  13vh, 130px)' },
     mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/2-removebg-preview.png`,
+    linkTo: '/work/overcoming-fears',
+    desktop: { left: '11%',  top: '25%', rotate: 5,  height: 'clamp(172px, 23vh, 222px)' },
+    narrow:  { left: '2%',   top: '20%', rotate: 5,   height: 'clamp(108px, 14.5vh, 155px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/4-removebg-preview.png`,
+    linkTo: '/work/overcoming-fears',
+    desktop: { left: '11%',  top: '49%', rotate: 0,   height: 'clamp(178px, 24vh, 232px)' },
+    narrow:  { left: '2%',   top: '56%', rotate: 0,   height: 'clamp(112px, 15vh, 160px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/14-removebg-preview.png`,
+    desktop: { left: '12%',  top: '72%', rotate: 6,  height: 'clamp(142px, 19vh, 186px)' },
+    narrow:  { left: '14%',  top: '78%', rotate: 6,  height: 'clamp(96px,  13vh, 130px)' },
+    mobile:  null },
+
+  // ── RIGHT cluster ────────────────────────────────────────────────────────
+  // Outer lane (hugs the edge) — starts below the vinyl (top ~26%).
+  { src: `${ABOUT_PHOTOS_DIR}/6-removebg-preview.png`,
+    desktop: { right: '0.5%', top: '28%', rotate: 7,  height: 'clamp(195px, 26vh, 250px)' },
+    narrow:  { right: '1%',   top: '30%', rotate: 7,  height: 'clamp(120px, 16vh, 172px)' },
+    mobile:  { right: '2%',   top: '4%',  rotate: 7,  height: 'clamp(88px,  12vh, 125px)' } },
   { src: `${ABOUT_PHOTOS_DIR}/9-removebg-preview.png`,
-    desktop: { right: '1%', top: '63%', rotate: -6, height: 'clamp(108px, 16vh, 152px)' },
-    narrow:  { right: '5%', top: '66%', rotate: -6, height: 'clamp(97px, 14vh, 146px)' },
+    desktop: { right: '0.5%', top: '54%', rotate: -6, height: 'clamp(195px, 26vh, 250px)' },
+    narrow:  { right: '1%',   top: '55%', rotate: -6, height: 'clamp(120px, 16vh, 172px)' },
+    mobile:  null },
+  // Inner lane.
+  { src: `${ABOUT_PHOTOS_DIR}/13-removebg-preview.png`,
+    desktop: { right: '14.5%', top: '4%', rotate: -8, height: 'clamp(142px, 19vh, 184px)' },
+    narrow:  { right: '15%',  top: '3%',  rotate: -8, height: 'clamp(96px,  13vh, 130px)' },
+    mobile:  null },
+  { src: `${ABOUT_PHOTOS_DIR}/7-removebg-preview.png`,
+    desktop: { right: '14.5%', top: '30%', rotate: -11, height: 'clamp(172px, 23vh, 222px)' },
+    narrow:  { right: '2%',   top: '75%', rotate: -11, height: 'clamp(112px, 15vh, 160px)' },
     mobile:  null },
   { src: `${ABOUT_PHOTOS_DIR}/10-removebg-preview.png`,
-    desktop: { right: '16.5%', top: '58%', rotate: 12, height: 'clamp(85px, 12.5vh, 124px)' },
-    narrow:  { right: '2%', top: '86%', rotate: 12, height: 'clamp(81px, 11.5vh, 119px)' },
-    mobile:  { right: '3%', bottom: '5%', rotate: 12, height: 'clamp(80px, 11.5vh, 118px)' } },
-
-  // Top row, left to right (4 here, including photo 8 moved from the right
-  // column above)
-  { src: `${ABOUT_PHOTOS_DIR}/11-removebg-preview.png`,
-    desktop: { left: '14%', top: '1%', rotate: -5, height: 'clamp(102px, 15vh, 140px)' },
-    mobile:  null },
-  { src: `${ABOUT_PHOTOS_DIR}/12-removebg-preview.png`,
-    desktop: { left: '36%', top: '2%', rotate: 9, height: 'clamp(90px, 13vh, 124px)' },
-    mobile:  null },
+    desktop: { right: '14.5%', top: '53%', rotate: 12, height: 'clamp(172px, 23vh, 222px)' },
+    narrow:  { right: '15%',  top: '55%', rotate: 12, height: 'clamp(108px, 14.5vh, 155px)' },
+    mobile:  { right: '2%',   bottom: '4%', rotate: 12, height: 'clamp(88px, 12vh, 125px)' } },
   { src: `${ABOUT_PHOTOS_DIR}/8-removebg-preview.png`,
-    // No mobile slot, same reasoning as photo 3 above.
-    desktop: { left: '64%', top: '2%', rotate: 4, height: 'clamp(88px, 12.5vh, 119px)' },
-    narrow:  { left: '64%', top: '2%', rotate: 4, height: 'clamp(76px, 11vh, 113px)' },
+    desktop: { right: '13.5%', top: '75%', rotate: 4,  height: 'clamp(140px, 19vh, 180px)' },
+    narrow:  { right: '15%',  top: '80%', rotate: 4,  height: 'clamp(94px,  13vh, 128px)' },
     mobile:  null },
-  { src: `${ABOUT_PHOTOS_DIR}/13-removebg-preview.png`,
-    // Positioned from the right (like the vinyl record itself) rather than
-    // the left, so the gap between them stays proportionally consistent
-    // across viewport widths instead of drifting at narrower desktop sizes.
-    desktop: { right: '17%', top: '1%', rotate: -8, height: 'clamp(110px, 16vh, 152px)' },
-    narrow:  { right: '17%', top: '1%', rotate: -8, height: 'clamp(95px, 13.5vh, 140px)' },
-    mobile:  null },
-
-  // Bottom row, left to right
-  { src: `${ABOUT_PHOTOS_DIR}/14-removebg-preview.png`,
-    desktop: { left: '20%', bottom: '1%', rotate: 6, height: 'clamp(118px, 17vh, 162px)' },
-    mobile:  null },
+  // Bottom-edge fillers tucked into the right cluster's lower gap.
   { src: `${ABOUT_PHOTOS_DIR}/sticker-1.webp`,
-    desktop: { left: '50%', bottom: '2%', rotate: -10, height: 'clamp(95px, 13.5vh, 132px)' },
+    desktop: { right: '2.5%', top: '79%', rotate: -10, height: 'clamp(130px, 17vh, 170px)' },
+    narrow:  { right: '3%',  bottom: '2%', rotate: -10, height: 'clamp(90px, 12vh, 122px)' },
     mobile:  null },
   { src: `${ABOUT_PHOTOS_DIR}/sticker-2.webp`,
-    desktop: { left: '68%', bottom: '1%', rotate: 3, height: 'clamp(100px, 14.5vh, 140px)' },
+    desktop: { right: '16%', top: '78%', rotate: 3,   height: 'clamp(132px, 18vh, 172px)' },
+    narrow:  { right: '17%', top: '82%', rotate: 3,   height: 'clamp(92px,  12.5vh, 126px)' },
     mobile:  null },
 ];
 
@@ -495,6 +480,29 @@ export default function About() {
         justifyContent: 'center',
         padding: '0 16px',
       }}>
+        {/* Central "desk mat" — a cream panel the bio sits on, so the
+            surrounding photos read as objects scattered across a workspace
+            and can bleed onto its edges (like a scrapbook / personal-space
+            collage) instead of floating loose on the page background. */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: '50%', top: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: isMobile ? '92vw' : 'min(660px, 52vw)',
+            height: isMobile ? '68vh' : '70vh',
+            background: CARD_CREAM,
+            borderRadius: '20px',
+            border: '1px solid oklch(88% 0.02 60)',
+            boxShadow: '0 24px 60px rgba(60,40,20,0.10), 0 4px 14px rgba(60,40,20,0.06)',
+            zIndex: 0,
+          }}
+        />
+
         {photos.map((photo, i) => (
           <FloatingObject
             key={photo.src}
