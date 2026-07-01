@@ -8,7 +8,7 @@ export const travelDestinations = [
     title: "Paris",
     mapPosition: { x: "28.53%", y: "42.45%" },
     labelOffset: { x: -8.5, y: 0 },
-    photos: ["/images/travel/travel-1.webp", "/images/travel/travel-2.webp"],
+    photos: ["/images/travel/Paris/paris1_result.webp", "/images/travel/Paris/paris2_result.webp"],
     story: [
       "When I was 17, I moved from India to the UK with a suitcase and very little else. On one of my first days in the university accommodation, I spotted another Indian girl unpacking across the hall. We've been inseparable ever since.",
       "Divya and I made three promises to each other somewhere between those early university days and figuring out what adulthood was supposed to look like - get jobs in London, visit Paris, visit New York.",
@@ -24,7 +24,7 @@ export const travelDestinations = [
     title: "Prague",
     mapPosition: { x: "34.58%", y: "40.55%" },
     labelOffset: { x: 6.5, y: -6 },
-    photos: ["/images/travel/travel-3.webp", "/images/travel/travel-4.webp"],
+    photos: ["/images/travel/Prague/prague1_result.webp", "/images/travel/Prague/prague2_result.webp"],
   },
   {
     id: "portugal",
@@ -38,7 +38,7 @@ export const travelDestinations = [
     title: "Thailand",
     mapPosition: { x: "78.18%", y: "84.76%" },
     labelOffset: { x: 5.5, y: 0 },
-    photos: ["/images/travel/travel-7.webp", "/images/travel/travel-8.webp"],
+    photos: ["/images/travel/Thailand/thailand1_result.webp", "/images/travel/Thailand/thailand2_result.webp"],
   },
   {
     id: "germany",
@@ -52,7 +52,7 @@ export const travelDestinations = [
     title: "Italy",
     mapPosition: { x: "33.58%", y: "52.43%" },
     labelOffset: { x: 0, y: 8 },
-    photos: ["/images/travel/travel-11.webp", "/images/travel/travel-12.jpg"],
+    photos: ["/images/travel/Italy/italy1_result.webp", "/images/travel/travel-12.jpg"],
   },
   {
     id: "amsterdam",
