@@ -7,6 +7,7 @@ import { travelDestinations } from '../data/travelDestinations';
 import FamilyFlipbook from '../components/FamilyFlipbook';
 import VolunteeringGallery3D from '../components/VolunteeringGallery3D';
 import LifeInIndiaReveal from '../components/LifeInIndiaReveal';
+import UniversityPuzzle from '../components/UniversityPuzzle';
 import CursorImageTrail from '../components/CursorImageTrail';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
@@ -589,6 +590,10 @@ export default function ProjectDetail() {
 
   if (project.slug === 'life-in-india') {
     return <LifeInIndiaReveal />;
+  }
+
+  if (project.slug === 'university') {
+    return <UniversityPuzzle />;
   }
 
   return (
