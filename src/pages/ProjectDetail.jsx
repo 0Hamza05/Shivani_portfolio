@@ -8,6 +8,7 @@ import FamilyFlipbook from '../components/FamilyFlipbook';
 import VolunteeringBoard from '../components/VolunteeringBoard';
 import LifeInIndiaReveal from '../components/LifeInIndiaReveal';
 import UniversityPuzzle from '../components/UniversityPuzzle';
+import DancePhotobooth from '../components/DancePhotobooth';
 import CursorImageTrail from '../components/CursorImageTrail';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
@@ -596,6 +597,10 @@ export default function ProjectDetail() {
     return <UniversityPuzzle />;
   }
 
+  if (project.slug === 'dance') {
+    return <DancePhotobooth />;
+  }
+
   return (
     <motion.div
       role="main"
@@ -778,7 +783,7 @@ export default function ProjectDetail() {
         })()}
 
         {/* Focused Editorial Film Strip horizontal scroll */}
-        {project.slug !== 'travel' && project.slug !== 'life-in-london' &&
+        {project.slug !== 'travel' && project.slug !== 'life-in-london' && project.slug !== 'dance' &&
           ((project.blogImages || project.gridImages || []).length > 0) && (
             <PillarFilmStrip
               images={project.blogImages || project.gridImages}

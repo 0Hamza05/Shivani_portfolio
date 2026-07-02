@@ -208,7 +208,6 @@ export const projects = [
     title: 'Dance',
     category: 'Stage 11',
     cover: '/images/dance/dance-4.mp4',
-    voiceNote: '/images/dance/dance-8.mp3',
     gridImages: [
       '/images/dance/optimised/dance-op-1.webp',
       '/images/dance/optimised/dance-op-2.webp',
