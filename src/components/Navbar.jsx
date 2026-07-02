@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { projects } from '../data/projects';
 import { useLondonTransition } from './LondonTransitionOverlay';
+import { useDanceTransition } from './DanceTransitionOverlay';
+import { useTravelTransition } from './TravelTransitionOverlay';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 const LEMON       = '#FFF44F';
@@ -17,6 +19,8 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { triggerTransition: triggerLondonTransition } = useLondonTransition();
+  const { triggerTransition: triggerDanceTransition } = useDanceTransition();
+  const { triggerTransition: triggerTravelTransition } = useTravelTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -39,6 +43,18 @@ export default function Navbar() {
     e.preventDefault();
     setMenuOpen(false);
     triggerLondonTransition(navigate, '/work/life-in-london');
+  };
+
+  const diveToDance = (e) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    triggerDanceTransition(navigate, '/work/dance');
+  };
+
+  const diveToTravel = (e) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    triggerTravelTransition(navigate, '/work/travel');
   };
 
   const navLinkStyle = (active = false) => ({
@@ -148,6 +164,32 @@ export default function Navbar() {
                   href={path}
                   style={navLinkStyle(active)}
                   onClick={diveToLondon}
+                  {...sharedHover}
+                >
+                  {proj.title}
+                </a>
+              );
+            }
+            if (proj.slug === 'dance') {
+              return (
+                <a
+                  key={proj.id}
+                  href={path}
+                  style={navLinkStyle(active)}
+                  onClick={diveToDance}
+                  {...sharedHover}
+                >
+                  {proj.title}
+                </a>
+              );
+            }
+            if (proj.slug === 'travel') {
+              return (
+                <a
+                  key={proj.id}
+                  href={path}
+                  style={navLinkStyle(active)}
+                  onClick={diveToTravel}
                   {...sharedHover}
                 >
                   {proj.title}
@@ -265,6 +307,20 @@ export default function Navbar() {
                   if (proj.slug === 'life-in-london') {
                     return (
                       <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToLondon}>
+                        {proj.title}
+                      </a>
+                    );
+                  }
+                  if (proj.slug === 'dance') {
+                    return (
+                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToDance}>
+                        {proj.title}
+                      </a>
+                    );
+                  }
+                  if (proj.slug === 'travel') {
+                    return (
+                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToTravel}>
                         {proj.title}
                       </a>
                     );

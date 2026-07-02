@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { projects } from '../data/projects';
 import { useLondonTransition } from '../components/LondonTransitionOverlay';
+import { useDanceTransition } from '../components/DanceTransitionOverlay';
+import { useTravelTransition } from '../components/TravelTransitionOverlay';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 
@@ -59,6 +61,8 @@ function buildColumns(photos, numCols) {
 function PhotoCard({ photo, eager }) {
   const navigate = useNavigate();
   const { triggerTransition: triggerLondonTransition } = useLondonTransition();
+  const { triggerTransition: triggerDanceTransition } = useDanceTransition();
+  const { triggerTransition: triggerTravelTransition } = useTravelTransition();
   const isVideo = VIDEO_RE.test(photo.imgUrl);
   const media = isVideo ? (
     <video
@@ -110,6 +114,32 @@ function PhotoCard({ photo, eager }) {
         onClick={e => {
           e.preventDefault();
           triggerLondonTransition(navigate, '/work/life-in-london');
+        }}
+      >{media}</a>
+    );
+  }
+  if (photo.project.slug === 'dance') {
+    return (
+      <a
+        href="/work/dance"
+        draggable={false} onDragStart={e => e.preventDefault()}
+        className="mc-card"
+        onClick={e => {
+          e.preventDefault();
+          triggerDanceTransition(navigate, '/work/dance');
+        }}
+      >{media}</a>
+    );
+  }
+  if (photo.project.slug === 'travel') {
+    return (
+      <a
+        href="/work/travel"
+        draggable={false} onDragStart={e => e.preventDefault()}
+        className="mc-card"
+        onClick={e => {
+          e.preventDefault();
+          triggerTravelTransition(navigate, '/work/travel');
         }}
       >{media}</a>
     );

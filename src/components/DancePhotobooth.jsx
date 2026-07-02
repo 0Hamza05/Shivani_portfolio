@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { projects } from '../data/projects';
 
 const INK     = 'oklch(27% 0.035 40)';
@@ -14,14 +14,20 @@ const isVideo = (src) => /\.(mp4|webm|mov|m4v)$/i.test(src || '');
 
 // ─── Strip geometry (px) ────────────────────────────────────────────────────
 const FRAMES = 4;
-const FRAME_W = 118;
-const FRAME_H = 88;
+const FRAME_W = 122;
 const FRAME_GAP = 6;
 const STRIP_PAD_X = 9;
 const STRIP_PAD_TOP = 9;
 const STRIP_PAD_BOT = 16;
-const STRIP_W = FRAME_W + STRIP_PAD_X * 2;                                  // 136
-const STRIP_H = FRAMES * FRAME_H + (FRAMES - 1) * FRAME_GAP + STRIP_PAD_TOP + STRIP_PAD_BOT; // 401
+const STRIP_W = FRAME_W + STRIP_PAD_X * 2;
+// Each frame's height follows its media's real aspect ratio, so the whole
+// image is seen (never cropped). Clamped so the strip stays a sane length.
+const FRAME_H_MIN = 60;
+const FRAME_H_MAX = 100;
+const frameHeight = (ratio) => {
+  const h = ratio ? FRAME_W / ratio : FRAME_W * 0.75; // fallback 4:3
+  return Math.round(Math.min(FRAME_H_MAX, Math.max(FRAME_H_MIN, h)));
+};
 
 // ─── Machine geometry ───────────────────────────────────────────────────────
 const WOOD_PAD = 18;
@@ -33,13 +39,15 @@ const ROLLER_Y = 40;                     // roller top, relative to well
 const ROLLER_H = 22;
 const FEED_Y = ROLLER_Y + 6;             // strip top tucks just behind the roller
 
-function Frame({ src }) {
+function Frame({ src, h }) {
+  // contain (on white photo-paper) so the whole frame is always visible; since
+  // h follows the media ratio, matched shots fill edge-to-edge with no bars.
   const common = {
-    width: '100%', height: FRAME_H, objectFit: 'cover', display: 'block',
-    background: '#111',
+    width: '100%', height: h, objectFit: 'contain', display: 'block',
+    background: '#fff',
   };
   return (
-    <div style={{ width: FRAME_W, height: FRAME_H, overflow: 'hidden', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)' }}>
+    <div style={{ width: FRAME_W, height: h, overflow: 'hidden', background: '#fff', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.07)' }}>
       {isVideo(src)
         ? <video src={src} autoPlay muted loop playsInline style={common} />
         : <img src={src} alt="" loading="lazy" draggable={false} style={common} />}
@@ -47,24 +55,25 @@ function Frame({ src }) {
   );
 }
 
-// One printed B&W photo-strip: feeds down from behind the roller, then hangs
-// with a gentle sway. Parent removes it (slides down + fades) to cycle.
-function PhotoStrip({ startIndex, onPrinted, reduce }) {
+// One printed photo-strip: feeds down from behind the roller, then hangs with
+// a gentle sway. The parent swaps it out (slides down + fades) to print the next.
+function PhotoStrip({ startIndex, reduce, ratios }) {
   const frames = Array.from({ length: FRAMES }, (_, i) => MEDIA[(startIndex + i) % MEDIA.length]);
+  const heights = frames.map(src => frameHeight(ratios[src]));
+  const stripH = heights.reduce((a, b) => a + b, 0) + (FRAMES - 1) * FRAME_GAP + STRIP_PAD_TOP + STRIP_PAD_BOT;
   return (
     <motion.div
-      initial={reduce ? { y: 6, opacity: 0 } : { y: -STRIP_H - 10 }}
-      animate={{ y: 0 }}
-      exit={reduce ? { opacity: 0 } : { y: 150, opacity: 0 }}
+      initial={reduce ? { y: 6, opacity: 0 } : { y: -stripH - 10 }}
+      animate={{ y: 0, opacity: 1 }}
       transition={reduce
         ? { duration: 0.4 }
         : { y: { duration: 2.6, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.6 } }}
-      onAnimationComplete={() => onPrinted && onPrinted()}
       style={{ position: 'absolute', top: FEED_Y, left: '50%', marginLeft: -STRIP_W / 2, zIndex: 2, width: STRIP_W }}
     >
-      <motion.div
-        animate={reduce ? {} : { rotate: [0, 0.8, -0.6, 0] }}
-        transition={reduce ? {} : { duration: 6.5, repeat: Infinity, ease: 'easeInOut', delay: 2.6 }}
+      {/* Sway is a CSS animation (not Framer) so AnimatePresence isn't blocked
+          from unmounting this strip by an infinitely-repeating child animation. */}
+      <div
+        className={reduce ? undefined : 'dance-sway'}
         style={{
           width: STRIP_W, background: '#fdfdfb',
           padding: `${STRIP_PAD_TOP}px ${STRIP_PAD_X}px ${STRIP_PAD_BOT}px`,
@@ -73,9 +82,9 @@ function PhotoStrip({ startIndex, onPrinted, reduce }) {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: FRAME_GAP }}>
-          {frames.map((src, i) => <Frame key={i} src={src} />)}
+          {frames.map((src, i) => <Frame key={i} src={src} h={heights[i]} />)}
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
@@ -174,30 +183,58 @@ function Machine({ printing, paused, onToggle, children }) {
 export default function DancePhotobooth() {
   const reduce = useReducedMotion();
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
-  const [cycle, setCycle] = useState(0);
-  const [printedDone, setPrintedDone] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [ratios, setRatios] = useState({}); // media src -> width/height
+  const [cycle, setCycle] = useState(0);       // which strip is printing
+  const [vp, setVp] = useState(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 1280,
+    h: typeof window !== 'undefined' ? window.innerHeight : 800,
+  }));
   const boothRef = useRef(null);
-  const timer = useRef(null);
 
   useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 900);
+    const onResize = () => {
+      setIsMobile(window.innerWidth < 900);
+      setVp({ w: window.innerWidth, h: window.innerHeight });
+    };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Advance to the next strip once the current one has printed — but only while
-  // not paused, so the pause button genuinely holds the machine.
+  // Scale the whole machine so it fills the viewport height under the navbar
+  // (bounded by the right column's width). All internal geometry scales as one.
+  const NAV_H = 54;
+  const boothScale = (() => {
+    if (isMobile) return Math.min(1, (vp.w - 40) / BOOTH_W);
+    const byH = (vp.h - NAV_H - 24) / BOOTH_H;
+    const byW = (vp.w * 0.46 - 40) / BOOTH_W;
+    return Math.max(0.8, Math.min(byH, byW, 2.4));
+  })();
+
+  // Measure each media item's natural aspect ratio so frames can show the
+  // whole image instead of cropping it.
   useEffect(() => {
-    clearTimeout(timer.current);
-    if (printedDone && !paused && !reduce) {
-      timer.current = setTimeout(() => {
-        setCycle(c => c + 1);
-        setPrintedDone(false);
-      }, 3600);
-    }
-    return () => clearTimeout(timer.current);
-  }, [printedDone, paused, reduce]);
+    MEDIA.forEach(src => {
+      if (isVideo(src)) {
+        const v = document.createElement('video');
+        v.preload = 'metadata'; v.muted = true;
+        v.onloadedmetadata = () => v.videoWidth && setRatios(r => ({ ...r, [src]: v.videoWidth / v.videoHeight }));
+        v.src = src;
+      } else {
+        const img = new Image();
+        img.onload = () => img.naturalWidth && setRatios(r => ({ ...r, [src]: img.naturalWidth / img.naturalHeight }));
+        img.src = src;
+      }
+    });
+  }, []);
+
+  // Print a fresh strip on a steady cadence (~2.6s to feed out + a hold),
+  // paused by the pause button so the machine genuinely stops.
+  useEffect(() => {
+    if (paused || reduce) return;
+    const id = setInterval(() => setCycle(c => c + 1), 6400);
+    return () => clearInterval(id);
+  }, [paused, reduce]);
 
   // Pausing also freezes the video frames.
   useEffect(() => {
@@ -215,6 +252,12 @@ export default function DancePhotobooth() {
       display: 'flex', flexDirection: isMobile ? 'column' : 'row',
       alignItems: isMobile ? 'stretch' : 'flex-start',
     }}>
+      <style>{`
+        @keyframes danceSway { 0%,100%{ transform: rotate(0deg); } 34%{ transform: rotate(0.8deg); } 67%{ transform: rotate(-0.6deg); } }
+        .dance-sway { animation: danceSway 6.5s ease-in-out infinite; animation-delay: 2.6s; will-change: transform; }
+        @media (prefers-reduced-motion: reduce) { .dance-sway { animation: none; } }
+      `}</style>
+
       {/* LEFT — text */}
       <section style={{
         flex: isMobile ? 'none' : '1 1 54%',
@@ -256,16 +299,16 @@ export default function DancePhotobooth() {
         alignItems: 'center',
         padding: isMobile ? '10px 24px 60px' : '0 24px',
       }}>
-        <div ref={boothRef}>
-          <Machine
-            printing={!printedDone}
-            paused={paused}
-            onToggle={() => setPaused(p => !p)}
-          >
-            <AnimatePresence>
-              <PhotoStrip key={cycle} startIndex={startIndex} onPrinted={() => setPrintedDone(true)} reduce={reduce} />
-            </AnimatePresence>
-          </Machine>
+        <div ref={boothRef} style={{ width: BOOTH_W * boothScale, height: BOOTH_H * boothScale, position: 'relative' }}>
+          <div style={{ transform: `scale(${boothScale})`, transformOrigin: 'top left', width: BOOTH_W, height: BOOTH_H }}>
+            <Machine
+              printing={!paused}
+              paused={paused}
+              onToggle={() => setPaused(p => !p)}
+            >
+              <PhotoStrip key={cycle} startIndex={startIndex} reduce={reduce} ratios={ratios} />
+            </Machine>
+          </div>
         </div>
       </section>
     </main>
