@@ -44,20 +44,43 @@ function knobPath(ax, ay, tvx, tvy, ox, oy, cfg) {
   );
 }
 
+// Radius (in local jigsaw units) for the puzzle's outer corners.
+const CORNER_R = 34;
+
 // Build one piece's clip-path 'd' in its local box. cfg = {top,right,bottom,left}
-// where 0 = straight border edge, +1 = tab out, -1 = tab in (blank).
+// where 0 = straight border edge, +1 = tab out, -1 = tab in (blank). Where two
+// straight border edges meet — i.e. the outer corners of the assembled puzzle —
+// the corner is rounded so the whole puzzle reads with soft rounded edges.
 function piecePath(cfg) {
-  // corners of the body, clockwise from top-left
-  const TL = `${T0} ${T0}`;
-  let d = `M ${TL} `;
-  // top: TL→TR, travel +x, outward up (0,-1)
-  d += cfg.top === 0 ? `L ${T1} ${T0} ` : knobPath(T0, T0, CELL, 0, 0, -1, cfg.top);
-  // right: TR→BR, travel +y, outward right (1,0)
-  d += cfg.right === 0 ? `L ${T1} ${T1} ` : knobPath(T1, T0, 0, CELL, 1, 0, cfg.right);
-  // bottom: BR→BL, travel -x, outward down (0,1)
-  d += cfg.bottom === 0 ? `L ${T0} ${T1} ` : knobPath(T1, T1, -CELL, 0, 0, 1, cfg.bottom);
-  // left: BL→TL, travel -y, outward left (-1,0)
-  d += cfg.left === 0 ? `L ${T0} ${T0} ` : knobPath(T0, T1, 0, -CELL, -1, 0, cfg.left);
+  const TL = [T0, T0], TR = [T1, T0], BR = [T1, T1], BL = [T0, T1];
+  // A corner rounds only when both of its border edges are straight.
+  const rTL = cfg.top === 0 && cfg.left === 0;
+  const rTR = cfg.top === 0 && cfg.right === 0;
+  const rBR = cfg.right === 0 && cfg.bottom === 0;
+  const rBL = cfg.bottom === 0 && cfg.left === 0;
+
+  // Clockwise edges, each carrying its travel/outward vectors + rounding flags.
+  const edges = [
+    { A: TL, B: TR, dir: [1, 0],  out: [0, -1], cfg: cfg.top,    rB: rTR },
+    { A: TR, B: BR, dir: [0, 1],  out: [1, 0],  cfg: cfg.right,  rB: rBR },
+    { A: BR, B: BL, dir: [-1, 0], out: [0, 1],  cfg: cfg.bottom, rB: rBL },
+    { A: BL, B: TL, dir: [0, -1], out: [-1, 0], cfg: cfg.left,   rB: rTL },
+  ];
+  const rA = [rTL, rTR, rBR, rBL]; // rounding flag for each edge's start corner
+  const fmt = (p) => `${p[0].toFixed(2)} ${p[1].toFixed(2)}`;
+  const start = (e, i) => [e.A[0] + e.dir[0] * (rA[i] ? CORNER_R : 0), e.A[1] + e.dir[1] * (rA[i] ? CORNER_R : 0)];
+  const end   = (e)    => [e.B[0] - e.dir[0] * (e.rB ? CORNER_R : 0), e.B[1] - e.dir[1] * (e.rB ? CORNER_R : 0)];
+
+  let d = `M ${fmt(start(edges[0], 0))} `;
+  edges.forEach((e, i) => {
+    d += e.cfg === 0
+      ? `L ${fmt(end(e))} `
+      : knobPath(e.A[0], e.A[1], e.dir[0] * CELL, e.dir[1] * CELL, e.out[0], e.out[1], e.cfg);
+    if (e.rB) {
+      const next = edges[(i + 1) % 4];
+      d += `Q ${fmt(e.B)} ${fmt(start(next, (i + 1) % 4))} `;
+    }
+  });
   return d + 'Z';
 }
 
@@ -130,7 +153,7 @@ function PuzzlePiece({ piece, index, onOpen, reduce }) {
         onBlur={() => setHovered(false)}
         // Rest slightly under 1 so a small, even gap opens along every seam;
         // hover grows past it to fill in and lift the piece forward.
-        animate={{ y: hovered ? -10 : 0, scale: hovered ? 1.01 : 0.975 }}
+        animate={{ y: hovered ? -10 : 0, scale: hovered ? 1.01 : 0.955 }}
         transition={{ type: 'spring', stiffness: 300, damping: 22 }}
         className="uni-piece"
         style={{
@@ -173,6 +196,13 @@ function PuzzlePiece({ piece, index, onOpen, reduce }) {
           transition: 'opacity 0.3s ease',
           pointerEvents: 'none',
         }} />
+        {/* Pastel border tracing the jigsaw outline. Drawn inside the clipped
+            piece, so the clip keeps the inner half of the stroke — a soft
+            coloured band hugging every edge, tab and rounded corner. */}
+        <svg viewBox={`0 0 ${BOX} ${BOX}`} preserveAspectRatio="none"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden>
+          <path d={d} fill="none" stroke={accent} strokeWidth="16" strokeLinejoin="round" opacity={hovered ? 1 : 0.9} />
+        </svg>
       </motion.div>
     </motion.div>
   );
@@ -209,16 +239,14 @@ function StoryModal({ piece, onClose }) {
         backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 26, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 18, scale: 0.97 }}
-        transition={{ type: 'spring', stiffness: 240, damping: 26 }}
+      <div
+        // Unfurls like a scroll: revealed top-to-bottom via a CSS clip-path
+        // keyframe (reliable, respects the timing) rather than a scale-in.
         onClick={(e) => e.stopPropagation()}
-        className="uni-modal"
+        className="uni-modal uni-scroll"
         style={{
           position: 'relative',
-          width: 'min(760px, 100%)', maxHeight: '88vh', overflowY: 'auto',
+          width: 'min(920px, 96vw)', maxHeight: '92vh', overflowY: 'auto',
           background: CREAM, borderRadius: '22px',
           boxShadow: `0 40px 100px rgba(40,24,16,0.4), 0 0 0 1px rgba(201,160,79,0.18)`,
         }}
@@ -244,9 +272,6 @@ function StoryModal({ piece, onClose }) {
           )}
           <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, transparent 40%, rgba(40,26,18,0.55)), linear-gradient(120deg, ${accent}, transparent 60%)`, opacity: 0.9, mixBlendMode: 'multiply' }} />
           <div style={{ position: 'absolute', left: '32px', bottom: '22px', right: '72px' }}>
-            <div style={{ fontFamily: "'EB Garamond', serif", fontStyle: 'italic', letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)', marginBottom: '6px' }}>
-              {piece.category}
-            </div>
             <h2 style={{ margin: 0, fontFamily: "'Cote Lumiere'", fontWeight: 400, fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: '#fff', lineHeight: 1 }}>
               {piece.title}
             </h2>
@@ -287,7 +312,7 @@ function StoryModal({ piece, onClose }) {
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
@@ -373,8 +398,14 @@ export default function UniversityPuzzle() {
         @keyframes uniBlob2 { 0%,100%{ transform: translate3d(5%, 6%, 0) scale(1.1); } 50%{ transform: translate3d(-5%, -6%, 0) scale(0.95); } }
         @keyframes uniBlob3 { 0%,100%{ transform: translate3d(0, 4%, 0) scale(1); } 50%{ transform: translate3d(4%, -5%, 0) scale(1.12); } }
         .uni-piece:focus-visible { outline: 2px solid ${GOLD}; outline-offset: 4px; }
+        @keyframes uniUnroll {
+          from { clip-path: inset(0 0 100% 0 round 22px); -webkit-clip-path: inset(0 0 100% 0 round 22px); }
+          to   { clip-path: inset(0 0 0 0 round 22px);    -webkit-clip-path: inset(0 0 0 0 round 22px); }
+        }
+        .uni-scroll { animation: uniUnroll 0.85s cubic-bezier(0.45, 0.05, 0.35, 1) both; }
         @media (prefers-reduced-motion: reduce) {
           .uni-blob { animation: none !important; }
+          .uni-scroll { animation: none !important; }
         }
       `}</style>
 
@@ -392,7 +423,7 @@ export default function UniversityPuzzle() {
         transition={{ duration: 0.9, delay: headingDelay, ease: [0.16, 1, 0.3, 1] }}
         style={{ position: 'relative', zIndex: 5, textAlign: 'center', marginTop: 'clamp(18px, 4vh, 46px)', padding: '0 20px' }}
       >
-        <h1 style={{ margin: 0, fontFamily: "'Cote Lumiere'", fontWeight: 400, fontSize: 'clamp(2.6rem, 7vw, 5rem)', color: INK, lineHeight: 0.98 }}>
+        <h1 style={{ margin: 0, fontFamily: "'EB Garamond', serif", fontWeight: 400, fontSize: 'clamp(2.6rem, 7vw, 5rem)', color: INK, lineHeight: 0.98 }}>
           University
         </h1>
       </motion.header>

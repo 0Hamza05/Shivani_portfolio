@@ -497,7 +497,7 @@ export default function FamilyFlipbook() {
         }}
       >
         <h1 style={{
-          fontFamily:    "'Mocha', serif",
+          fontFamily:    "'EB Garamond', serif",
           fontSize:      'clamp(2rem, 4vw, 3rem)',
           fontWeight:    400,
           letterSpacing: '0.10em',

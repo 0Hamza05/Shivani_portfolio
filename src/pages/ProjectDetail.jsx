@@ -613,7 +613,7 @@ export default function ProjectDetail() {
       {project.slug !== 'travel' && (
         <>
       {/* Hero Banner Image */}
-      <div style={{ height: '70vh', width: '100%', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ height: project.slug === 'life-in-london' ? '52vh' : '70vh', width: '100%', position: 'relative', overflow: 'hidden' }}>
         {project.slug === 'life-in-london' ? (
           <>
             <div style={{ position: 'absolute', inset: 0, backgroundColor: 'var(--bg)' }} />
@@ -680,8 +680,8 @@ export default function ProjectDetail() {
           inset: 0,
           clipPath: `polygon(
             0 0, 100% 0, 100% 100%,
-            calc(50% + 380px) 100%, calc(50% + 380px) 70vh,
-            calc(50% - 380px) 70vh, calc(50% - 380px) 100%,
+            calc(50% + 380px) 100%, calc(50% + 380px) 52vh,
+            calc(50% - 380px) 52vh, calc(50% - 380px) 100%,
             0 100%
           )`,
         }}>

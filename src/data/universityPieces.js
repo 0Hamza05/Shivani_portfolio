@@ -86,7 +86,7 @@ export const universityPieces = [
     title: 'Independence',
     category: 'The becoming',
     media: { type: 'image', src: '/images/university/optimised/uni-op-5.webp' },
-    accent: 'blue',
+    accent: 'yellow',
     cell: { c: 0, r: 1 },
     from: 'left',
     popup: {
@@ -120,7 +120,7 @@ export const universityPieces = [
     title: 'Graduation',
     category: 'The threshold',
     media: { type: 'image', src: '/images/university/optimised/uni-op-6.webp' },
-    accent: 'yellow',
+    accent: 'blue',
     cell: { c: 2, r: 1 },
     from: 'right',
     popup: {

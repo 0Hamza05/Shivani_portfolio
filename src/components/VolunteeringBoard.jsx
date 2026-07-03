@@ -140,7 +140,7 @@ function BoardItem({ item, index, boardRef, bumpZ, z, onOpen, reduce, isMobile }
       dragConstraints={boardRef}
       onPointerDown={() => { draggedRef.current = false; bumpZ(item.id); }}
       onDrag={(e, info) => { if (Math.hypot(info.offset.x, info.offset.y) > 4) draggedRef.current = true; }}
-      whileDrag={{ scale: 1.06, zIndex: 9999 }}
+      whileDrag={{ scale: 1.06, zIndex: 9999, cursor: 'grabbing' }}
       initial={reduce
         ? { opacity: 1, scale: 1, x: 0, y: 0 }
         : { opacity: 0, scale: 0.6, y: -40, rotate: item.rotate * 2.2 }}
@@ -185,8 +185,9 @@ function BoardItem({ item, index, boardRef, bumpZ, z, onOpen, reduce, isMobile }
           outline: 'none',
         }}
       >
-        {/* micro-float — a barely-there idle drift, paused while interacting */}
-        <div>
+        {/* One-time "loosen" nudge on load, staggered per item — hints that
+            each piece is draggable, then settles (no continuous motion). */}
+        <div className={reduce ? undefined : 'vol-nudge'} style={{ animationDelay: `${1.3 + index * 0.13}s` }}>
           <Attachment type={item.attach} color={item.attachColor} />
           {item.kind === 'photo' ? <PhotoBody item={item} isMobile={isMobile} /> : <NoteBody item={item} isMobile={isMobile} />}
         </div>
@@ -291,6 +292,15 @@ export default function VolunteeringBoard() {
     }}>
       <style>{`
         .vol-item:focus-visible { outline: 2px solid ${GOLD}; outline-offset: 6px; border-radius: 4px; }
+        @keyframes volNudge {
+          0%, 100% { transform: rotate(0deg); }
+          22% { transform: rotate(-2.6deg); }
+          44% { transform: rotate(2deg); }
+          66% { transform: rotate(-1.1deg); }
+          84% { transform: rotate(0.5deg); }
+        }
+        .vol-nudge { animation: volNudge 0.95s ease-in-out both; transform-origin: 50% 22%; }
+        @media (prefers-reduced-motion: reduce) { .vol-nudge { animation: none !important; } }
       `}</style>
 
       {/* Heading */}
@@ -300,9 +310,13 @@ export default function VolunteeringBoard() {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         style={{ position: 'relative', zIndex: 5, textAlign: 'center', marginTop: 'clamp(16px, 3.5vh, 40px)', padding: '0 20px' }}
       >
-        <h1 style={{ margin: 0, fontFamily: "'Cote Lumiere'", fontWeight: 400, fontSize: 'clamp(2.4rem, 6.5vw, 4.6rem)', color: INK, lineHeight: 1 }}>
+        <h1 style={{ margin: 0, fontFamily: "'EB Garamond', serif", fontWeight: 400, fontSize: 'clamp(2.4rem, 6.5vw, 4.6rem)', color: INK, lineHeight: 1 }}>
           Volunteering
         </h1>
+        <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: "'EB Garamond', serif", fontStyle: 'italic', fontSize: '0.9rem', color: INK_DIM }}>
+          <span aria-hidden style={{ fontSize: '1rem', transform: 'translateY(1px)' }}>✥</span>
+          drag the memories to move them around
+        </div>
       </motion.header>
 
       {/* Board */}
@@ -313,47 +327,11 @@ export default function VolunteeringBoard() {
             position: 'relative',
             width: 'min(1180px, 96vw)',
             height: isMobile ? '168vh' : 'min(70vh, 660px)',
-            borderRadius: '16px',
-            // Warm canvas: a soft top-lit wash that deepens toward the edges so
-            // the surface reads as a real, slightly domed piece of paper/board.
-            background: `
-              radial-gradient(140% 115% at 50% -8%, oklch(99% 0.012 88), oklch(95.5% 0.02 74) 55%, oklch(92% 0.032 66) 100%)`,
-            boxShadow: `
-              inset 0 1px 0 rgba(255,255,255,0.55),
-              inset 0 0 0 1px rgba(120,85,45,0.10),
-              inset 0 0 60px rgba(120,80,40,0.05),
-              0 1px 2px rgba(60,40,20,0.10),
-              0 34px 80px rgba(70,45,20,0.16)`,
-            overflow: 'hidden',
+            // Transparent — items sit directly on the page background so the
+            // whole page reads as one seamless surface.
+            background: 'transparent',
           }}
         >
-          {/* Fine linen / canvas weave */}
-          <div aria-hidden style={{
-            position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', opacity: 0.6,
-            backgroundImage: `
-              repeating-linear-gradient(0deg, rgba(120,88,50,0.035) 0 1px, transparent 1px 5px),
-              repeating-linear-gradient(90deg, rgba(120,88,50,0.03) 0 1px, transparent 1px 5px)`,
-          }} />
-          {/* Organic paper grain (fractal noise) */}
-          <svg aria-hidden width="100%" height="100%" preserveAspectRatio="none"
-            style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', opacity: 0.5, mixBlendMode: 'soft-light' }}>
-            <filter id="volGrain">
-              <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" />
-              <feColorMatrix type="saturate" values="0" />
-            </filter>
-            <rect width="100%" height="100%" filter="url(#volGrain)" />
-          </svg>
-          {/* Soft vignette for depth */}
-          <div aria-hidden style={{
-            position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-            background: 'radial-gradient(125% 115% at 50% 42%, transparent 52%, rgba(75,48,20,0.09) 100%)',
-          }} />
-          {/* Warm centre glow, barely there */}
-          <div aria-hidden style={{
-            position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-            background: 'radial-gradient(60% 50% at 50% 38%, rgba(255,238,205,0.35), transparent 70%)',
-          }} />
-
           {volunteeringBoard.map((item, i) => (
             <BoardItem
               key={item.id}

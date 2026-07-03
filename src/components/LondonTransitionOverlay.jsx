@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 const TUBE_VIDEO    = '/london%20tube.mp4';
 const TUBE_CLIP_MS  = 1000; // how much of the clip is ever allowed to play
 const EXIT_MS       = 550;  // current page sliding out left
-const ENTER_MS      = 600;  // destination sliding in from the right
+const ENTER_MS      = 1200; // destination sliding in from the right — slow, visible glide
 const VIDEO_FADE_MS = 320;
 
 const LondonTransitionContext = createContext(null);
@@ -99,6 +99,7 @@ export function LondonTransitionProvider({ children }) {
         }
         body.lt-exit-left #main-wrap {
           transform: translateX(-100%);
+          transition: transform ${EXIT_MS}ms cubic-bezier(0.7, 0, 0.84, 0);
         }
         body.lt-enter-right-instant #main-wrap {
           transform: translateX(100%);
@@ -106,7 +107,7 @@ export function LondonTransitionProvider({ children }) {
         }
         body.lt-enter-right #main-wrap {
           transform: translateX(0);
-          transition: transform ${ENTER_MS}ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform ${ENTER_MS}ms cubic-bezier(0.33, 1, 0.68, 1);
         }
         @media (prefers-reduced-motion: reduce) {
           #main-wrap { transition: none !important; transform: none !important; }

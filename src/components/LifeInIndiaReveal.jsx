@@ -576,7 +576,7 @@ export default function LifeInIndiaReveal() {
 
   const sectionTitle = (
     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px 24px 0', textAlign: 'center', zIndex: 21 }}>
-      <h1 style={{ margin: 0, fontFamily: "'Cote Lumiere'", fontWeight: 400, fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: INK }}>
+      <h1 style={{ margin: 0, fontFamily: "'EB Garamond', serif", fontWeight: 400, fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: INK }}>
         Life in India
       </h1>
     </div>
@@ -596,7 +596,7 @@ export default function LifeInIndiaReveal() {
             tabIndex={0}
             aria-label="View photo of Me"
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(ME_IMAGE, 'Me'); } }}
-            style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, width: 130, height: 130, borderRadius: '50%', overflow: 'hidden', border: `4px solid ${TERRACOTTA}`, boxShadow: '0 16px 40px rgba(60,40,20,0.28)', cursor: 'pointer' }}
+            style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, width: 130, height: 130, borderRadius: '50%', overflow: 'hidden', boxShadow: '0 16px 40px rgba(60,40,20,0.28)', cursor: 'pointer' }}
           >
             <img src={ME_IMAGE} alt="Me" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
@@ -631,7 +631,6 @@ export default function LifeInIndiaReveal() {
                 height: 'clamp(112px, 14vw, 180px)',
                 borderRadius: '50%',
                 overflow: 'hidden',
-                border: `4px solid ${TERRACOTTA}`,
                 boxShadow: '0 16px 40px rgba(60, 40, 20, 0.28)',
                 cursor: 'pointer',
               }}

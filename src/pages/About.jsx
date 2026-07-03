@@ -457,7 +457,14 @@ export default function About() {
     : { right: '2%', top: '3%' };
 
   return (
-    <main style={{ position: 'relative', height: '100vh', overflow: 'hidden', backgroundColor: PEACH }}>
+    <main style={{
+      position: 'relative', height: '100vh', overflow: 'hidden',
+      backgroundColor: PEACH,
+      // Soft staggered polka dots across the whole page
+      backgroundImage: `radial-gradient(rgba(150,95,60,0.17) 2.8px, transparent 3px), radial-gradient(rgba(150,95,60,0.17) 2.8px, transparent 3px)`,
+      backgroundSize: '44px 44px',
+      backgroundPosition: '0 0, 22px 22px',
+    }}>
       <style>{BUTTERFLY_FLAP_CSS}</style>
       <style>{`
         .about-clickable-photo { transition: transform 0.25s ease; }
@@ -480,29 +487,6 @@ export default function About() {
         justifyContent: 'center',
         padding: '0 16px',
       }}>
-        {/* Central "desk mat" — a cream panel the bio sits on, so the
-            surrounding photos read as objects scattered across a workspace
-            and can bleed onto its edges (like a scrapbook / personal-space
-            collage) instead of floating loose on the page background. */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            left: '50%', top: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: isMobile ? '92vw' : 'min(660px, 52vw)',
-            height: isMobile ? '68vh' : '70vh',
-            background: CARD_CREAM,
-            borderRadius: '20px',
-            border: '1px solid oklch(88% 0.02 60)',
-            boxShadow: '0 24px 60px rgba(60,40,20,0.10), 0 4px 14px rgba(60,40,20,0.06)',
-            zIndex: 0,
-          }}
-        />
-
         {photos.map((photo, i) => (
           <FloatingObject
             key={photo.src}
