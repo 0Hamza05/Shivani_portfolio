@@ -5,6 +5,7 @@ import { projects } from '../data/projects';
 import { useLondonTransition } from './LondonTransitionOverlay';
 import { useDanceTransition } from './DanceTransitionOverlay';
 import { useTravelTransition } from './TravelTransitionOverlay';
+import { useUniversityTransition } from './UniversityTransitionOverlay';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 const LEMON       = '#FFF44F';
@@ -21,6 +22,7 @@ export default function Navbar() {
   const { triggerTransition: triggerLondonTransition } = useLondonTransition();
   const { triggerTransition: triggerDanceTransition } = useDanceTransition();
   const { triggerTransition: triggerTravelTransition } = useTravelTransition();
+  const { triggerTransition: triggerUniversityTransition } = useUniversityTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -55,6 +57,12 @@ export default function Navbar() {
     e.preventDefault();
     setMenuOpen(false);
     triggerTravelTransition(navigate, '/work/travel');
+  };
+
+  const diveToUniversity = (e) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    triggerUniversityTransition(navigate, '/work/university');
   };
 
   const navLinkStyle = (active = false) => ({
@@ -196,6 +204,19 @@ export default function Navbar() {
                 </a>
               );
             }
+            if (proj.slug === 'university') {
+              return (
+                <a
+                  key={proj.id}
+                  href={path}
+                  style={navLinkStyle(active)}
+                  onClick={diveToUniversity}
+                  {...sharedHover}
+                >
+                  {proj.title}
+                </a>
+              );
+            }
             return (
               <Link
                 key={proj.id}
@@ -321,6 +342,13 @@ export default function Navbar() {
                   if (proj.slug === 'travel') {
                     return (
                       <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToTravel}>
+                        {proj.title}
+                      </a>
+                    );
+                  }
+                  if (proj.slug === 'university') {
+                    return (
+                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToUniversity}>
                         {proj.title}
                       </a>
                     );

@@ -5,6 +5,7 @@ import { projects } from '../data/projects';
 import { useLondonTransition } from '../components/LondonTransitionOverlay';
 import { useDanceTransition } from '../components/DanceTransitionOverlay';
 import { useTravelTransition } from '../components/TravelTransitionOverlay';
+import { useUniversityTransition } from '../components/UniversityTransitionOverlay';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
 
@@ -63,6 +64,7 @@ function PhotoCard({ photo, eager }) {
   const { triggerTransition: triggerLondonTransition } = useLondonTransition();
   const { triggerTransition: triggerDanceTransition } = useDanceTransition();
   const { triggerTransition: triggerTravelTransition } = useTravelTransition();
+  const { triggerTransition: triggerUniversityTransition } = useUniversityTransition();
   const isVideo = VIDEO_RE.test(photo.imgUrl);
   const media = isVideo ? (
     <video
@@ -140,6 +142,19 @@ function PhotoCard({ photo, eager }) {
         onClick={e => {
           e.preventDefault();
           triggerTravelTransition(navigate, '/work/travel');
+        }}
+      >{media}</a>
+    );
+  }
+  if (photo.project.slug === 'university') {
+    return (
+      <a
+        href="/work/university"
+        draggable={false} onDragStart={e => e.preventDefault()}
+        className="mc-card"
+        onClick={e => {
+          e.preventDefault();
+          triggerUniversityTransition(navigate, '/work/university');
         }}
       >{media}</a>
     );

@@ -10,6 +10,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import { TravelTransitionProvider } from './components/TravelTransitionOverlay';
 import { LondonTransitionProvider } from './components/LondonTransitionOverlay';
 import { DanceTransitionProvider } from './components/DanceTransitionOverlay';
+import { UniversityTransitionProvider } from './components/UniversityTransitionOverlay';
 import './index.css';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
       <TravelTransitionProvider>
         <LondonTransitionProvider>
          <DanceTransitionProvider>
+          <UniversityTransitionProvider>
           <motion.div
             id="main-wrap"
             initial={{ opacity: 0 }}
@@ -39,6 +41,7 @@ export default function App() {
               <Welcome key="welcome" onDismiss={() => setWelcomeDone(true)} />
             )}
           </AnimatePresence>
+          </UniversityTransitionProvider>
          </DanceTransitionProvider>
         </LondonTransitionProvider>
       </TravelTransitionProvider>

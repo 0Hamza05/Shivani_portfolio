@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useId } from 'react';
+import { SLIDE_MS, RISE_CLASS } from './UniversityTransitionOverlay';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { universityPieces, PUZZLE_GRID, PUZZLE_TABS } from '../data/universityPieces';
@@ -374,14 +375,33 @@ export default function UniversityPuzzle() {
     return () => window.removeEventListener('resize', fit);
   }, [stageW, stageH]);
 
-  // Anticipation beat, then reveal.
-  useEffect(() => {
-    const t = setTimeout(() => setReady(true), reduce ? 0 : 140);
-    return () => clearTimeout(t);
-  }, [reduce]);
+  // If we mounted because of the cap-toss transition, its body class is
+  // still present at this exact instant (set synchronously before this
+  // component ever mounts, so there's no race) — meaning the page itself is
+  // still physically sliding up into view. Captured once via lazy initial
+  // state so it can't change mid-lifecycle.
+  const [viaTransition] = useState(() => typeof document !== 'undefined' && document.body.classList.contains(RISE_CLASS));
+  // The slide's ease-out means the page reads as visually "arrived" well
+  // before the full SLIDE_MS is up — start pieces flying in against that
+  // near-settled page, not after it comes to a full stop, so there's barely
+  // any dead pause between the two motions.
+  const extraDelaySec = viaTransition ? Math.max(0, SLIDE_MS - 700) / 1000 : 0;
+  const anticipationMs = viaTransition ? 60 : 140;
 
-  // Heading fades in once the pieces have (roughly) settled.
-  const headingDelay = reduce ? 0.15 : 0.08 + universityPieces.length * 0.09 + 0.35;
+  // Anticipation beat, then reveal. Held until the slide has all but
+  // finished when arriving via the transition, so the pieces visibly fly in
+  // from the sides against a settled-looking page rather than racing —
+  // and finishing invisibly — underneath the one still moving.
+  useEffect(() => {
+    const delay = reduce ? 0 : extraDelaySec * 1000 + anticipationMs;
+    const t = setTimeout(() => setReady(true), delay);
+    return () => clearTimeout(t);
+  }, [reduce, extraDelaySec]);
+
+  // Heading fades in once the pieces have (roughly) settled — pushed back by
+  // the same held-entrance amount so it doesn't appear while pieces are
+  // still waiting to fly in.
+  const headingDelay = (reduce ? 0.15 : 0.08 + universityPieces.length * 0.09 + 0.35) + extraDelaySec;
 
   return (
     <main
