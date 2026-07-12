@@ -159,6 +159,19 @@ function PhotoCard({ photo, eager }) {
       >{media}</a>
     );
   }
+  // Family no longer has its own pillar page — its photos still live in
+  // projects.js (the Life in India page reuses that data for its own photo
+  // popup), but grid tiles now route into Life in India instead of the
+  // retired flipbook.
+  if (photo.project.slug === 'family') {
+    return (
+      <Link
+        to="/work/life-in-india"
+        draggable={false} onDragStart={e => e.preventDefault()}
+        className="mc-card"
+      >{media}</Link>
+    );
+  }
 
   return (
     <Link
