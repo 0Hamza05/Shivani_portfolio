@@ -41,52 +41,70 @@ export function LondonTransitionProvider({ children }) {
       return;
     }
 
+    const v = videoRef.current;
+
     // Only fetch the clip the first time it's actually needed — without a
     // src attribute the browser never requests it, so visiting unrelated
-    // pages doesn't pull in a 12s video for no reason.
-    if (!srcLoadedRef.current && videoRef.current) {
-      videoRef.current.src = TUBE_VIDEO;
+    // pages doesn't pull in the video for no reason.
+    if (!srcLoadedRef.current && v) {
+      v.src = TUBE_VIDEO;
+      v.load();
       srcLoadedRef.current = true;
     }
 
     // 1 — current page slides out to the left.
     document.body.classList.add('lt-exit-left');
 
-    // 2 — video layer fades in just before the slide finishes, so there's a
-    // brief crossfade instead of a hard cut to black. The <video> itself is
-    // always mounted (see render below) so the ref is already live here —
-    // toggling showVideo only drives its opacity, never its mount state.
-    schedule(() => {
+    // 2 — video layer fades in and the rest of the sequence (route swap,
+    // slide-in, cleanup) all runs from here — but only once the clip can
+    // actually play. A fixed timer here used to fire regardless of load
+    // state, so on any real network delay the whole sequence completed
+    // before a single video frame ever rendered. Gate on both the slide
+    // timing AND actual readiness, with a safety-net timeout so a stalled
+    // load can never hang the page transition.
+    let timeElapsed = v ? v.readyState >= 3 : true;
+    let videoReady  = v ? v.readyState >= 3 : true;
+    let started = false;
+
+    const startClip = () => {
+      if (started || !(timeElapsed && videoReady)) return;
+      started = true;
       setShowVideo(true);
-      const v = videoRef.current;
       if (v) {
         v.currentTime = 0;
         v.play().catch(() => {});
       }
-    }, EXIT_MS - 200);
 
-    // 3 — swap the route while fully hidden behind the video, and snap the
-    // (now off-screen) page to the right edge with no transition, so it's
-    // positioned to slide IN from the right once the video clears.
-    schedule(() => {
-      navigate(to);
-      document.body.classList.remove('lt-exit-left');
-      document.body.classList.add('lt-enter-right-instant');
-    }, TUBE_CLIP_MS - 150);
+      // 3 — swap the route while fully hidden behind the video, and snap the
+      // (now off-screen) page to the right edge with no transition, so it's
+      // positioned to slide IN from the right once the video clears.
+      schedule(() => {
+        navigate(to);
+        document.body.classList.remove('lt-exit-left');
+        document.body.classList.add('lt-enter-right-instant');
+      }, TUBE_CLIP_MS - 150);
 
-    // 4 — video's done its job: slide the destination in from the right
-    // while the video fades out underneath the motion.
-    schedule(() => {
-      document.body.classList.remove('lt-enter-right-instant');
-      document.body.classList.add('lt-enter-right');
-      setShowVideo(false);
-    }, TUBE_CLIP_MS);
+      // 4 — video's done its job: slide the destination in from the right
+      // while the video fades out underneath the motion.
+      schedule(() => {
+        document.body.classList.remove('lt-enter-right-instant');
+        document.body.classList.add('lt-enter-right');
+        setShowVideo(false);
+      }, TUBE_CLIP_MS);
 
-    // 5 — cleanup.
-    schedule(() => {
-      document.body.classList.remove('lt-enter-right');
-      activeRef.current = false;
-    }, TUBE_CLIP_MS + ENTER_MS);
+      // 5 — cleanup.
+      schedule(() => {
+        document.body.classList.remove('lt-enter-right');
+        activeRef.current = false;
+      }, TUBE_CLIP_MS + ENTER_MS);
+    };
+
+    schedule(() => { timeElapsed = true; startClip(); }, EXIT_MS - 200);
+    if (v && v.readyState < 3) {
+      v.addEventListener('canplay', () => { videoReady = true; startClip(); }, { once: true });
+    }
+    // Safety net: never let a stalled/slow load hang the transition.
+    schedule(() => { videoReady = true; startClip(); }, 1600);
   }, []);
 
   return (

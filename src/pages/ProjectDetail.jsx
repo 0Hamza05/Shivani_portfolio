@@ -9,6 +9,7 @@ import VolunteeringBoard from '../components/VolunteeringBoard';
 import LifeInIndiaReveal from '../components/LifeInIndiaReveal';
 import UniversityPuzzle from '../components/UniversityPuzzle';
 import DancePhotobooth from '../components/DancePhotobooth';
+import LondonFlipbook from '../components/LondonFlipbook';
 import CursorImageTrail from '../components/CursorImageTrail';
 
 const VIDEO_RE = /\.(mp4|webm|ogg|mov)(\?|$)/i;
@@ -29,6 +30,7 @@ const LONDON_TRAIL_IMAGES = [
   'f8453ca368fb8919376c47b234ed8c5f.png',
   'f8ddba46620a2535383ebabaeee89c42.png',
 ].map(name => encodeURI(`/London Stickers/${name}`));
+
 const carouselButtonStyle = {
   border: '1px solid var(--border)',
   background: 'rgba(255, 255, 255, 0.8)',
@@ -551,8 +553,6 @@ export default function ProjectDetail() {
   const project = projects.find(p => p.slug === slug);
   const [activeImage, setActiveImage] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
-  // Shared across the hero + both gutter trail instances so the image
-  // sequence continues smoothly instead of resetting per section.
   const londonTrailCycleRef = useRef(0);
 
   useEffect(() => {
@@ -669,28 +669,21 @@ export default function ProjectDetail() {
     </>
 )}
 
-      {/* One single trail spanning the full hero + content height, with a
-          notch clipped out of its bottom matching the text column. This is
-          ONE shape (no separate overlapping boxes), so there are no internal
-          seams anywhere — not across the hero/content boundary, and not
-          between the hero and either side gutter. */}
+      {/* Life in London: cursor-image trail across the hero, then the flip book */}
       {project.slug === 'life-in-london' && !isMobile && (
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          clipPath: `polygon(
-            0 0, 100% 0, 100% 100%,
-            calc(50% + 380px) 100%, calc(50% + 380px) 52vh,
-            calc(50% - 380px) 52vh, calc(50% - 380px) 100%,
-            0 100%
-          )`,
-        }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '52vh', overflow: 'hidden', zIndex: 1 }}>
           <CursorImageTrail images={LONDON_TRAIL_IMAGES} cycleIndexRef={londonTrailCycleRef} />
         </div>
       )}
+      {project.slug === 'life-in-london' && (
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <LondonFlipbook />
+        </div>
+      )}
 
-      {/* Main Content Layout (Centered & Elegant) */}
-      <div style={{ 
+      {/* Main Content Layout (Centered & Elegant) — hidden for London, which
+          shows the flip book above instead. */}
+      <div style={{
         padding: isMobile
           ? project.slug === 'travel'
             ? 'calc(var(--nav-h) + max(56vw, 200px) + 48px) 0 80px'
@@ -700,7 +693,7 @@ export default function ProjectDetail() {
             ? '100%'
             : '1200px',
         margin: '0 auto',
-        display: 'flex',
+        display: project.slug === 'life-in-london' ? 'none' : 'flex',
         flexDirection: 'column',
         alignItems: 'center'
       }}>

@@ -37,28 +37,43 @@ export function DanceTransitionProvider({ children }) {
       return;
     }
 
+    const v = videoRef.current;
+
     // Load the clip lazily the first time it's needed.
-    if (!srcLoadedRef.current && videoRef.current) {
-      videoRef.current.src = DANCE_VIDEO;
+    if (!srcLoadedRef.current && v) {
+      v.src = DANCE_VIDEO;
+      v.load();
       srcLoadedRef.current = true;
     }
 
-    // Cover the screen and start the clip from the top.
+    // Cover the screen and swap the route while hidden behind it.
     setShowVideo(true);
-    const v = videoRef.current;
-    if (v) { v.currentTime = 0; v.play().catch(() => {}); }
-
-    // Swap the route while fully hidden behind the video, so the dance page is
-    // mounted and ready by the time the clip clears.
     schedule(() => navigate(to), 260);
 
-    // After 2s, fade the video out to reveal the dance page.
-    schedule(() => {
-      setShowVideo(false);
-      if (videoRef.current) videoRef.current.pause();
-    }, PLAY_MS);
+    // The PLAY_MS window used to start counting from trigger time, so a slow
+    // load could eat most of it before a frame ever rendered. Start the clock
+    // only once the clip can actually play (bounded by a safety-net timeout),
+    // so the visible playback window is always the full PLAY_MS.
+    let started = false;
+    const beginPlayback = () => {
+      if (started) return;
+      started = true;
+      if (v) { v.currentTime = 0; v.play().catch(() => {}); }
 
-    schedule(() => { activeRef.current = false; }, PLAY_MS + FADE_OUT_MS + 40);
+      schedule(() => {
+        setShowVideo(false);
+        if (v) v.pause();
+      }, PLAY_MS);
+
+      schedule(() => { activeRef.current = false; }, PLAY_MS + FADE_OUT_MS + 40);
+    };
+
+    if (v && v.readyState < 3) {
+      v.addEventListener('canplay', beginPlayback, { once: true });
+      schedule(beginPlayback, 900); // safety net for a stalled load
+    } else {
+      beginPlayback();
+    }
   }, []);
 
   return (
