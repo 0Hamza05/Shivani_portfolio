@@ -301,6 +301,83 @@ export default function VolunteeringBoard() {
         }
         .vol-nudge { animation: volNudge 0.95s ease-in-out both; transform-origin: 50% 22%; }
         @media (prefers-reduced-motion: reduce) { .vol-nudge { animation: none !important; } }
+
+        /* ── Canvas panel behind the pinned items ────────────────────────────
+           Three stacked layers so the draggable area reads as real stretched
+           artist's canvas rather than a flat card:
+             base      — pale cream ground + broad slack shading (the wide,
+                         soft undulation of fabric that isn't pulled
+                         perfectly taut)
+             ::before  — woven fibre, from two crossed feTurbulence fields
+                         (one stretched horizontally = weft, one vertically =
+                         warp). Real irregular fibre; a repeating-gradient
+                         grid here just reads as graph paper.
+             ::after   — a handful of finite creases, each built from 2-3
+                         tapering dark/light blob pairs fanning inward from
+                         where the canvas would be stapled (the corners and
+                         one mid-edge), rather than hard lines ruled straight
+                         across the whole panel — real folds don't reach
+                         edge to edge, and they thin out as they travel.     */
+        .vol-canvas {
+          isolation: isolate;
+          background-color: oklch(96.5% 0.018 93);
+          background-image:
+            linear-gradient(101deg,
+              rgba(90,62,32,0.00) 0%,
+              rgba(90,62,32,0.06) 8%,
+              rgba(255,251,240,0.40) 16%,
+              rgba(90,62,32,0.00) 25%,
+              rgba(90,62,32,0.05) 39%,
+              rgba(255,251,240,0.36) 47%,
+              rgba(90,62,32,0.00) 57%,
+              rgba(90,62,32,0.06) 71%,
+              rgba(255,251,240,0.34) 79%,
+              rgba(90,62,32,0.00) 90%),
+            radial-gradient(ellipse 68% 88% at 16% 10%, rgba(255,251,240,0.40), transparent 62%),
+            radial-gradient(ellipse 78% 72% at 86% 86%, rgba(90,62,32,0.08), transparent 66%);
+          border-radius: clamp(16px, 2.5vw, 28px);
+          border: 1px solid rgba(90,62,32,0.12);
+          box-shadow:
+            inset 0 2px 16px rgba(90,62,32,0.10),
+            inset 0 0 70px rgba(90,62,32,0.05),
+            0 14px 40px rgba(60,40,20,0.09);
+        }
+        .vol-canvas::before,
+        .vol-canvas::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          pointer-events: none;
+        }
+        .vol-canvas::before {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='weave' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.028 1.15' numOctaves='3' seed='7' stitchTiles='stitch' result='weft'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.15 0.028' numOctaves='3' seed='19' stitchTiles='stitch' result='warp'/%3E%3CfeBlend in='weft' in2='warp' mode='multiply' result='cloth'/%3E%3CfeColorMatrix in='cloth' type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23weave)'/%3E%3C/svg%3E");
+          background-size: 240px 240px;
+          opacity: 0.30;
+          mix-blend-mode: multiply;
+        }
+        .vol-canvas::after {
+          background-image:
+            /* streak A — fans down-right from the top-left corner */
+            radial-gradient(circle 50px at 8.6% 8.4%,  rgba(255,251,240,0.34), transparent 72%),
+            radial-gradient(circle 32px at 17.6% 18.4%, rgba(255,251,240,0.26), transparent 72%),
+            radial-gradient(circle 16px at 26.6% 28.4%, rgba(255,251,240,0.18), transparent 72%),
+            radial-gradient(circle 64px at 7% 10%,   rgba(90,62,32,0.13), transparent 72%),
+            radial-gradient(circle 42px at 16% 20%,  rgba(90,62,32,0.10), transparent 72%),
+            radial-gradient(circle 22px at 25% 30%,  rgba(90,62,32,0.07), transparent 72%),
+            /* streak B — fans up-left from the bottom-right corner */
+            radial-gradient(circle 46px at 91.4% 90.8%, rgba(255,251,240,0.32), transparent 72%),
+            radial-gradient(circle 30px at 81.4% 80.8%, rgba(255,251,240,0.24), transparent 72%),
+            radial-gradient(circle 14px at 71.4% 70.8%, rgba(255,251,240,0.17), transparent 72%),
+            radial-gradient(circle 60px at 93% 89%,  rgba(90,62,32,0.12), transparent 72%),
+            radial-gradient(circle 40px at 83% 79%,  rgba(90,62,32,0.09), transparent 72%),
+            radial-gradient(circle 20px at 73% 69%,  rgba(90,62,32,0.06), transparent 72%),
+            /* streak C — short, fans in from the left edge */
+            radial-gradient(circle 30px at 4% 52%,  rgba(255,251,240,0.28), transparent 72%),
+            radial-gradient(circle 18px at 12% 46%, rgba(255,251,240,0.19), transparent 72%),
+            radial-gradient(circle 40px at 3% 54%,  rgba(90,62,32,0.10), transparent 72%),
+            radial-gradient(circle 24px at 11% 48%, rgba(90,62,32,0.07), transparent 72%);
+        }
       `}</style>
 
       {/* Heading */}
@@ -313,23 +390,45 @@ export default function VolunteeringBoard() {
         <h1 style={{ margin: 0, fontFamily: "'EB Garamond', serif", fontWeight: 400, fontSize: 'clamp(2.4rem, 6.5vw, 4.6rem)', color: INK, lineHeight: 1 }}>
           Volunteering
         </h1>
-        <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: "'EB Garamond', serif", fontStyle: 'italic', fontSize: '0.9rem', color: INK_DIM }}>
-          <span aria-hidden style={{ fontSize: '1rem', transform: 'translateY(1px)' }}>✥</span>
-          drag the memories to move them around
-        </div>
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 8, rotate: 0 }}
+          animate={{ opacity: 1, y: 0, rotate: -2 }}
+          transition={{ duration: 0.7, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            marginTop: 16,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 9,
+            padding: '8px 20px 7px',
+            borderRadius: '999px',
+            background: `linear-gradient(165deg, ${NOTE_COLORS.yellow.bg}, ${NOTE_COLORS.yellow.edge})`,
+            boxShadow: '0 4px 14px rgba(60,40,20,0.16)',
+            fontFamily: "'Cote Lumiere'",
+            fontSize: 'clamp(1.05rem, 2.6vw, 1.3rem)',
+            color: INK,
+          }}
+        >
+          <motion.span
+            aria-hidden
+            animate={reduce ? {} : { x: [0, 7, 0], rotate: [0, -12, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ display: 'inline-block', fontSize: '1.25em', transform: 'translateY(1px)' }}
+          >
+            ✋
+          </motion.span>
+          drag the memories around!
+        </motion.div>
       </motion.header>
 
       {/* Board */}
       <div style={{ width: '100%', flex: 1, display: 'flex', justifyContent: 'center', padding: 'clamp(16px, 3vh, 34px) clamp(10px, 3vw, 40px) 60px' }}>
         <div
           ref={boardRef}
+          className="vol-canvas"
           style={{
             position: 'relative',
             width: 'min(1180px, 96vw)',
             height: isMobile ? '168vh' : 'min(70vh, 660px)',
-            // Transparent — items sit directly on the page background so the
-            // whole page reads as one seamless surface.
-            background: 'transparent',
           }}
         >
           {volunteeringBoard.map((item, i) => (

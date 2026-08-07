@@ -43,6 +43,11 @@ ring_hole_r = 2.5;
 // Positive x = right, positive y = up. Defaults work for any name.
 ring_nudge_x = 0;
 ring_nudge_y = 0;
+// How far the ring's pink neck reaches INTO the letters (mm). Increase
+// this to fill the gap next to tall first letters like "T" / "J".
+ring_neck_reach = 9;
+// Thickness of that neck as a fraction of the ring (0..1).
+ring_neck_fill = 0.7;
 
 /* [Quality] */
 // Curve smoothness. Lower while editing (24), raise for final (64).
@@ -76,17 +81,20 @@ module base_outline() {
 // connect it with a hull "neck" that always fuses into the base, so
 // the ring never drifts or detaches for different names.
 module ring_tab() {
-    // Ring centre: just left of the name start (nudge to taste).
+    // Ring centre: just left of the name start, at letter mid-height
+    // (its original position). Nudge to taste.
     cx = -ring_outer_r * 0.5 + ring_nudge_x;
-    cy = ring_nudge_y;
-    // Anchor point: solidly inside the base of the first letter.
-    anchor = [border, 0];
+    cy = 0 + ring_nudge_y;
 
     linear_extrude(height = base_thickness)
         difference() {
+            // A pink lozenge from the ring reaching INTO the letters.
+            // The reach fills the gap beside tall first letters so the
+            // ring blends into the plate instead of looking pinched.
             hull() {
                 translate([cx, cy]) circle(r = ring_outer_r);
-                translate(anchor)  square(border, center = true);
+                translate([ring_neck_reach, cy])
+                    circle(r = ring_outer_r * ring_neck_fill);
             }
             translate([cx, cy]) circle(r = ring_hole_r);
         }

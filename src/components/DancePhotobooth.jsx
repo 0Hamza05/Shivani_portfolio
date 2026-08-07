@@ -11,56 +11,34 @@ const dance = projects.find(p => p.slug === 'dance');
 const MEDIA = (dance?.blogImages || dance?.gridImages || []);
 const isVideo = (src) => /\.(mp4|webm|mov|m4v)$/i.test(src || '');
 
-// Pinned photos — scattered, tilted prints held up with push pins. Positions
-// are % of the board area; desktop and mobile are tuned separately.
-const PINS = [
-  { src: MEDIA[0], w: 210, rot: -6, pin: '#e0574a', pos: { x: 4,  y: 4  }, posM: { x: 3,  y: 2  } },
-  { src: MEDIA[3], w: 184, rot: 5,  pin: '#3a7be0', pos: { x: 46, y: 1  }, posM: { x: 52, y: 4  } },
-  { src: MEDIA[2], w: 224, rot: 3,  pin: '#c9a04f', pos: { x: 14, y: 34 }, posM: { x: 6,  y: 34 } },
-  { src: MEDIA[4], w: 192, rot: -5, pin: '#d95a86', pos: { x: 52, y: 40 }, posM: { x: 50, y: 40 } },
-  { src: MEDIA[5], w: 200, rot: 6,  pin: '#5aa06a', pos: { x: 26, y: 68 }, posM: { x: 20, y: 70 } },
-];
+// Film-reel strip — the same five curated shots, now in a straight vertical
+// line inside a filmstrip frame (dark strip + sprocket holes down each
+// edge), each still presented in its own white polaroid-style mount.
+const FRAME_SRCS = [MEDIA[0], MEDIA[3], MEDIA[2], MEDIA[4], MEDIA[5]];
 
-function PushPin({ color }) {
-  return (
-    <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', zIndex: 3, filter: 'drop-shadow(0 3px 3px rgba(0,0,0,0.3))', pointerEvents: 'none' }}>
-      <svg width="22" height="22" viewBox="0 0 22 22">
-        <circle cx="11" cy="9" r="7" fill={color} />
-        <circle cx="8.6" cy="6.6" r="2.4" fill="rgba(255,255,255,0.55)" />
-        <rect x="10.2" y="13" width="1.6" height="7" rx="0.8" fill="rgba(0,0,0,0.32)" />
-      </svg>
-    </div>
-  );
-}
-
-function PinnedPhoto({ item, index, isMobile, reduce }) {
+function FilmFrame({ src, index, reduce }) {
   const [hovered, setHovered] = useState(false);
-  const pos = isMobile ? item.posM : item.pos;
-  const w = Math.round(item.w * (isMobile ? 0.66 : 1));
-  const h = Math.round(w * 0.82);
 
   return (
     <motion.div
-      initial={reduce ? { opacity: 1 } : { opacity: 0, scale: 0.85, y: -14, rotate: item.rot * 1.8 }}
-      animate={{ opacity: 1, scale: hovered ? 1.04 : 1, y: hovered ? -6 : 0, rotate: hovered ? item.rot * 0.5 : item.rot }}
-      transition={reduce ? { duration: 0.3 } : { type: 'spring', stiffness: 220, damping: 18, delay: 0.15 + index * 0.12 }}
+      initial={reduce ? { opacity: 1 } : { opacity: 0, y: -14 }}
+      animate={{ opacity: 1, y: 0, scale: hovered ? 1.03 : 1 }}
+      transition={reduce ? { duration: 0.3 } : { type: 'spring', stiffness: 220, damping: 20, delay: 0.15 + index * 0.12 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       style={{
-        position: 'absolute', left: `${pos.x}%`, top: `${pos.y}%`,
-        width: w, zIndex: hovered ? 20 : 10 - index,
+        width: '100%', zIndex: hovered ? 5 : 1,
         background: '#fff', padding: 8, borderRadius: 2,
         boxShadow: hovered
-          ? '0 20px 34px rgba(50,32,14,0.28)'
-          : '0 8px 18px rgba(50,32,14,0.20)',
+          ? '0 16px 28px rgba(50,32,14,0.26)'
+          : '0 6px 14px rgba(50,32,14,0.18)',
         cursor: 'default',
       }}
     >
-      <PushPin color={item.pin} />
-      <div style={{ width: '100%', height: h, overflow: 'hidden', background: '#111' }}>
-        {isVideo(item.src)
-          ? <video src={item.src} autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          : <img src={item.src} alt="" loading="lazy" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+      <div style={{ width: '100%', aspectRatio: '1 / 0.82', overflow: 'hidden', background: '#111' }}>
+        {isVideo(src)
+          ? <video src={src} autoPlay muted loop playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          : <img src={src} alt="" loading="lazy" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
       </div>
     </motion.div>
   );
@@ -96,7 +74,7 @@ export default function DancePhotobooth() {
         <div style={{ width: 54, height: 2, background: GOLD, opacity: 0.6, margin: '20px auto 0' }} />
       </motion.header>
 
-      {/* Body: widened text (nudged right) + pinned photos */}
+      {/* Body: widened text (nudged right) + film reel */}
       <div style={{
         display: 'flex', flexDirection: isMobile ? 'column' : 'row',
         alignItems: 'flex-start', gap: isMobile ? 0 : 'clamp(20px, 3vw, 48px)',
@@ -127,19 +105,51 @@ export default function DancePhotobooth() {
           </motion.div>
         </section>
 
-        {/* Pinned photos */}
+        {/* Film reel — straight vertical strip of frames */}
         <section style={{
           flex: isMobile ? 'none' : '1 1 0',
-          alignSelf: 'stretch', width: isMobile ? '100%' : 'auto',
+          alignSelf: 'flex-start', width: isMobile ? '100%' : 'auto',
           marginTop: isMobile ? 40 : 0,
+          display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end',
         }}>
-          <div style={{ position: 'relative', width: '100%', height: isMobile ? '118vw' : 'min(74vh, 620px)' }}>
-            {PINS.map((item, i) => (
-              <PinnedPhoto key={i} item={item} index={i} isMobile={isMobile} reduce={reduce} />
+          <div
+            className="film-strip"
+            style={{
+              width: isMobile ? 'min(78vw, 280px)' : 240,
+              display: 'flex', flexDirection: 'column', gap: 10,
+              padding: '18px 22px',
+            }}
+          >
+            {FRAME_SRCS.map((src, i) => (
+              <FilmFrame key={i} src={src} index={i} reduce={reduce} />
             ))}
           </div>
         </section>
       </div>
+
+      <style>{`
+        /* Dark filmstrip body with round sprocket-hole perforations tiled
+           down each edge — the page background shows through the holes. */
+        .film-strip {
+          position: relative;
+          background: linear-gradient(180deg, #241b14, #16100b);
+          border-radius: 10px;
+          box-shadow: 0 10px 26px rgba(40,26,14,0.28);
+        }
+        .film-strip::before,
+        .film-strip::after {
+          content: '';
+          position: absolute;
+          top: 0; bottom: 0;
+          width: 16px;
+          background-image: radial-gradient(circle at 8px 8px, var(--bg) 4px, transparent 4.6px);
+          background-size: 16px 24px;
+          background-repeat: repeat-y;
+          background-position: 0 6px;
+        }
+        .film-strip::before { left: 2px; }
+        .film-strip::after  { right: 2px; }
+      `}</style>
     </main>
   );
 }

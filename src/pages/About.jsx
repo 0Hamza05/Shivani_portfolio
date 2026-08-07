@@ -229,7 +229,7 @@ function Vinyl({ pos, controllerRef }) {
 
 const SOCIAL_LINKS = [
   { href: 'mailto:hello@shivani.com', label: 'Email', Icon: MailIcon },
-  { href: '#', label: 'Instagram', Icon: InstagramIcon },
+  { href: 'https://www.instagram.com/shivaniipawarr?igsh=MWV6dGJjN2NiZDhudA==', label: 'Instagram', Icon: InstagramIcon, external: true },
   { href: 'https://www.linkedin.com/in/shivanipawar9', label: 'LinkedIn', Icon: LinkedinIcon, external: true, className: 'linkedin' },
 ];
 

@@ -867,6 +867,7 @@ export default function ProjectDetail() {
                 fontSize: isMobile ? "clamp(2rem, 8vw, 3rem)" : "clamp(2.8rem, 5vw, 5rem)",
                 fontWeight: "normal",
                 marginBottom: "24px",
+                color: "#2f6fd1",
               }}
             >
               {destination.title}

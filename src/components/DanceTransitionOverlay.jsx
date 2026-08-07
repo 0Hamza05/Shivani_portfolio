@@ -98,7 +98,16 @@ export function DanceTransitionProvider({ children }) {
           preload="none"
           aria-hidden="true"
           onTimeUpdate={e => { if (e.currentTarget.currentTime * 1000 >= PLAY_MS) e.currentTarget.pause(); }}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          style={{
+            position: 'absolute', top: 0,
+            // Rendered wider than the viewport and centered (via a negative
+            // left offset rather than a transform, which can leave a video
+            // layer stuck on its first frame on some GPUs) so the parent's
+            // overflow:hidden clips a slice off each side — crops the shot
+            // horizontally without zooming into the top/bottom.
+            left: '-6%', width: '112%', height: '100%',
+            objectFit: 'cover', display: 'block',
+          }}
         />
       </motion.div>
     </DanceTransitionContext.Provider>

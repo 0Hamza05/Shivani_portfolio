@@ -26,6 +26,13 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  const diveTransitions = {
+    'life-in-london': triggerLondonTransition,
+    'dance': triggerDanceTransition,
+    'travel': triggerTravelTransition,
+    'university': triggerUniversityTransition,
+  };
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll);
@@ -41,28 +48,10 @@ export default function Navbar() {
     return location.pathname.startsWith(path);
   };
 
-  const diveToLondon = (e) => {
+  const diveTo = (path, trigger) => (e) => {
     e.preventDefault();
     setMenuOpen(false);
-    triggerLondonTransition(navigate, '/work/life-in-london');
-  };
-
-  const diveToDance = (e) => {
-    e.preventDefault();
-    setMenuOpen(false);
-    triggerDanceTransition(navigate, '/work/dance');
-  };
-
-  const diveToTravel = (e) => {
-    e.preventDefault();
-    setMenuOpen(false);
-    triggerTravelTransition(navigate, '/work/travel');
-  };
-
-  const diveToUniversity = (e) => {
-    e.preventDefault();
-    setMenuOpen(false);
-    triggerUniversityTransition(navigate, '/work/university');
+    trigger(navigate, path);
   };
 
   const navLinkStyle = (active = false) => ({
@@ -165,52 +154,14 @@ export default function Navbar() {
                 e.currentTarget.style.borderColor     = active ? 'rgba(255, 244, 79, 0.60)' : 'transparent';
               },
             };
-            if (proj.slug === 'life-in-london') {
+            const transition = diveTransitions[proj.slug];
+            if (transition) {
               return (
                 <a
                   key={proj.id}
                   href={path}
                   style={navLinkStyle(active)}
-                  onClick={diveToLondon}
-                  {...sharedHover}
-                >
-                  {proj.title}
-                </a>
-              );
-            }
-            if (proj.slug === 'dance') {
-              return (
-                <a
-                  key={proj.id}
-                  href={path}
-                  style={navLinkStyle(active)}
-                  onClick={diveToDance}
-                  {...sharedHover}
-                >
-                  {proj.title}
-                </a>
-              );
-            }
-            if (proj.slug === 'travel') {
-              return (
-                <a
-                  key={proj.id}
-                  href={path}
-                  style={navLinkStyle(active)}
-                  onClick={diveToTravel}
-                  {...sharedHover}
-                >
-                  {proj.title}
-                </a>
-              );
-            }
-            if (proj.slug === 'university') {
-              return (
-                <a
-                  key={proj.id}
-                  href={path}
-                  style={navLinkStyle(active)}
-                  onClick={diveToUniversity}
+                  onClick={diveTo(path, transition)}
                   {...sharedHover}
                 >
                   {proj.title}
@@ -325,36 +276,17 @@ export default function Navbar() {
                     transition: 'color 0.2s',
                     textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
                   };
-                  if (proj.slug === 'life-in-london') {
+                  const path = `/work/${proj.slug}`;
+                  const transition = diveTransitions[proj.slug];
+                  if (transition) {
                     return (
-                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToLondon}>
-                        {proj.title}
-                      </a>
-                    );
-                  }
-                  if (proj.slug === 'dance') {
-                    return (
-                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToDance}>
-                        {proj.title}
-                      </a>
-                    );
-                  }
-                  if (proj.slug === 'travel') {
-                    return (
-                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToTravel}>
-                        {proj.title}
-                      </a>
-                    );
-                  }
-                  if (proj.slug === 'university') {
-                    return (
-                      <a key={proj.id} href={`/work/${proj.slug}`} style={mobileStyle} onClick={diveToUniversity}>
+                      <a key={proj.id} href={path} style={mobileStyle} onClick={diveTo(path, transition)}>
                         {proj.title}
                       </a>
                     );
                   }
                   return (
-                    <Link key={proj.id} to={`/work/${proj.slug}`} style={mobileStyle}>
+                    <Link key={proj.id} to={path} style={mobileStyle}>
                       {proj.title}
                     </Link>
                   );

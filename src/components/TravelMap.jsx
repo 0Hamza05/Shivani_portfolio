@@ -6,8 +6,12 @@ import { travelDestinations } from "../data/travelDestinations";
 // used pins, so this ratio matches that cropped region, not the full world.
 const SVG_RATIO = 555.32 / 279.7045;
 const TRAIL_SAMPLE_DIST = 0.7;
-// Offset (px) from pin center before the leader line starts — enough to clear the teardrop body
-const PIN_RADIUS = 9;
+// Zoom applied to the whole map+pins+labels group, centered on the actual
+// bounding box of every destination (pin + label anchor) so the crop stays
+// tighter without clipping Thailand/Dubai, which sit farthest from the
+// European cluster.
+const MAP_ZOOM = 1.2;
+const MAP_ZOOM_ORIGIN = "50% 56%";
 
 export default function TravelMap() {
   const [activeDestination, setActiveDestination] = useState(travelDestinations[0]);
@@ -179,29 +183,58 @@ export default function TravelMap() {
           transform: rotate(-45deg) scale(1.15);
           box-shadow: 0 0 22px rgba(30,58,138,0.55);
         }
-        .travel-map-img { height: 90vh; }
-        @media (max-width: 960px) {
-          .travel-map-img { height: 56vw; min-height: 200px; }
+        /* Matches the map SVG's own aspect ratio exactly, so the box is
+           filled edge-to-edge with no empty letterbox strip above/below —
+           previously a fixed vh-tall box let the (much wider) map shrink to
+           fit, leaving large blank bands and badly compressing vertical
+           spacing between pins relative to horizontal. */
+        .travel-map-viewport {
+          aspect-ratio: 555.32 / 279.7045;
+          min-height: 200px;
+        }
+        .travel-label {
+          font-size: 0.52rem;
+          letter-spacing: 0.13em;
+          padding: 4px 2px;
+        }
+        @media (max-width: 700px) {
+          .travel-label {
+            font-size: 0.4rem;
+            letter-spacing: 0.06em;
+            padding: 2px 1px;
+          }
         }
       `}</style>
 
       <div
+        className="travel-map-viewport"
         style={{
           width: "100%",
           maxWidth: "1500px",
-          margin: "0 auto 0 -4%",
-          paddingTop: "12px",
-          paddingBottom: "12px",
+          margin: "12px auto 12px -4%",
           position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* Zoomed group — map image, trail, plane, pins and labels all scale
+            together as one unit so everything stays perfectly aligned; the
+            viewport above clips the overflow. */}
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            transform: `scale(${MAP_ZOOM})`,
+            transformOrigin: MAP_ZOOM_ORIGIN,
+          }}
+        >
         <img
           ref={mapImgRef}
           src="/maps/world-map.svg"
           alt="Interactive world map showing travel destinations"
-          className="travel-map-img"
           style={{
             width: "100%",
+            height: "100%",
             objectFit: "contain",
             opacity: 0.72,
             filter: "brightness(0) saturate(100%) invert(86%) sepia(90%) saturate(850%) brightness(97%)",
@@ -209,7 +242,7 @@ export default function TravelMap() {
           }}
         />
 
-        {/* Trail + leader lines in a single SVG overlay */}
+        {/* Flight trail dots */}
         <svg
           style={{
             position: "absolute", inset: 0,
@@ -217,7 +250,6 @@ export default function TravelMap() {
             pointerEvents: "none", overflow: "visible",
           }}
         >
-          {/* Trail dots */}
           {trail.map((pt, i) => {
             const px = toPixel(pt.x, pt.y);
             if (!px) return null;
@@ -229,33 +261,6 @@ export default function TravelMap() {
                 r={1.4 + t * 1.6}
                 fill="#7EB8F7"
                 opacity={t * 0.8}
-              />
-            );
-          })}
-
-          {/* Leader lines */}
-          {mapArea && travelDestinations.map((dest) => {
-            const pinPct = { x: parseFloat(dest.mapPosition.x), y: parseFloat(dest.mapPosition.y) };
-            const px = toPixel(pinPct.x, pinPct.y);
-            const lx = toPixel(pinPct.x + dest.labelOffset.x, pinPct.y + dest.labelOffset.y);
-            if (!px || !lx) return null;
-
-            // Start line from the edge of the dot, not its center
-            const dx = lx.x - px.x;
-            const dy = lx.y - px.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const nx = dist > 0 ? (dx / dist) * (PIN_RADIUS + 1) : 0;
-            const ny = dist > 0 ? (dy / dist) * (PIN_RADIUS + 1) : 0;
-
-            const active = isActive(dest.id);
-            return (
-              <line
-                key={dest.id + "-leader"}
-                x1={px.x + nx} y1={px.y + ny}
-                x2={lx.x} y2={lx.y}
-                stroke="#1e3a8a"
-                strokeWidth={active ? 1 : 0.75}
-                opacity={active ? 0.75 : 0.4}
               />
             );
           })}
@@ -346,7 +351,7 @@ export default function TravelMap() {
           );
         })}
 
-        {/* Leader line labels */}
+        {/* Destination labels */}
         {mapArea && travelDestinations.map((dest) => {
           const pinPct = { x: parseFloat(dest.mapPosition.x), y: parseFloat(dest.mapPosition.y) };
           const lx = toPixel(
@@ -365,6 +370,7 @@ export default function TravelMap() {
               aria-current={active ? "true" : undefined}
               onClick={() => handlePinClick(dest.id)}
               onKeyDown={(e) => handlePinKeyDown(e, dest.id)}
+              className="travel-label"
               style={{
                 position: "absolute",
                 left: `${lx.x}px`,
@@ -373,16 +379,13 @@ export default function TravelMap() {
                 cursor: "pointer",
                 userSelect: "none",
                 whiteSpace: "nowrap",
-                fontSize: "0.52rem",
                 fontWeight: 600,
-                letterSpacing: "0.13em",
                 textTransform: "uppercase",
                 color: active
                   ? "rgba(30, 58, 138, 1)"
                   : "rgba(30, 58, 138, 0.65)",
                 transition: "color 0.2s ease, opacity 0.2s ease",
                 zIndex: active ? 110 : 20,
-                padding: "4px 2px",
               }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "rgba(30, 58, 138, 1)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = active ? "rgba(30, 58, 138, 1)" : "rgba(30, 58, 138, 0.65)"; }}
@@ -391,6 +394,7 @@ export default function TravelMap() {
             </div>
           );
         })}
+        </div>
       </div>
     </motion.div>
   );

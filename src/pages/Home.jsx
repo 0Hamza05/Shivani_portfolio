@@ -65,6 +65,12 @@ function PhotoCard({ photo, eager }) {
   const { triggerTransition: triggerDanceTransition } = useDanceTransition();
   const { triggerTransition: triggerTravelTransition } = useTravelTransition();
   const { triggerTransition: triggerUniversityTransition } = useUniversityTransition();
+  const diveTransitions = {
+    'life-in-london': triggerLondonTransition,
+    'dance': triggerDanceTransition,
+    'travel': triggerTravelTransition,
+    'university': triggerUniversityTransition,
+  };
   const isVideo = VIDEO_RE.test(photo.imgUrl);
   const media = isVideo ? (
     <video
@@ -107,54 +113,17 @@ function PhotoCard({ photo, eager }) {
       >{media}</a>
     );
   }
-  if (photo.project.slug === 'life-in-london') {
+  const transition = diveTransitions[photo.project.slug];
+  if (transition) {
+    const path = `/work/${photo.project.slug}`;
     return (
       <a
-        href="/work/life-in-london"
+        href={path}
         draggable={false} onDragStart={e => e.preventDefault()}
         className="mc-card"
         onClick={e => {
           e.preventDefault();
-          triggerLondonTransition(navigate, '/work/life-in-london');
-        }}
-      >{media}</a>
-    );
-  }
-  if (photo.project.slug === 'dance') {
-    return (
-      <a
-        href="/work/dance"
-        draggable={false} onDragStart={e => e.preventDefault()}
-        className="mc-card"
-        onClick={e => {
-          e.preventDefault();
-          triggerDanceTransition(navigate, '/work/dance');
-        }}
-      >{media}</a>
-    );
-  }
-  if (photo.project.slug === 'travel') {
-    return (
-      <a
-        href="/work/travel"
-        draggable={false} onDragStart={e => e.preventDefault()}
-        className="mc-card"
-        onClick={e => {
-          e.preventDefault();
-          triggerTravelTransition(navigate, '/work/travel');
-        }}
-      >{media}</a>
-    );
-  }
-  if (photo.project.slug === 'university') {
-    return (
-      <a
-        href="/work/university"
-        draggable={false} onDragStart={e => e.preventDefault()}
-        className="mc-card"
-        onClick={e => {
-          e.preventDefault();
-          triggerUniversityTransition(navigate, '/work/university');
+          transition(navigate, path);
         }}
       >{media}</a>
     );

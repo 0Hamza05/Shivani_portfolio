@@ -17,9 +17,15 @@ export function useTravelTransition() {
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
 const rand = () => CHARS[Math.floor(Math.random() * CHARS.length)];
 
-const CREAM = '#f0e3c4';
-const CREAM_DIM = 'rgba(240,227,196,0.55)';
-const AMBER = '#e8b862';
+// Same warm pastel palette used everywhere else on the site (About, Dance,
+// Volunteering) — light peachy tiles instead of a dark airport board, with
+// dark ink lettering for contrast rather than light-on-dark.
+const INK      = 'oklch(27% 0.035 40)';  // lettering / header text
+const INK_DIM  = 'oklch(42% 0.03 45)';   // gate-status line
+const GOLD     = '#c9a04f';
+const PASTEL_1 = 'oklch(95% 0.035 70)';  // tile/board — lightest peach
+const PASTEL_2 = 'oklch(89% 0.045 66)';  // tile/board — mid peach
+const PASTEL_3 = 'oklch(83% 0.05 62)';   // tile/board — deepest (still pastel) peach
 
 // One split-flap tile: shuffles random characters until its lock time, then
 // settles on the target letter with a final flap.
@@ -35,16 +41,16 @@ function Flap({ target, lockAt, w, h, fs, active }) {
   return (
     <div style={{
       position: 'relative', width: w, height: h, borderRadius: 4,
-      background: 'linear-gradient(180deg, #2b2620 0%, #211d17 49%, #14110c 50%, #1d1a14 100%)',
-      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.4)',
+      background: `linear-gradient(180deg, ${PASTEL_1} 0%, ${PASTEL_2} 49%, ${PASTEL_3} 50%, ${PASTEL_2} 100%)`,
+      boxShadow: 'inset 0 0 0 1px rgba(120,80,50,0.16), 0 2px 4px rgba(120,80,50,0.14)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
     }}>
       <span key={ch + Math.random()} className="dep-flap" style={{
         fontFamily: "'Courier New', ui-monospace, monospace", fontWeight: 700,
-        fontSize: fs, color: CREAM, lineHeight: 1, letterSpacing: '0.02em',
+        fontSize: fs, color: INK, lineHeight: 1, letterSpacing: '0.02em',
       }}>{ch === ' ' ? ' ' : ch}</span>
       {/* centre seam */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 1, background: 'rgba(0,0,0,0.55)' }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 1, background: 'rgba(120,80,50,0.22)' }} />
     </div>
   );
 }
@@ -117,16 +123,16 @@ export function TravelTransitionProvider({ children }) {
             position: 'fixed', inset: 0, zIndex: 900, pointerEvents: 'none',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 'clamp(14px, 3vh, 28px)', overflow: 'hidden',
-            background: 'radial-gradient(120% 100% at 50% 0%, #241f18 0%, #16130d 60%, #0e0b07 100%)',
+            background: `radial-gradient(120% 100% at 50% 0%, ${PASTEL_1} 0%, ${PASTEL_2} 60%, ${PASTEL_3} 100%)`,
           }}
         >
           {/* header */}
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-            style={{ display: 'flex', alignItems: 'center', gap: 12, color: AMBER,
+            style={{ display: 'flex', alignItems: 'center', gap: 12, color: INK_DIM,
               fontFamily: "'EB Garamond', serif", fontStyle: 'italic', letterSpacing: '0.34em',
               textTransform: 'uppercase', fontSize: 'clamp(0.62rem, 1.4vw, 0.82rem)' }}>
-            <span aria-hidden style={{ fontStyle: 'normal' }}>✈</span> Departures
+            <span aria-hidden style={{ fontStyle: 'normal', color: GOLD }}>✈</span> Departures
           </motion.div>
 
           {/* main split-flap word */}
@@ -141,7 +147,7 @@ export function TravelTransitionProvider({ children }) {
           <motion.div
             animate={{ opacity: [1, 1, 0.15, 0.15] }}
             transition={{ duration: 1.1, repeat: Infinity, times: [0, 0.5, 0.55, 1] }}
-            style={{ color: CREAM_DIM, fontFamily: "'Courier New', monospace", fontSize: 'clamp(0.6rem,1.3vw,0.78rem)', letterSpacing: '0.3em' }}
+            style={{ color: INK_DIM, fontFamily: "'Courier New', monospace", fontSize: 'clamp(0.6rem,1.3vw,0.78rem)', letterSpacing: '0.3em' }}
           >
             GATE 07 · ON TIME
           </motion.div>
